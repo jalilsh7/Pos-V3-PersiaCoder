@@ -73,6 +73,20 @@ final readonly class CashRegisterController
         ));
     }
 
+    public function createManualMovement(Request $request, array $parameters): Response
+    {
+        $this->assertJson($request);
+        return $this->idempotentResponse($this->cash->createManualMovement(
+            $this->principal($request),
+            $this->scope($request),
+            (string) ($parameters['sessionPublicId'] ?? ''),
+            $request->json(),
+            $request->header('idempotency-key') ?? '',
+            $request->requestId,
+            $this->ipAddress($request),
+        ));
+    }
+
     private function assertJson(Request $request): void
     {
         $contentType = strtolower(trim($request->header('content-type') ?? ''));
