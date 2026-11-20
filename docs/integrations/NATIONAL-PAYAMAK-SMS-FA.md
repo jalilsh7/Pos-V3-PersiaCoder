@@ -106,3 +106,5 @@
 - پاسخ و خطاهای مستندشده parse می‌شوند؛ HTTP 5xx/transport unknown هستند و retry کور ندارند.
 - تست fake transport اضافه شده؛ ارسال واقعی و delivery polling هنوز انجام نشده‌اند.
 
+
+- SmartSMS error code 15 explicitly indicates a missing لغو11 marker at the end of the message. V3 validates this suffix before enqueue/send and never appends or rewrites message text automatically.
