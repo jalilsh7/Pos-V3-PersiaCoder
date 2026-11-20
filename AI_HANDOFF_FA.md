@@ -691,3 +691,23 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
   3. inventory-to-order posting را فقط پس از تعیین trigger رزرو/مصرف که هنوز open است اجرا کن؛ تصمیم زمان رزرو/مصرف را حدس نزن.
   4. ادامه فاز عرضه اولیه و به‌روزرسانی roadmap/handoff.
 
+
+## نقطه ادامه — National Payamak SMS adapters (2026-11-20)
+
+- SmartSMS adapter و SharedNumber BaseServiceNumber template adapter در مسیر Communications/Sms اضافه شدند.
+- SmartSMS: Send، SendMultiple و GetDeliveries؛ SharedNumber: BaseServiceNumber با bodyId تأییدشده و variables جداشده با semicolon.
+- کلید API از environment سرور خوانده می‌شود؛ هیچ credential به frontend ارسال نمی‌شود.
+- HTTPS/TLS verification، no redirect و timeout محدود اعمال شده است.
+- Transport timeout/5xx به deliveryUnknown تبدیل می‌شود و retry کور ممنوع است.
+- Backend Validation run 44810239937 روی PHP 8.2/8.3/8.4 PASS است. تست‌ها با fake HTTP client بوده‌اند؛ ارسال واقعی provider اجرا نشده.
+- اسناد مرجع:
+  - SmartSMS REST PDF: صفحات 3 تا 6 برای Send/SendMultiple/GetDeliveries و status codes.
+  - SharedNumber PDF: صفحات 6 تا 8 برای BaseServiceNumber و BaseServiceNumberSchedule.
+- گام بعدی:
+  1. ساخت outbox و delivery_attempts با business scope، encryption متن، ذخیره provider IDs و idempotency.
+  2. worker با claim اتمیک، batch send، وضعیت unknown و backoff محدود.
+  3. delivery poller برای SmartSMS؛ مسیر گزارش SharedNumber فقط پس از تأیید endpoint دقیق.
+  4. consent/opt-out و سیاست transactional/marketing؛ ارسال تبلیغاتی تا consent واقعی مجاز نشود.
+  5. secrets settings UI و integration test با credential واقعی فقط با اجازه صریح.
+- Scheduled SharedNumber را تا تعیین timezone کسب‌وکار و سیاست زمان‌بندی اجرا نکن؛ پنجره مستندشده 07:00–22:00 است.
+
