@@ -92,3 +92,10 @@ MySQL/MariaDB برای بسیاری از دستورات DDL implicit commit ان
 - پیام تبلیغاتی در enum این نسخه وجود ندارد؛ تا زمان پیاده‌سازی consent/opt-out ارسال marketing مجاز نیست.
 - این migration فقط در مخزن ثبت شده؛ اجرای واقعی آن باید از DB validation workflow روی MySQL و MariaDB تأیید شود.
 
+
+## Migration 014 — شاخص صفحه‌بندی مشتریان
+
+- شاخص idx_customers_business_updated_id روی (business_id, updated_at, id) برای keyset pagination فهرست مشتریان اضافه می‌شود.
+- ترتیب پایدار فهرست بر اساس updated_at DESC و id DESC است.
+- این migration صرفاً بهینه‌سازی خواندن است و داده مشتری را تغییر نمی‌دهد.
+
