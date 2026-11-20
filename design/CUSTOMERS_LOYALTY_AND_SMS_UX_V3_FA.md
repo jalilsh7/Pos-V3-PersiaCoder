@@ -274,3 +274,24 @@ UI باید وضعیت‌ها را به‌صورت «رضایت ثبت‌شده�
 - 2026-11-20 — نسخه 0.1 بر اساس schema، UI مشتریان، parser پیامک و مستندات integration موجود.
 - وضعیت: آماده بازبینی مفهومی؛ پیاده‌سازی Backend و اتصال UI باقی است.
 - این سند به معنی فعال‌شدن CRM، وفاداری یا ارسال پیامک نیست.
+
+
+## 16. ممیزی تکمیلی اتصال سفارش و شواهد API — 2026-11-20
+
+بررسی مستقیم `OrderService::create` و `OrderRepository::findCustomerId` تکمیل شد:
+- payload سفارش می‌تواند `customer_id` را دریافت کند؛ مقدار باید UUID معتبر باشد.
+- شناسه مشتری در همان business و فقط برای مشتری `is_active = 1` resolve می‌شود؛ شناسه خارج از scope یا مشتری ناموجود/غیرفعال با خطای 404 رد می‌شود.
+- customer_id در رکورد سفارش ذخیره می‌شود؛ سفارش مهمان با customer_id تهی همچنان ممکن است.
+- این مسیر، API جست‌وجو/ایجاد/ویرایش مشتری نیست و فهرست/پروفایل مشتری را برای UI فراهم نمی‌کند.
+- phone_normalized در schema ایندکس دارد، اما unique constraint برای شماره تلفن در migration بررسی‌شده وجود ندارد؛ duplicate/merge policy باز است.
+- جدول `pos_customer_ledger` ساختار امتیاز، اعتبار و مراجعه را دارد، اما route یا service فعال برای ثبت/محاسبه آن در مسیرهای فعلی مشاهده نشد.
+- جدول consent/opt-out و فیلد birthday در schema بررسی‌شده وجود ندارد؛ parser تاریخ تولد فقط خروجی parse می‌دهد و آن را در پروفایل ذخیره نمی‌کند.
+- در `public/index.php` هیچ route مدیریتی customer، loyalty یا SMS ثبت نشده است.
+
+### مستندات provider که باید مبنای adapter باشند
+- `docs/integrations/NATIONAL-PAYAMAK-SMS-FA.md` قرارداد SmartSMS REST، BaseServiceNumber و BaseServiceNumberSchedule را از مستندات ارائه‌شده پروژه خلاصه کرده است.
+- SendMultiple حداکثر 100 گیرنده در هر فراخوانی و آرایه‌های هم‌اندازه `to` و `text` دارد؛ شناسه `ID` هر پیام برای delivery tracking نگهداری شود.
+- وضعیت خام provider باید حفظ شود؛ پذیرفته‌شدن درخواست ارسال به معنی تحویل قطعی به گوشی نیست.
+- نمونه PHP/HTTP قدیمی فقط مرجع شکل پارامترهاست؛ در V3 از HTTPS و adapter امن استفاده شود.
+
+- نسخه 0.2 — تکمیل تطبیق OrderService، customer schema، routeهای جاری و مستند provider؛ وضعیت همچنان «آماده بازبینی مفهومی؛ نیازمند تکمیل Backend».
