@@ -124,3 +124,11 @@
 - تست DB روی MySQL 8.4 و MariaDB 10.6 موفق است (run 44811930818)؛ backend tests روی PHP 8.2/8.3/8.4 موفق‌اند (run 44812010216). تست‌ها fake provider بوده‌اند و پیام واقعی ارسال نشده است.
 - هنوز trigger خودکار از رویدادهای سفارش، داشبورد صف، تنظیمات provider، consent/opt-out بازاریابی، زمان‌بندی و reconciliation گزارش تحویل SharedNumber وجود ندارد. SharedNumber adapter فعلاً مستقل از outbox است.
 
+
+## مرز API و ارسال (2026-11-20)
+
+- endpoint موقت متن آزاد POST /api/v1/communications/sms/transactional پس از بازبینی D-10 حذف شد؛ آن endpoint امکان enqueue متن دلخواه با pos.sell می‌داد و با اصل event-driven/template-controlled ناسازگار بود.
+- Outbox/worker/poller به‌عنوان زیرساخت داخلی باقی است؛ تا زمان ساخت event type و template registry، route عمومی برای enqueue وجود ندارد.
+- هر SMS تراکنشی باید از رویداد معتبر سفارش/خدمت و قالب کنترل‌شده تولید شود. هر رویداد باید enable/disable مستقل داشته باشد.
+- ارسال بازاریابی تا ثبت consent معتبر و enforce کردن opt-out/suppression در تمام مسیرهای ارسال ممنوع است.
+
