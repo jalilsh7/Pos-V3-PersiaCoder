@@ -542,6 +542,7 @@ export type CreatePosOrderPayload = {
   recipient_name?: string;
   recipient_phone?: string;
   delivery_address?: { street: string };
+  customer_id?: string | null;
   items: {
     product_id: string;
     variant_id: string | null;
