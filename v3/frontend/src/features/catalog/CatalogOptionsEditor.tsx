@@ -26,6 +26,7 @@ export function CatalogOptionsEditor({ productId, detail, onSaved }: {
   const [required, setRequired] = useState(false);
   const [attachRequired, setAttachRequired] = useState(false);
   const [options, setOptions] = useState([{ name: "", price: "0" }, { name: "", price: "0" }]);
+  const [variantDrafts, setVariantDrafts] = useState<Record<string, { name: string; sku: string; price: string }>>({});
   const [groupDrafts, setGroupDrafts] = useState<Record<string, { name: string; type: "single" | "multiple"; min: string; max: string; required: boolean }>>({});
   const [optionDrafts, setOptionDrafts] = useState<Record<string, { name: string; price: string }>>({});
   const [busy, setBusy] = useState(false);
@@ -94,10 +95,22 @@ export function CatalogOptionsEditor({ productId, detail, onSaved }: {
     {message ? <p className="catalog-editor-message" role="status">{message}</p> : null}
     <div className="catalog-editor-section">
       <strong>تنوع‌های محصول</strong>
-      {detail.variants.map((variant) => <div className="catalog-editor-row" key={variant.id}>
-        <span><b>{variant.name}</b><small>{variant.sku || "بدون SKU"} · {variant.price_delta_amount > 0 ? "+" : ""}{money(variant.price_delta_amount)} تومان</small></span>
-        <StatusBadge variant={variant.is_active ? "success" : "neutral"}>{variant.is_active ? "فعال" : "غیرفعال"}</StatusBadge>
-        <Button size="sm" variant="secondary" disabled={busy} onClick={() => void toggle(() => updateCatalogVariant(variant.id, { is_active: !variant.is_active }))}>{variant.is_active ? "غیرفعال" : "فعال‌سازی"}</Button>
+      {detail.variants.map((variant) => <div className="catalog-editor-group" key={variant.id}>
+        <div className="catalog-editor-row"><span><b>{variant.name}</b><small>{variant.sku || "بدون SKU"} · {money(variant.price_delta_amount)} تومان</small></span>
+          <StatusBadge variant={variant.is_active ? "success" : "neutral"}>{variant.is_active ? "فعال" : "غیرفعال"}</StatusBadge>
+          <Button size="sm" variant="secondary" disabled={busy} onClick={() => void toggle(() => updateCatalogVariant(variant.id, { is_active: !variant.is_active }))}>{variant.is_active ? "غیرفعال" : "فعال‌سازی"}</Button>
+        </div>
+        <div className="catalog-editor-form">
+          <input aria-label="نام تنوع" value={(variantDrafts[variant.id] ?? { name: variant.name }).name} onChange={(event) => setVariantDrafts((current) => ({ ...current, [variant.id]: { ...(current[variant.id] ?? { name: variant.name, sku: variant.sku ?? "", price: String(variant.price_delta_amount) }), name: event.target.value } }))} />
+          <input aria-label="SKU تنوع" value={(variantDrafts[variant.id] ?? { sku: variant.sku ?? "" }).sku} onChange={(event) => setVariantDrafts((current) => ({ ...current, [variant.id]: { ...(current[variant.id] ?? { name: variant.name, sku: variant.sku ?? "", price: String(variant.price_delta_amount) }), sku: event.target.value } }))} />
+          <input aria-label="اختلاف قیمت تنوع" inputMode="numeric" value={(variantDrafts[variant.id] ?? { price: String(variant.price_delta_amount) }).price} onChange={(event) => setVariantDrafts((current) => ({ ...current, [variant.id]: { ...(current[variant.id] ?? { name: variant.name, sku: variant.sku ?? "", price: String(variant.price_delta_amount) }), price: event.target.value } }))} />
+          <Button size="sm" variant="secondary" disabled={busy} onClick={() => {
+            const draft = variantDrafts[variant.id] ?? { name: variant.name, sku: variant.sku ?? "", price: String(variant.price_delta_amount) };
+            const price = parseSignedInteger(draft.price);
+            if (!draft.name.trim() || !Number.isSafeInteger(price) || (draft.sku.trim() && !/^[A-Za-z0-9._-]{1,80}$/.test(draft.sku.trim()))) { setMessage("نام، SKU یا اختلاف قیمت تنوع معتبر نیست."); return; }
+            void toggle(() => updateCatalogVariant(variant.id, { name: draft.name.trim(), sku: draft.sku.trim() || null, price_delta_amount: price }));
+          }}>ذخیره تغییرات</Button>
+        </div>
       </div>)}
       {!detail.variants.length ? <small className="catalog-editor-hint">هنوز تنوعی ثبت نشده است.</small> : null}
       <form onSubmit={(event) => void saveVariant(event)} className="catalog-editor-form">
