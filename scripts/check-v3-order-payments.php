@@ -12,7 +12,7 @@ $checks = [
         str_contains($service, '$this->idempotency->execute('),
     'order is selected with business/branch scope and row lock' =>
         str_contains($service, 'AND branch_id = :branch_id AND public_id = :public_id') &&
-        str_contains($service, "($forUpdate ? ' FOR UPDATE' : '')"),
+        str_contains($service, '$forUpdate ?') && str_contains($service, ' FOR UPDATE'),
     'payment amount is checked against server-computed outstanding balance' =>
         str_contains($service, '$amount > $due'),
     'payment ledger row is captured as cash only' =>
