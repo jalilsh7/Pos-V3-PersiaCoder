@@ -377,3 +377,21 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - بسته بعدی: **D-12 — تنظیمات، کاربران، نقش‌ها و entitlement قابلیت‌ها**.
 - پیش از طراحی، تصمیمات محصول و آخرین HEAD را تازه بخوان؛ routeها و PermissionService/RoleRepository/BusinessScope و ساختار entitlement را با سند LIC-MODULE-CONTROL-2026-001 تطبیق بده.
 - هیچ پلن/بسته فروش یا ترکیب ماژول‌ها را حدس نزن؛ تصمیم تجاری بسته‌بندی هنوز باز است.
+
+
+## بسته طراحی D-12 — تنظیمات، کاربران، نقش‌ها و مجوز قابلیت‌ها (2026-11-20)
+
+- سند UX: [ACCESS_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md](design/ACCESS_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md)، نسخه 0.1.
+- UserManagementService/Controller، RoleManagementService/Controller، PermissionService، BranchManagementService و routeهای access بررسی شدند.
+- APIهای فهرست/ایجاد کاربر business/branch، فهرست نقش/permission، ایجاد/ویرایش نقش سفارشی و assign/remove نقش در scope business/branch وجود دارند.
+- ایجاد کاربر رمز موقت تصادفی می‌سازد که فقط یک بار در پاسخ نمایش داده می‌شود و تغییر رمز در اولین ورود اجباری است؛ نقش owner/system محافظت شده و role escalation رد می‌شود.
+- API ویرایش/غیرفعال‌سازی/reset password/revoke sessions و Settings API جامع در مسیرهای بررسی‌شده پیدا نشد.
+- تفکیک RBAC داخلی از Central entitlement صریح ثبت شد. اتصال runtime به Central و enforcement کامل entitlement هنوز اثبات نشده است.
+- هیچ پلن، قیمت یا ترکیب بسته تجاری تعریف نشده؛ تصمیم `LIC-MODULE-CONTROL-2026-001` و موارد باز آن همچنان مرجع‌اند.
+- README و backlog طراحی D-12 به‌روزرسانی شدند؛ این بسته سند UX است و تست runtime/اتصال Central اجرا نشده است.
+
+### نقطه ادامه
+- بسته بعدی طراحی: **D-13 — فروشگاه آنلاین، قالب عمومی صنفی و checkout**.
+- آخرین HEAD و تصمیمات محصول را تازه fetch کن؛ سپس storefront فعلی، cart، API سفارش، ساعات کاری، روش دریافت/ارسال، قالب و routeهای عمومی را بررسی کن.
+- قالب واحد قابل پیکربندی برای صنف‌های غذا و نوشیدنی مبناست؛ برای هر صنف storefront مستقل نساز. فروشگاه آنلاین باید از همان catalog/order engine استفاده کند و سیستم سفارش موازی ایجاد نکند.
+- پرداخت آنلاین، ساعت کاری، تعطیلی فروشگاه، delivery zone و پیش‌سفارش را فقط بر اساس کد و تصمیمات مصوب طراحی کن؛ جزئیات باز را حدس نزن.
