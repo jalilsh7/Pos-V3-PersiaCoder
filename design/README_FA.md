@@ -24,7 +24,7 @@
 | [PAYMENT_AND_RECEIPT_UX_V3_FA.md](PAYMENT_AND_RECEIPT_UX_V3_FA.md) | طراحی پرداخت POS، تفکیک درگاه storefront، نتیجه تراکنش، رسید و بازپرداخت | آماده نمونه‌سازی |
 | [ORDER_CENTER_AND_DETAILS_UX_V3_FA.md](ORDER_CENTER_AND_DETAILS_UX_V3_FA.md) | مرکز سفارش چندکاناله، فیلترهای API، جزئیات، timeline وضعیت و اقدامات مجاز | آماده نمونه‌سازی؛ نیازمند بازبینی مالک |
 | [CATALOG_OPTIONS_AND_RECIPES_UX_V3_FA.md](CATALOG_OPTIONS_AND_RECIPES_UX_V3_FA.md) | طراحی کاتالوگ، دسته و محصول، تنوع، گروه افزودنی، رسپی نسخه‌دار و مرز اتصال به انبار | آماده نمونه‌سازی؛ نیازمند تکمیل UI و بازبینی مالک |\n| [INVENTORY_LOCATIONS_STOCK_AND_DOCUMENTS_UX_V3_FA.md](INVENTORY_LOCATIONS_STOCK_AND_DOCUMENTS_UX_V3_FA.md) | نمای کلی موجودی، اقلام و واحدها، مکان‌ها، مانده، ledger، اسناد و posting | آماده نمونه‌سازی؛ نیازمند بازبینی مالک |
-| [INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md](INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md) | داشبورد موجودی، مواد اولیه، مکان‌ها، تأمین‌کنندگان، اسناد چندردیفی، posting، valuation و ledger | آماده بازبینی و نمونه‌سازی |
+| [INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md](INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md) | داشبورد موجودی، مواد اولیه، مکان‌ها، تأمین‌کنندگان، اسناد چندردیفی، posting، valuation و ledger | آماده بازبینی و نمونه‌سازی |\n| [CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md](CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md) | پرونده مشتری، تاریخچه سفارش، ledger وفاداری، رضایت/opt-out و معماری پیامک تراکنشی/تبلیغاتی | آماده بازبینی مفهومی؛ Backend لازم است |
 
 ## سندهای مرتبط بیرون از پوشه
 
