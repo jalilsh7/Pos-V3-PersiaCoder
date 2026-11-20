@@ -48,7 +48,7 @@ const fulfillmentLabels: Record<string, string> = {
 };
 const paymentLabels: Record<string, { label: string; variant: "success" | "warning" | "danger" | "neutral" }> = {
   unpaid: { label: "پرداخت‌نشده", variant: "warning" },
-  partial: { label: "پرداخت بخشی", variant: "warning" },
+  partially_paid: { label: "پرداخت بخشی", variant: "warning" },
   pending: { label: "در انتظار تأیید", variant: "warning" },
   failed: { label: "ناموفق", variant: "danger" },
   partially_refunded: { label: "استرداد بخشی", variant: "warning" },
@@ -291,7 +291,7 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
   const totalOrders = orders.length;
   const preparingOrders = orders.filter((order) => order.order_status === "preparing").length;
   const readyOrders = orders.filter((order) => order.order_status === "ready").length;
-  const awaitingPayment = orders.filter((order) => ["unpaid", "partial", "pending"].includes(order.payment_status)).length;
+  const awaitingPayment = orders.filter((order) => ["unpaid", "partially_paid", "pending"].includes(order.payment_status)).length;
 
   return (
     <div className="page-stack orders-workspace">
@@ -484,7 +484,7 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
                   </Button>
                 ) : null}
                 {!showCancelForm && !["completed", "cancelled", "rejected"].includes(selectedOrder.order_status)
-                  && !["paid", "partially_paid"].includes(selectedOrder.payment_status) ? (
+                  && !["paid", "partially_paid", "partially_refunded"].includes(selectedOrder.payment_status) ? (
                   <Button variant="danger" disabled={transitioning} onClick={() => { setCancelReason(""); setShowCancelForm(true); }}>
                     لغو سفارش
                   </Button>
