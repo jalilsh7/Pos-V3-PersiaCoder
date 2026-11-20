@@ -22,8 +22,6 @@ use PersiaCoder\PosV3\Finance\CashRegisterController;
 use PersiaCoder\PosV3\Finance\CashRegisterService;
 use PersiaCoder\PosV3\Finance\OrderPaymentController;
 use PersiaCoder\PosV3\Finance\OrderPaymentService;
-use PersiaCoder\PosV3\Communications\Sms\SmsOutboxController;
-use PersiaCoder\PosV3\Communications\Sms\SmsOutboxService;
 use PersiaCoder\PosV3\Customers\CustomerController;
 use PersiaCoder\PosV3\Customers\CustomerService;
 use PersiaCoder\PosV3\Auth\AuthController;
@@ -126,20 +124,6 @@ try {
             );
         }
         return $cashRegisterController;
-    };
-
-    $smsOutboxController = null;
-    $getSmsOutboxController = static function () use (&$smsOutboxController, $getConnection, $configuration): SmsOutboxController {
-        if (!$smsOutboxController instanceof SmsOutboxController) {
-            $smsOutboxController = new SmsOutboxController(
-                new SmsOutboxService(
-                    $getConnection(),
-                    $configuration->applicationKey,
-                    new PermissionService(new PermissionRepository($getConnection())),
-                ),
-            );
-        }
-        return $smsOutboxController;
     };
 
     $customerController = null;
@@ -420,11 +404,6 @@ try {
     $router->add('POST', '/api/v1/orders/{orderPublicId}/payments/{paymentPublicId}/refunds/cash',
         static fn (Request $request, array $parameters): Response => $getOrderPaymentController()->refundCash($request, $parameters),
         [$sessionMiddleware, $makePermissionMiddleware('finance.manage', true), $csrfMiddleware, $originMiddleware],
-    );
-
-    $router->add('POST', '/api/v1/communications/sms/transactional',
-        static fn (Request $request): Response => $getSmsOutboxController()->enqueueTransactional($request),
-        [$sessionMiddleware, $makePermissionMiddleware('pos.sell'), $csrfMiddleware, $originMiddleware],
     );
 
     $router->add('GET', '/api/v1/pos/customers',
