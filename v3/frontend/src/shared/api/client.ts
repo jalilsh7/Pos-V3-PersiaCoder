@@ -735,7 +735,7 @@ export async function openCashSession(registerId: string, openingAmount: number)
 export async function closeCashSession(sessionId: string, countedCashAmount: number): Promise<{
   session_id: string; status: string; expected_cash_amount: number; counted_cash_amount: number; difference_amount: number;
 }> {
-  return request(`/cash/sessions/${encodeURIComponent(sessionId)}/close`, {
+  return request<{ session_id: string; status: string; expected_cash_amount: number; counted_cash_amount: number; difference_amount: number }>(`/cash/sessions/${encodeURIComponent(sessionId)}/close`, {
     method: "PATCH",
     body: JSON.stringify({ counted_cash_amount: countedCashAmount }),
   });
@@ -754,7 +754,7 @@ export async function createManualCashMovement(sessionId: string, payload: {
   amount: number;
   reason: string;
 }): Promise<{ session_id: string; movement_type: "manual_in" | "manual_out"; amount: number; expected_cash_amount: number }> {
-  return request(`/cash/sessions/${encodeURIComponent(sessionId)}/movements`, {
+  return request<{ session_id: string; movement_type: "manual_in" | "manual_out"; amount: number; expected_cash_amount: number }>(`/cash/sessions/${encodeURIComponent(sessionId)}/movements`, {
     method: "POST",
     body: JSON.stringify(payload),
   });
