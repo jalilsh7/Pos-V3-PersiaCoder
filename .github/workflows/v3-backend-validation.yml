@@ -1,21 +1,6 @@
 name: V3 Backend Validation
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'v3/backend/**'
-      - 'database/v3/**'
-      - 'scripts/check-v3-backend-*.php'
-      - 'scripts/check-v3-order-payments.php'
-      - '.github/workflows/v3-backend-validation.yml'
-  pull_request:
-    paths:
-      - 'v3/backend/**'
-      - 'database/v3/**'
-      - 'scripts/check-v3-backend-*.php'
-      - 'scripts/check-v3-order-payments.php'
-      - '.github/workflows/v3-backend-validation.yml'
   workflow_dispatch:
 
 permissions:

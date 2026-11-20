@@ -1,31 +1,6 @@
 name: V3 database engine validation
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'database/v3/**'
-      - 'v3/backend/src/Finance/**'
-      - 'v3/backend/src/Customers/**'
-      - 'v3/backend/src/Communications/Sms/**'
-      - 'v3/backend/src/Infrastructure/Database/CustomerRepository.php'
-      - 'v3/backend/src/Infrastructure/Database/SmsOutboxRepository.php'
-      - 'v3/backend/public/index.php'
-      - 'v3/backend/src/Orders/OrderService.php'
-      - 'scripts/check-v3-*.php'
-      - '.github/workflows/v3-database-validation.yml'
-  pull_request:
-    paths:
-      - 'database/v3/**'
-      - 'v3/backend/src/Finance/**'
-      - 'v3/backend/src/Customers/**'
-      - 'v3/backend/src/Communications/Sms/**'
-      - 'v3/backend/src/Infrastructure/Database/CustomerRepository.php'
-      - 'v3/backend/src/Infrastructure/Database/SmsOutboxRepository.php'
-      - 'v3/backend/src/Orders/OrderService.php'
-      - 'v3/backend/public/index.php'
-      - 'scripts/check-v3-*.php'
-      - '.github/workflows/v3-database-validation.yml'
   workflow_dispatch:
 
 permissions:
