@@ -383,3 +383,13 @@
 - Loyalty، consent تبلیغاتی، تولد، segmentation، pagination و ساخت مشتری inline در POS هنوز باز هستند و نباید fake یا فرض شوند.
 - HEAD زمان ثبت: 9b6ee79c8a7f9bd76a9b11f05d1f4a254ad8094b؛ نتیجه Frontend workflow باید مجدداً بررسی شود.
 
+
+## SMS-MIG-2026-002 — آداپتورهای پیامک (2026-11-20)
+
+- NationalPayamakSmartSmsProvider برای Send/SendMultiple/GetDeliveries اضافه شد.
+- NationalPayamakSharedNumberProvider برای BaseServiceNumber با bodyId تأییدشده و variables جداشده با ; اضافه شد.
+- API key فقط در environment سمت سرور و private config property نگهداری می‌شود؛ HTTPS/TLS verification و timeout محدود است.
+- شناسه‌های provider برای persistence آماده‌اند؛ timeout/5xx می‌تواند outcome نامشخص باشد و retry کور ممنوع است.
+- تست‌های fake transport روی PHP 8.2/8.3/8.4 موفق شدند؛ هیچ پیام واقعی ارسال نشده است.
+- Queue/outbox، delivery attempts، worker، delivery polling، consent/opt-out، scheduled send و settings UI هنوز باقی‌اند.
+
