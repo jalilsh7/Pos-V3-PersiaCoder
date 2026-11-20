@@ -763,3 +763,15 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - پس از حذف controller/route یک اجرای نهایی Backend/Database phase gate لازم است؛ این اجرا هنوز ثبت نشده است.
 - محدودیت‌های واقعی: no real SMS sent; no order event trigger; no template registry/settings UI; no consent/opt-out; SharedNumber adapter not wired to queue; scheduled send pending.
 
+
+## نقطه ادامه — Customer keyset pagination (2026-11-20)
+
+- Migration 014: index idx_customers_business_updated_id (business_id, updated_at, id).
+- CustomerRepository از keyset pagination بر اساس updated_at DESC, id DESC استفاده می‌کند و next_cursor_data را برمی‌گرداند.
+- CustomerService cursor base64url را decode و validate می‌کند؛ malformed cursor => 400 customer_cursor_invalid.
+- CustomerController و API client next_cursor را منتقل می‌کنند.
+- CustomersWorkspace صفحه 50تایی، load more، deduplication و request-version guard برای جلوگیری از پاسخ stale دارد.
+- Integration script check-v3-customer-integration.php برای سه رکورد/دو صفحه، عدم overlap و invalid cursor توسعه یافت.
+- تغییرات پس از آخرین DB/Backend PASS انجام شده‌اند؛ این نسخه هنوز phase-gate test نشده است. Workflowها manual workflow_dispatch-only هستند؛ در gate بعدی اجرا شود.
+- گام بعدی: تست مرحله‌ای؛ سپس بررسی customer inline creation in POS و policy permissions قبل از افزودن آن. Loyalty/consent همچنان جداگانه و بدون حدس باقی بمانند.
+
