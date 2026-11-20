@@ -1,15 +1,8 @@
 import { useEffect, useState } from "react";
 import { MessageSquare, RefreshCw } from "lucide-react";
-import { ApiError, getSmsOutboxMessages, getSmsServiceOutboxMessages, type SmsOutboxMessage, type SmsServiceOutboxMessage } from "../../shared/api/client";
+import { ApiError, getSmsOutboxMessages, type SmsOutboxMessage } from "../../shared/api/client";
 import { Button, Notice, PageHeader, StatusBadge, Surface } from "../../shared/ui";
 import "./communications.css";
-
-const triggerLabels: Record<string, string> = {
-  "order.created": "ثبت سفارش",
-  "order.status_changed": "تغییر وضعیت سفارش",
-  "order.ready": "آماده‌شدن سفارش",
-  "order.completed": "تکمیل / تحویل سفارش",
-};
 
 const statusOptions = [
   { value: "all", label: "همه وضعیت‌ها" },
@@ -42,7 +35,6 @@ const dateLabel = (value: string) => {
 export function SmsOutboxWorkspace() {
   const [status, setStatus] = useState("all");
   const [messages, setMessages] = useState<SmsOutboxMessage[]>([]);
-  const [serviceMessages, setServiceMessages] = useState<SmsServiceOutboxMessage[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -53,10 +45,9 @@ export function SmsOutboxWorkspace() {
     let active = true;
     setLoading(true);
     setError(null);
-    Promise.all([getSmsOutboxMessages({ status, limit: 25 }), getSmsServiceOutboxMessages({ status, limit: 50 })]).then(([page, servicePage]) => {
+    getSmsOutboxMessages({ status, limit: 25 }).then((page) => {
       if (!active) return;
       setMessages(page.messages);
-      setServiceMessages(servicePage.messages);
       setCursor(page.next_cursor);
     }).catch((cause: unknown) => {
       if (!active) return;
@@ -65,7 +56,6 @@ export function SmsOutboxWorkspace() {
         ? "دسترسی مشاهده گزارش پیامک برای نقش کاربری شما فعال نیست."
         : apiError?.message || "دریافت گزارش پیامک انجام نشد.");
       setMessages([]);
-      setServiceMessages([]);
       setCursor(null);
     }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -144,38 +134,6 @@ export function SmsOutboxWorkspace() {
           </div>
         )}
         {cursor && !loading ? <div className="sms-outbox-more"><Button onClick={loadMore} disabled={loadingMore}>{loadingMore ? "در حال دریافت…" : "نمایش پیام‌های بیشتر"}</Button></div> : null}
-      </Surface>
-      <Surface padding="md" className="sms-outbox-panel">
-        <div className="sms-outbox-toolbar">
-          <strong>پیامک‌های قالب خدماتی ملی‌پیامک</strong>
-          <span className="sms-outbox-count">{serviceMessages.length.toLocaleString("fa-IR")} پیام</span>
-        </div>
-        {serviceMessages.length === 0 ? (
-          <div className="sms-outbox-empty">پیام قالب خدماتی ثبت‌شده‌ای وجود ندارد.</div>
-        ) : (
-          <div className="sms-outbox-list">
-            {serviceMessages.map((message) => {
-              const meta = statusMeta[message.status] ?? { label: message.status, variant: "neutral" as const };
-              const trigger = triggerLabels[message.trigger_key] ?? message.trigger_key;
-              return (
-                <article className="sms-outbox-item" key={message.id}>
-                  <div className="sms-outbox-item__main">
-                    <div className="sms-outbox-item__title">
-                      <strong>{trigger}</strong>
-                      <StatusBadge variant={meta.variant}>{meta.label}</StatusBadge>
-                    </div>
-                    <div className="sms-outbox-item__meta">
-                      <span>قالب: {message.provider_body_id.toLocaleString("fa-IR")}</span>
-                      <span>تلاش‌ها: {message.attempt_count.toLocaleString("fa-IR")}</span>
-                      <span>ثبت: {dateLabel(message.created_at)}</span>
-                    </div>
-                    {message.failure_code ? <small className="sms-outbox-failure">کد خطا: {message.failure_code}</small> : null}
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
       </Surface>
     </div>
   );
