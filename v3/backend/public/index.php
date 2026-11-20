@@ -363,6 +363,11 @@ try {
         [$sessionMiddleware, $makePermissionMiddleware('orders.read', true)],
     );
 
+    $router->add('GET', '/api/v1/cash/payment-sessions',
+        static fn (Request $request): Response => $getOrderPaymentController()->listOpenCashSessions($request),
+        [$sessionMiddleware, $makePermissionMiddleware('pos.sell', true)],
+    );
+
     $router->add('GET', '/api/v1/orders/{orderPublicId}/payments',
         static fn (Request $request, array $parameters): Response => $getOrderPaymentController()->list($request, $parameters),
         [$sessionMiddleware, $makePermissionMiddleware('orders.read', true)],
