@@ -747,3 +747,15 @@ export async function reviewCashSession(sessionId: string, reviewNote: string): 
     body: JSON.stringify({ review_note: reviewNote.trim() }),
   });
 }
+
+
+export async function createManualCashMovement(sessionId: string, payload: {
+  direction: "in" | "out";
+  amount: number;
+  reason: string;
+}): Promise<{ session_id: string; movement_type: "manual_in" | "manual_out"; amount: number; expected_cash_amount: number }> {
+  return request(`/cash/sessions/${encodeURIComponent(sessionId)}/movements`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
