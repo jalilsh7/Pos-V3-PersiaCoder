@@ -209,6 +209,7 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
 
   useEffect(() => {
     if (!selectedId) {
+      setPaymentLoading(false);
       setPaymentSummary(null);
       setRefundSessions([]);
       setRefundPaymentId(null);
@@ -327,6 +328,7 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
       setRefundConfirmed(false);
       refundAttempt.current = null;
       void getOrderPayments(selectedOrder.id).then(setPaymentSummary).catch(() => undefined);
+      void getOrderDetails(selectedOrder.id).then(setDetail).catch(() => undefined);
       void fetchOrders();
     } catch (cause) {
       setRefundError(cause instanceof ApiError
