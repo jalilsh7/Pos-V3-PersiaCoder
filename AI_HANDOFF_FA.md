@@ -168,3 +168,10 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - مرجع APIهای ارائه‌شده: `docs/integrations/NATIONAL-PAYAMAK-SMS-FA.md`.
 - هنوز ارسال واقعی، صف، گزارش تحویل، provider adapter و consent/opt-out وجود ندارد. `SamplePHP.rar` قابل استخراج نبود؛ محتوایش منتقل نشده است.
 
+
+
+## نقطه تحویل معماری — ARCH-MASTER-2026-001 (2026-11-20)
+- مبنای شروع: `4f3d79f3ac7331d0258020300615eb520a2bb508`؛ سند پایه: [ARCHITECTURE_MASTER_V3_FA.md](ARCHITECTURE_MASTER_V3_FA.md).
+- وضعیت: در حال انجام؛ فاز 1 باز است.
+- ادامه‌دهنده ابتدا HEAD و اسناد را تازه fetch کند؛ سپس ERD موجود را با migrationها، repositories، services و API واقعی تطبیق دهد. ERD فعلی طرح منطقی است، نه DDL اجرایی.
+- بسته بعدی ARCH-02: ماتریس موجود/ناقص/متعارض مدل دامنه و اصلاح اسناد بر اساس کد و schema. تست اجرایی در بسته سند معماری انجام نشده است.
