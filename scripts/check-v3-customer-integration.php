@@ -197,6 +197,36 @@ $list = $service->list($scope, 'به‌روزشده', 'inactive', 50);
 $assert(count($list['customers']) === 1 && $list['customers'][0]['id'] === $customerId,
     'Customer search/status filter did not return the updated customer.');
 
+$paginationIds = [];
+for ($index = 1; $index <= 3; $index++) {
+    $createdPageCustomer = $service->create(
+        $actor,
+        $scope,
+        ['name' => 'صفحه‌بندی ' . $index, 'phone' => '', 'notes' => ''],
+        'ci-customer-page-' . $index . '-' . bin2hex(random_bytes(3)),
+        $requestId,
+        $ip,
+    );
+    $paginationIds[] = (string) $createdPageCustomer['body']['data']['customer']['id'];
+}
+$firstPage = $service->list($scope, 'صفحه‌بندی', 'all', 2);
+$assert(count($firstPage['customers']) === 2 && is_string($firstPage['next_cursor']),
+    'Customer first page did not return a continuation cursor.');
+$secondPage = $service->list($scope, 'صفحه‌بندی', 'all', 2, $firstPage['next_cursor']);
+$assert(count($secondPage['customers']) === 1 && $secondPage['next_cursor'] === null,
+    'Customer second page did not return the final row and stop cursor.');
+$firstIds = array_column($firstPage['customers'], 'id');
+$secondIds = array_column($secondPage['customers'], 'id');
+$assert(count(array_unique(array_merge($firstIds, $secondIds))) === 3,
+    'Customer cursor pagination repeated or skipped a customer.');
+$invalidCursorRejected = false;
+try {
+    $service->list($scope, 'صفحه‌بندی', 'all', 2, 'not-a-valid-cursor');
+} catch (HttpException $error) {
+    $invalidCursorRejected = $error->status === 400 && $error->errorCode === 'customer_cursor_invalid';
+}
+$assert($invalidCursorRejected, 'Malformed customer pagination cursor was not rejected.');
+
 $secondBusinessPublicId = $uuid();
 $insertOtherBusiness = $pdo->prepare('INSERT INTO pos_businesses (public_id, code, name) VALUES (:public_id, :code, :name)');
 $insertOtherBusiness->execute(['public_id' => $secondBusinessPublicId, 'code' => $prefix . '-other', 'name' => 'Other CI Business']);
