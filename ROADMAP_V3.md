@@ -1223,3 +1223,14 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - Backend validation و تست‌های SmartSMS/SharedNumber روی PHP 8.2/8.3/8.4 موفق: run 44812010216.
 - محدودیت‌ها: هیچ ارسال واقعی انجام نشده؛ صف هنوز از رویدادهای سفارش فراخوانی نمی‌شود و مدیریت UI ندارد؛ SharedNumber به outbox وصل نیست؛ marketing consent/opt-out، زمان‌بندی، تنظیمات UI و SharedNumber delivery report باقی‌اند.
 
+
+## SMS-API-01 — ورودی API صف پیامک تراکنشی (2026-11-21)
+
+- وضعیت: **کدنویسی انجام شد؛ پذیرش و تست جامع در پایان بسته/فاز باقی است.**
+- Controller جدید \`v3/backend/src/Communications/Sms/SmsOutboxController.php\` ایجاد شد.
+- endpoint احراز هویت‌شده \`POST /api/v1/communications/sms/transactional\` در front controller ثبت شد.
+- ساختار payload: \`recipient\`، \`message\` و \`customer_public_id\` اختیاری.
+- کنترل‌های موجود سرویس حفظ شده‌اند: مجوز \`pos.sell\`، context کسب‌وکار، Idempotency-Key، نرمال‌سازی موبایل ایران، الزام suffix مستند \`لغو11\`، تطبیق شماره با مشتری فعال و رمزنگاری متن/شماره در outbox.
+- این API فقط پیام را در صف پایدار ثبت می‌کند؛ ارسال شبکه‌ای فقط توسط CLI worker جداگانه انجام می‌شود. هیچ trigger خودکار از چرخه سفارش و هیچ ارسال واقعی پیامک فعال نشده است.
+- تست endpoint، PHP lint، E2E و UI در این بسته اجرا نشده‌اند؛ در تست تجمیعی پایان فاز بررسی شوند.
+- باقی‌مانده: UI مدیریت صف و گزارش تحویل، تنظیمات امن provider، اتصال پیام‌های transactional به رویداد سفارش پس از تثبیت template و قواعد ارسال، consent/opt-out برای marketing.
