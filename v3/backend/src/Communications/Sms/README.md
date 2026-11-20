@@ -57,3 +57,21 @@ php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
 
 
 - SmartSMS requires the documented literal suffix لغو11 at the end of every text. The adapter and outbox reject messages without it; the text is not silently rewritten.
+
+## Encrypted transactional outbox and workers
+
+- Migration 013 creates pos_sms_outbox and pos_sms_delivery_attempts.
+- Recipient mobile and message text are stored only as AES-256-GCM ciphertext with independent nonce/tag pairs; HMAC integrity hashes are verified before send.
+- SmsOutboxService queues transactional messages idempotently and requires pos.sell. If a customer is linked, the recipient must match that active customer's stored normalized mobile.
+- Marketing messages are not accepted by this service. The SmartSMS literal suffix لغو11 is required and is never appended automatically.
+- SmsOutboxWorker claims up to 100 rows with SKIP LOCKED, uses SendMultiple, stores provider IDs and attempts, and defers duplicate recipients to a later pass.
+- HTTP 429 is retried with bounded exponential backoff (maximum 3 attempts); transport/5xx unknown outcomes are not retried. Stale processing claims older than 10 minutes become unknown.
+- SmsOutboxDeliveryPoller checks SmartSMS delivery statuses and stores each report attempt. Unknown provider statuses do not regress the current state.
+- CLI:
+  - php scripts/run-v3-sms-outbox-worker.php
+  - php scripts/poll-v3-sms-deliveries.php
+- Server environment must include database settings, POS_V3_APP_KEY and SmartSMS variables documented above. No credentials are stored in frontend or source.
+- DB integration on MySQL 8.4 and MariaDB 10.6 passed (run 44811930818); backend tests on PHP 8.2/8.3/8.4 passed (run 44812010216). Tests use fake providers; no real SMS was sent.
+- The outbox is not yet triggered automatically by order events and has no management UI. SharedNumber template sending is not wired into the queue.
+- Marketing consent/opt-out registry, provider settings UI, scheduled sending and SharedNumber delivery reconciliation remain pending.
+
