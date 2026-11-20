@@ -129,7 +129,7 @@ final readonly class SmsOutboxRepository
             $statement = $this->connection->prepare(
                 'SELECT id, business_id, branch_id, provider_code, attempt_count
                  FROM pos_sms_outbox
-                 WHERE status = \'processing\' AND updated_at <= :cutoff
+                 WHERE status = \'processing\' AND provider_code = \'national_payamak_smartsms\' AND updated_at <= :cutoff
                  ORDER BY id ASC
                  LIMIT 100
                  FOR UPDATE SKIP LOCKED'
@@ -192,6 +192,9 @@ final readonly class SmsOutboxRepository
                 'attempt_count' => $attemptNumber,
                 'id' => (int) $row['id'],
             ]);
+            if ($statement->rowCount() !== 1) {
+                throw new RuntimeException('sms_outbox_message_not_processing');
+            }
             $this->insertAttempt($row, $attemptNumber, 'send', 'accepted', $providerMessageId, null, null);
             $this->connection->commit();
         } catch (\Throwable $error) {
