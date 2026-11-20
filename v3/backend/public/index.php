@@ -28,6 +28,8 @@ use PersiaCoder\PosV3\Auth\AuthController;
 use PersiaCoder\PosV3\Auth\AuditLogController;
 use PersiaCoder\PosV3\Auth\BusinessSetupController;
 use PersiaCoder\PosV3\Auth\BusinessContextController;
+use PersiaCoder\PosV3\Communications\Sms\SmsOutboxReadController;
+use PersiaCoder\PosV3\Communications\Sms\SmsOutboxReadService;
 use PersiaCoder\PosV3\Auth\BranchManagementController;
 use PersiaCoder\PosV3\Auth\BranchManagementService;
 use PersiaCoder\PosV3\Auth\BusinessSetupService;

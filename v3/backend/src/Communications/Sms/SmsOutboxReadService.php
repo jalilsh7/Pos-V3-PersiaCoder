@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
-namespace PersiaCoder\\PosV3\\Communications\\Sms;
+namespace PersiaCoder\PosV3\Communications\Sms;
 use PDO;
-use PersiaCoder\\PosV3\\Auth\\BusinessScope;
-use PersiaCoder\\PosV3\\Http\\HttpException;
+use PersiaCoder\PosV3\Auth\BusinessScope;
+use PersiaCoder\PosV3\Http\HttpException;
 final readonly class SmsOutboxReadService
 {
     private const STATUSES = ['queued','processing','accepted','sent_to_carrier','delivered','failed','rejected','unknown','cancelled'];
@@ -52,7 +52,7 @@ final readonly class SmsOutboxReadService
         if(strlen($cursor)>256) throw new HttpException(400,'sms_outbox_cursor_invalid','The pagination cursor is invalid.');
         $raw=base64_decode(strtr($cursor,'-_','+/').str_repeat('=',(4-strlen($cursor)%4)%4),true);
         $data=$raw===false?null:json_decode($raw,true);
-        if(!is_array($data)||!isset($data['created_at'],$data['id'])||!is_string($data['created_at'])||!preg_match('/^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$/',$data['created_at'])||!(is_int($data['id'])||(is_string($data['id'])&&ctype_digit($data['id'])))||(int)$data['id']<1) throw new HttpException(400,'sms_outbox_cursor_invalid','The pagination cursor is invalid.');
+        if(!is_array($data)||!isset($data['created_at'],$data['id'])||!is_string($data['created_at'])||!preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d{1,6})?$/',$data['created_at'])||!(is_int($data['id'])||(is_string($data['id'])&&ctype_digit($data['id'])))||(int)$data['id']<1) throw new HttpException(400,'sms_outbox_cursor_invalid','The pagination cursor is invalid.');
         return ['created_at'=>$data['created_at'],'id'=>(int)$data['id']];
     }
     private static function encodeCursor(string $createdAt,int $id): string

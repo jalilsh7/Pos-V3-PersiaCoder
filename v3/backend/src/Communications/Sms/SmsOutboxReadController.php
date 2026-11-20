@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
-namespace PersiaCoder\\PosV3\\Communications\\Sms;
-use PersiaCoder\\PosV3\\Auth\\BusinessScope;
-use PersiaCoder\\PosV3\\Http\\HttpException;
-use PersiaCoder\\PosV3\\Http\\Request;
-use PersiaCoder\\PosV3\\Http\\Response;
+namespace PersiaCoder\PosV3\Communications\Sms;
+use PersiaCoder\PosV3\Auth\BusinessScope;
+use PersiaCoder\PosV3\Http\HttpException;
+use PersiaCoder\PosV3\Http\Request;
+use PersiaCoder\PosV3\Http\Response;
 final readonly class SmsOutboxReadController
 {
     public function __construct(private SmsOutboxReadService $outbox) {}
