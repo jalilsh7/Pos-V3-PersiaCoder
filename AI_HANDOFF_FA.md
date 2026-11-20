@@ -1,5 +1,7 @@
 # دفتر تحویل و ادامه توسعه — PersiaCoder POS V3
 
+- برای جلوگیری از اجرای کامل CI بعد از هر commit و حفظ سرعت توسعه، هر سه workflow اعتبارسنجی V3 اکنون فقط با workflow_dispatch اجرا می‌شوند؛ در پایان هر فاز، هر سه workflow به‌صورت دستی اجرا و نتایج ثبت می‌شوند.
+
 آخرین به‌روزرسانی: 2026-11-20  
 مخزن مرجع: `jalilsh7/Pos-V3-PersiaCoder`  
 شاخه اصلی: `main`
@@ -13,7 +15,7 @@
 - در گزارش هر بسته: شماره فاز/بخش، خروجی و commit، تست‌های انجام‌نشده/ضروری، ریسک و بسته بعدی. در گزارش پایان فاز: ماتریس کامل تست و PASS/FAIL/BLOCKED ثبت شود.
 
 ## وضعیت CI تا آخرین commit تأییدشده
-- HEAD شاخه main: 576cbfcf44ee55e1a77adf6054d2803e9967f1b9.
+- HEAD شاخه main: 4136ec68d16d997ef93e2abf3b7ad155f2e9cbb4.
 - Backend run 44767100889: موفق.
 - Database run 44767100788: موفق؛ workflow شامل MySQL 8.4 و MariaDB 10.6.
 - Frontend run 44767100742: پس از rerun موفق؛ TypeScript check و production build.
