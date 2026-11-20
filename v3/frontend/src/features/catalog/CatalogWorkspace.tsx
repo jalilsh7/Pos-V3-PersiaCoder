@@ -17,6 +17,7 @@ import {
 import { Button, SelectField, StatusBadge, Surface, TextField } from "../../shared/ui";
 import "./catalog.css";
 import { CatalogOptionsEditor } from "./CatalogOptionsEditor";
+import { ProductRecipeEditor } from "./ProductRecipeEditor";
 
 const money = (value: number) => new Intl.NumberFormat("fa-IR").format(value);
 const normalizeDigits = (value: string) => value
@@ -375,6 +376,7 @@ export function CatalogWorkspace() {
               </div>
             ) : null}
             {selectedDetail && !loadingDetail ? <CatalogOptionsEditor key={selectedDetail.id} productId={selectedDetail.id} detail={selectedDetail} onSaved={() => refreshCatalog(selectedDetail.id)} /> : null}
+            {selectedDetail && !loadingDetail ? <ProductRecipeEditor key={`recipe-${selectedDetail.id}`} productId={selectedDetail.id} variants={selectedDetail.variants} /> : null}
             <div className="catalog-detail-actions">
               <Button variant="secondary" disabled={saving} onClick={() => startProductEdit(selected)}>ویرایش محصول</Button>
               <Button variant={selected.is_active ? "secondary" : "primary"} disabled={saving} onClick={() => { void toggleAvailability(selected); }}>
