@@ -1,14 +1,17 @@
-import { useMemo, useState } from "react";
-import { ArrowDownToLine, ArrowUpFromLine, Clock3, LockKeyhole, Plus, Wallet, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Clock3, LockKeyhole, Plus, RefreshCw, Wallet } from "lucide-react";
+import {
+  ApiError,
+  closeCashSession,
+  createCashRegister,
+  getCashRegisters,
+  openCashSession,
+  reviewCashSession,
+  type CashRegisterSummary,
+} from "../../shared/api/client";
 import { Button, Notice, StatusBadge, Surface, TextField } from "../../shared/ui";
 import "./finance.css";
 
-type Movement = { id: number; kind: "in" | "out"; title: string; amount: number; time: string; note: string };
-const seedMovements: Movement[] = [
-  { id: 1, kind: "in", title: "دریافت نقدی نمونه", amount: 350000, time: "۱۰:۲۵", note: "ثبت نمایشی" },
-  { id: 2, kind: "out", title: "هزینه خرد نمونه", amount: 80000, time: "۱۱:۱۰", note: "ثبت نمایشی" },
-  { id: 3, kind: "in", title: "واریز به صندوق نمونه", amount: 200000, time: "۱۲:۴۰", note: "ثبت نمایشی" },
-];
 const money = (value: number) => new Intl.NumberFormat("fa-IR").format(value);
 const parseAmount = (value: string) => {
   const normalized = value.replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
@@ -18,80 +21,167 @@ const parseAmount = (value: string) => {
 };
 
 export function FinanceWorkspace() {
-  const [shiftOpen, setShiftOpen] = useState(true);
-  const [openingCash] = useState(2000000);
-  const [movements, setMovements] = useState(seedMovements);
-  const [showMovement, setShowMovement] = useState(false);
-  const [kind, setKind] = useState<"in" | "out">("in");
-  const [title, setTitle] = useState("");
-  const [amount, setAmount] = useState("");
-  const [note, setNote] = useState("");
-  const [showCloseSummary, setShowCloseSummary] = useState(false);
-  const cashIn = useMemo(() => movements.filter((item) => item.kind === "in").reduce((sum, item) => sum + item.amount, 0), [movements]);
-  const cashOut = useMemo(() => movements.filter((item) => item.kind === "out").reduce((sum, item) => sum + item.amount, 0), [movements]);
-  const expectedCash = openingCash + cashIn - cashOut;
+  const [registers, setRegisters] = useState<CashRegisterSummary[]>([]);
+  const [selectedId, setSelectedId] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [registerName, setRegisterName] = useState("صندوق اصلی");
+  const [registerCode, setRegisterCode] = useState("MAIN");
+  const [openingAmount, setOpeningAmount] = useState("0");
+  const [countedAmount, setCountedAmount] = useState("");
+  const [reviewNote, setReviewNote] = useState("");
 
-  function addMovement() {
-    const value = parseAmount(amount);
-    if (!title.trim() || !Number.isSafeInteger(value) || value <= 0 || (kind === "out" && value > expectedCash)) return;
-    const next: Movement = { id: Math.max(0, ...movements.map((item) => item.id)) + 1, kind, title: title.trim(), amount: value, time: "اکنون", note: note.trim() || "بدون توضیح" };
-    setMovements((current) => [next, ...current]);
-    setTitle(""); setAmount(""); setNote(""); setShowMovement(false);
+  async function refresh() {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await getCashRegisters();
+      setRegisters(result);
+      setSelectedId((current) => result.some((item) => item.id === current) ? current : result[0]?.id ?? "");
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : "دریافت اطلاعات صندوق‌ها انجام نشد.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function closeShift() {
-    setShiftOpen(false);
-    setShowCloseSummary(false);
+  useEffect(() => {
+    void refresh();
+  }, []);
+
+  const selected = registers.find((item) => item.id === selectedId) ?? null;
+  const activeSession = selected?.active_session ?? null;
+  const totalRegisters = registers.length;
+  const openRegisters = useMemo(() => registers.filter((item) => item.active_session?.status === "open").length, [registers]);
+  const reviewRegisters = useMemo(() => registers.filter((item) => item.active_session?.status === "requires_review").length, [registers]);
+
+  async function addRegister() {
+    if (!registerName.trim() || !/^[A-Z0-9][A-Z0-9_-]{1,39}$/.test(registerCode.trim().toUpperCase())) return;
+    setBusy(true); setError(null); setNotice(null);
+    try {
+      const created = await createCashRegister({ code: registerCode, name: registerName });
+      await refresh();
+      setSelectedId(created.id);
+      setShowCreate(false);
+      setNotice("صندوق با موفقیت در سرور ایجاد شد.");
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : "ایجاد صندوق انجام نشد.");
+    } finally { setBusy(false); }
+  }
+
+  async function startShift() {
+    if (!selected) return;
+    const amount = parseAmount(openingAmount);
+    if (!Number.isSafeInteger(amount) || amount < 0) return;
+    setBusy(true); setError(null); setNotice(null);
+    try {
+      await openCashSession(selected.id, amount);
+      await refresh();
+      setNotice("شیفت صندوق در سرور باز شد.");
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : "باز کردن شیفت انجام نشد.");
+    } finally { setBusy(false); }
+  }
+
+  async function finishShift() {
+    if (!activeSession) return;
+    const amount = parseAmount(countedAmount);
+    if (!Number.isSafeInteger(amount) || amount < 0) return;
+    setBusy(true); setError(null); setNotice(null);
+    try {
+      const result = await closeCashSession(activeSession.id, amount);
+      await refresh();
+      setNotice(`شیفت بسته شد. اختلاف شمارش با مبلغ مورد انتظار: ${money(result.difference_amount)} تومان.`);
+      setCountedAmount("");
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : "بستن شیفت انجام نشد.");
+    } finally { setBusy(false); }
+  }
+
+  async function resolveReview() {
+    if (!activeSession || !reviewNote.trim()) return;
+    setBusy(true); setError(null); setNotice(null);
+    try {
+      await reviewCashSession(activeSession.id, reviewNote);
+      await refresh();
+      setReviewNote("");
+      setNotice("بررسی شیفت در سرور ثبت شد.");
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : "ثبت بررسی شیفت انجام نشد.");
+    } finally { setBusy(false); }
   }
 
   return (
     <div className="page-stack finance-workspace">
       <div className="finance-heading">
-        <div><span className="ui-eyebrow">CASH & SHIFT CONTROL</span><h1>مالی و صندوق‌ها</h1><p>مدیریت شیفت صندوق، دریافت‌ها و پرداخت‌های نقدی</p></div>
-        <StatusBadge variant={shiftOpen ? "success" : "warning"}>{shiftOpen ? "شیفت نمونه باز است" : "شیفت نمونه بسته است"}</StatusBadge>
+        <div><span className="ui-eyebrow">CASH & SHIFT CONTROL</span><h1>مالی و صندوق‌ها</h1><p>مدیریت صندوق‌ها و شیفت‌های واقعی ثبت‌شده در سرور</p></div>
+        <Button variant="secondary" onClick={() => void refresh()} disabled={loading || busy}><RefreshCw size={14} /> به‌روزرسانی</Button>
       </div>
-      <Notice variant="warning">این صفحه صرفاً نمونه تعاملی است. مبالغ، شیفت و گردش‌ها ساختگی‌اند و فقط در حافظه مرورگر تغییر می‌کنند؛ هیچ پرداخت، تراکنش بانکی، سند حسابداری یا موجودی واقعی ثبت نمی‌شود.</Notice>
+      <Notice variant="info">این بخش اکنون به API صندوق V3 متصل است. ثبت دریافت/پرداخت دستی، هزینه‌ها و گزارش مالی در بسته‌های بعدی همین ماژول تکمیل می‌شوند.</Notice>
+      {error ? <Notice variant="warning">{error}</Notice> : null}
+      {notice ? <Notice variant="success">{notice}</Notice> : null}
       <div className="finance-metrics">
-        <Surface padding="sm"><span>موجودی ابتدای شیفت</span><strong>{money(openingCash)} <small>تومان</small></strong></Surface>
-        <Surface padding="sm"><span>دریافت‌های نقدی</span><strong>{money(cashIn)} <small>تومان</small></strong></Surface>
-        <Surface padding="sm"><span>پرداخت‌های نقدی</span><strong>{money(cashOut)} <small>تومان</small></strong></Surface>
-        <Surface padding="sm"><span>موجودی مورد انتظار</span><strong>{money(expectedCash)} <small>تومان</small></strong></Surface>
+        <Surface padding="sm"><span>تعداد صندوق‌ها</span><strong>{loading ? "…" : money(totalRegisters)}</strong></Surface>
+        <Surface padding="sm"><span>شیفت‌های باز</span><strong>{loading ? "…" : money(openRegisters)}</strong></Surface>
+        <Surface padding="sm"><span>نیازمند بررسی</span><strong>{loading ? "…" : money(reviewRegisters)}</strong></Surface>
       </div>
       <Surface padding="md" className="finance-shift-card">
         <div className="finance-shift-top">
           <div className="finance-shift-icon"><Wallet size={20} /></div>
-          <div className="finance-shift-copy"><strong>شیفت صندوق اصلی</strong><span><Clock3 size={13} /> شروع نمونه: امروز، ساعت ۰۸:۰۰</span></div>
-          <StatusBadge variant={shiftOpen ? "success" : "warning"}>{shiftOpen ? "باز" : "بسته"}</StatusBadge>
+          <div className="finance-shift-copy"><strong>صندوق و شیفت فعال</strong><span><Clock3 size={13} /> وضعیت از دیتابیس دریافت می‌شود</span></div>
+          {activeSession ? <StatusBadge variant={activeSession.status === "open" ? "success" : "warning"}>{activeSession.status === "open" ? "شیفت باز" : "نیازمند بررسی"}</StatusBadge> : <StatusBadge variant="neutral">بدون شیفت فعال</StatusBadge>}
         </div>
-        <div className="finance-shift-bottom">
-          <div><span>صندوقدار نمونه</span><strong>کاربر نمایشی</strong></div>
-          <div><span>تعداد گردش ثبت‌شده</span><strong>{money(movements.length)}</strong></div>
-          {shiftOpen ? <Button variant="secondary" onClick={() => setShowCloseSummary(true)}><LockKeyhole size={14} /> بستن شیفت نمونه</Button> : <Button variant="secondary" onClick={() => { setShiftOpen(true); setShowCloseSummary(false); }}>بازکردن شیفت نمونه</Button>}
+        <div className="finance-form-fields">
+          <label className="ui-field"><span className="ui-field__label">انتخاب صندوق</span><select className="ui-select" value={selectedId} onChange={(event) => setSelectedId(event.target.value)} disabled={loading || busy}><option value="">انتخاب صندوق</option>{registers.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.code}</option>)}</select></label>
+          {selected && activeSession ? (
+            <div className="finance-close-values">
+              <span>موجودی ابتدای شیفت<strong>{money(activeSession.opening_amount)} تومان</strong></span>
+              <span>موجودی مورد انتظار<strong>{money(activeSession.expected_cash_amount)} تومان</strong></span>
+              <span>شروع شیفت<strong>{new Date(activeSession.opened_at).toLocaleString("fa-IR")}</strong></span>
+            </div>
+          ) : selected ? (
+            <TextField label="موجودی اولیه صندوق (تومان)" value={openingAmount} onChange={(event) => setOpeningAmount(event.target.value)} placeholder="۰" />
+          ) : null}
         </div>
+        <div className="finance-panel-actions">
+          {selected && !activeSession ? <Button variant="primary" onClick={() => void startShift()} disabled={busy || !Number.isSafeInteger(parseAmount(openingAmount))}><Clock3 size={14} /> بازکردن شیفت</Button> : null}
+          {!selected ? <Button variant="primary" onClick={() => setShowCreate((value) => !value)} disabled={busy}><Plus size={14} /> ایجاد اولین صندوق</Button> : null}
+        </div>
+        {selected && activeSession?.status === "open" ? (
+          <div className="finance-movement-form">
+            <div className="finance-panel-heading"><strong>بستن شیفت</strong><LockKeyhole size={16} /></div>
+            <TextField label="مبلغ شمارش‌شده واقعی (تومان)" value={countedAmount} onChange={(event) => setCountedAmount(event.target.value)} placeholder="مبلغ وجه نقد شمارش‌شده" />
+            <div className="finance-panel-actions"><Button variant="primary" onClick={() => void finishShift()} disabled={busy || countedAmount.trim() === "" || !Number.isSafeInteger(parseAmount(countedAmount))}>ثبت شمارش و بستن شیفت</Button></div>
+          </div>
+        ) : null}
+        {selected && activeSession?.status === "requires_review" ? (
+          <div className="finance-movement-form">
+            <Notice variant="warning">این شیفت به دلیل اختلاف شمارش نیازمند بررسی مدیر است.</Notice>
+            <TextField label="یادداشت بررسی" value={reviewNote} onChange={(event) => setReviewNote(event.target.value)} placeholder="دلیل و نتیجه بررسی" />
+            <div className="finance-panel-actions"><Button variant="primary" onClick={() => void resolveReview()} disabled={busy || !reviewNote.trim()}>تأیید بررسی و بستن</Button></div>
+          </div>
+        ) : null}
       </Surface>
-      {showCloseSummary && shiftOpen ? <Surface padding="md" className="finance-close-panel">
-        <div className="finance-panel-heading"><strong>خلاصه بستن شیفت (نمایشی)</strong><button type="button" onClick={() => setShowCloseSummary(false)} aria-label="بستن"><X size={15} /></button></div>
-        <div className="finance-close-values"><span>موجودی مورد انتظار<strong>{money(expectedCash)} تومان</strong></span><span>دریافت نقدی<strong>{money(cashIn)} تومان</strong></span><span>پرداخت نقدی<strong>{money(cashOut)} تومان</strong></span></div>
-        <Notice variant="info">در نسخه عملیاتی، شمارش واقعی وجه، ثبت کسری/اضافی، کنترل مجوز و تأیید نهایی سرور الزامی است.</Notice>
-        <div className="finance-panel-actions"><Button variant="secondary" onClick={() => setShowCloseSummary(false)}>انصراف</Button><Button variant="primary" onClick={closeShift}>بستن محلی شیفت نمونه</Button></div>
-      </Surface> : null}
-      {showMovement && shiftOpen ? <Surface padding="md" className="finance-movement-form">
-        <div className="finance-panel-heading"><strong>ثبت گردش نقدی نمونه</strong><button type="button" onClick={() => setShowMovement(false)} aria-label="بستن"><X size={15} /></button></div>
-        <div className="finance-kind-tabs"><button type="button" className={kind === "in" ? "is-active" : ""} onClick={() => setKind("in")}><ArrowDownToLine size={14} /> دریافت نقدی</button><button type="button" className={kind === "out" ? "is-active" : ""} onClick={() => setKind("out")}><ArrowUpFromLine size={14} /> پرداخت نقدی</button></div>
-        <div className="finance-form-fields"><TextField label="عنوان گردش" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="مثلاً واریز وجه به صندوق" /><TextField label="مبلغ به تومان" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="مثلاً ۲۵۰۰۰۰" /><TextField label="یادداشت (اختیاری)" value={note} onChange={(event) => setNote(event.target.value)} placeholder="توضیح کوتاه" /></div>
-        {kind === "out" && parseAmount(amount) > expectedCash ? <p className="finance-validation">مبلغ پرداخت از موجودی مورد انتظار بیشتر است.</p> : null}
-        <div className="finance-panel-actions"><Button variant="secondary" onClick={() => setShowMovement(false)}>انصراف</Button><Button variant="primary" onClick={addMovement} disabled={!title.trim() || parseAmount(amount) <= 0 || (kind === "out" && parseAmount(amount) > expectedCash)}>ثبت گردش نمونه</Button></div>
+      {showCreate ? <Surface padding="md" className="finance-movement-form">
+        <div className="finance-panel-heading"><strong>ایجاد صندوق جدید</strong></div>
+        <div className="finance-form-fields">
+          <TextField label="نام صندوق" value={registerName} onChange={(event) => setRegisterName(event.target.value)} />
+          <TextField label="کد صندوق (انگلیسی)" value={registerCode} onChange={(event) => setRegisterCode(event.target.value.toUpperCase())} />
+        </div>
+        <div className="finance-panel-actions"><Button variant="secondary" onClick={() => setShowCreate(false)}>انصراف</Button><Button variant="primary" onClick={() => void addRegister()} disabled={busy || !registerName.trim() || !/^[A-Z0-9][A-Z0-9_-]{1,39}$/.test(registerCode.trim().toUpperCase())}>ایجاد صندوق</Button></div>
       </Surface> : null}
       <Surface padding="md" className="finance-ledger">
-        <div className="finance-ledger-heading"><div><h2>گردش‌های نقدی شیفت</h2><p>فهرست نمایشی دریافت‌ها و پرداخت‌ها</p></div>{shiftOpen ? <Button variant="primary" onClick={() => setShowMovement((value) => !value)}><Plus size={14} /> ثبت گردش</Button> : null}</div>
-        <div className="finance-movement-list">
-          {movements.map((item) => <div className="finance-movement" key={item.id}>
-            <span className={`finance-movement-icon ${item.kind}`}>{item.kind === "in" ? <ArrowDownToLine size={16} /> : <ArrowUpFromLine size={16} />}</span>
-            <div className="finance-movement-copy"><strong>{item.title}</strong><small>{item.time} · {item.note}</small></div>
-            <div className="finance-movement-amount"><strong className={item.kind}>{item.kind === "in" ? "+" : "−"}{money(item.amount)}</strong><small>تومان</small></div>
-          </div>)}
-          {movements.length === 0 ? <div className="finance-empty">هنوز گردش نمونه‌ای ثبت نشده است.</div> : null}
-        </div>
+        <div className="finance-ledger-heading"><div><h2>صندوق‌های این شعبه</h2><p>فهرست صندوق‌ها و وضعیت شیفت جاری</p></div><Button variant="secondary" onClick={() => setShowCreate((value) => !value)}><Plus size={14} /> صندوق جدید</Button></div>
+        {loading ? <div className="finance-empty">در حال دریافت اطلاعات...</div> : registers.length ? (
+          <div className="finance-movement-list">{registers.map((item) => <button type="button" className="finance-movement finance-register-row" key={item.id} onClick={() => setSelectedId(item.id)}>
+            <span className="finance-movement-icon in"><Wallet size={16} /></span>
+            <span className="finance-movement-copy"><strong>{item.name}</strong><small>{item.code} · {item.active_session ? (item.active_session.status === "open" ? "شیفت باز" : "نیازمند بررسی") : "بدون شیفت فعال"}</small></span>
+            <span className="finance-movement-amount"><strong>{item.active_session ? money(item.active_session.expected_cash_amount) : "—"}</strong><small>تومان</small></span>
+          </button>)}</div>
+        ) : <div className="finance-empty">هنوز صندوقی برای این شعبه تعریف نشده است.</div>}
       </Surface>
     </div>
   );
