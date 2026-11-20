@@ -122,6 +122,20 @@ try {
         return $cashRegisterController;
     };
 
+    $customerController = null;
+    $getCustomerController = static function () use (&$customerController, $getConnection, $configuration): CustomerController {
+        if (!$customerController instanceof CustomerController) {
+            $customerController = new CustomerController(
+                new CustomerService(
+                    $getConnection(),
+                    $configuration->applicationKey,
+                    new PermissionService(new PermissionRepository($getConnection())),
+                ),
+            );
+        }
+        return $customerController;
+    };
+
     $orderPaymentController = null;
     $getOrderPaymentController = static function () use (&$orderPaymentController, $getConnection, $configuration): OrderPaymentController {
         if (!$orderPaymentController instanceof OrderPaymentController) {
@@ -386,6 +400,26 @@ try {
     $router->add('POST', '/api/v1/orders/{orderPublicId}/payments/{paymentPublicId}/refunds/cash',
         static fn (Request $request, array $parameters): Response => $getOrderPaymentController()->refundCash($request, $parameters),
         [$sessionMiddleware, $makePermissionMiddleware('finance.manage', true), $csrfMiddleware, $originMiddleware],
+    );
+
+    $router->add('GET', '/api/v1/customers',
+        static fn (Request $request): Response => $getCustomerController()->list($request),
+        [$sessionMiddleware, $makePermissionMiddleware('customers.read')],
+    );
+
+    $router->add('GET', '/api/v1/customers/{customerPublicId}',
+        static fn (Request $request, array $parameters): Response => $getCustomerController()->show($request, $parameters),
+        [$sessionMiddleware, $makePermissionMiddleware('customers.read')],
+    );
+
+    $router->add('POST', '/api/v1/customers',
+        static fn (Request $request): Response => $getCustomerController()->create($request),
+        [$sessionMiddleware, $makePermissionMiddleware('customers.manage'), $csrfMiddleware, $originMiddleware],
+    );
+
+    $router->add('PATCH', '/api/v1/customers/{customerPublicId}',
+        static fn (Request $request, array $parameters): Response => $getCustomerController()->update($request, $parameters),
+        [$sessionMiddleware, $makePermissionMiddleware('customers.manage'), $csrfMiddleware, $originMiddleware],
     );
 
     $router->add('GET', '/api/v1/orders/{orderPublicId}',
