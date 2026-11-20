@@ -131,14 +131,14 @@ $requestId = $uuid();
 $ip = '127.0.0.1';
 
 $queued = $service->enqueueTransactional(
-    $actor, $scope, '+989123456789', 'سفارش شما ثبت شد', 'ci-sms-outbox-create-0001',
+    $actor, $scope, '+989123456789', 'سفارش شما ثبت شد لغو11', 'ci-sms-outbox-create-0001',
     $requestId, $ip, $customerPublicId,
 );
 $messagePublicId = (string) $queued['body']['data']['message']['id'];
 $assert($queued['status'] === 202 && $queued['body']['data']['message']['status'] === 'queued',
     'Transactional SMS was not queued.');
 $replay = $service->enqueueTransactional(
-    $actor, $scope, '+989123456789', 'سفارش شما ثبت شد', 'ci-sms-outbox-create-0001',
+    $actor, $scope, '+989123456789', 'سفارش شما ثبت شد لغو11', 'ci-sms-outbox-create-0001',
     $requestId, $ip, $customerPublicId,
 );
 $assert($replay['replayed'] === true, 'SMS enqueue idempotency replay failed.');
@@ -146,7 +146,7 @@ $assert($replay['replayed'] === true, 'SMS enqueue idempotency replay failed.');
 $mismatchBlocked = false;
 try {
     $service->enqueueTransactional(
-        $actor, $scope, '09361234567', 'متن دیگر', 'ci-sms-outbox-mismatch-0001',
+        $actor, $scope, '09361234567', 'متن دیگر لغو11', 'ci-sms-outbox-mismatch-0001',
         $requestId, $ip, $customerPublicId,
     );
 } catch (PersiaCoder\PosV3\Http\HttpException $error) {
@@ -162,7 +162,7 @@ $rowQuery->execute(['business_id' => $businessId, 'public_id' => $messagePublicI
 $row = $rowQuery->fetch(PDO::FETCH_ASSOC);
 $assert(is_array($row) && $row['status'] === 'queued', 'SMS outbox row was not persisted.');
 $assert(!str_contains((string) $row['recipient_ciphertext'], '09123456789')
-    && !str_contains((string) $row['message_ciphertext'], 'سفارش شما ثبت شد'),
+    && !str_contains((string) $row['message_ciphertext'], 'سفارش شما ثبت شد لغو11'),
     'SMS recipient or message text was stored in plaintext.');
 
 $provider = new FakeOutboxSmsProvider();
@@ -184,11 +184,11 @@ $delivered = $state->fetch(PDO::FETCH_ASSOC);
 $assert($delivered['status'] === 'delivered', 'Delivered provider status was not persisted.');
 
 $duplicateOne = $service->enqueueTransactional(
-    $actor, $scope, '09123456789', 'پیام اول', 'ci-sms-outbox-duplicate-0001',
+    $actor, $scope, '09123456789', 'پیام اول لغو11', 'ci-sms-outbox-duplicate-0001',
     $requestId, $ip, $customerPublicId,
 );
 $duplicateTwo = $service->enqueueTransactional(
-    $actor, $scope, '09123456789', 'پیام دوم', 'ci-sms-outbox-duplicate-0002',
+    $actor, $scope, '09123456789', 'پیام دوم لغو11', 'ci-sms-outbox-duplicate-0002',
     $requestId, $ip, $customerPublicId,
 );
 $deferred = $worker->processBatch(100);
@@ -198,7 +198,7 @@ $next = $worker->processBatch(100);
 $assert($next['accepted'] === 1, 'Deferred recipient message was not processed on the next worker pass.');
 
 $unknownQueued = $service->enqueueTransactional(
-    $actor, $scope, '09123456789', 'نتیجه نامشخص', 'ci-sms-outbox-unknown-0001',
+    $actor, $scope, '09123456789', 'نتیجه نامشخص لغو11', 'ci-sms-outbox-unknown-0001',
     $requestId, $ip, $customerPublicId,
 );
 $provider->failure = new SmsProviderException('sms_provider_transport_outcome_unknown', null, false, true);
@@ -209,7 +209,7 @@ $secondUnknownPass = $worker->processBatch(100);
 $assert($secondUnknownPass['accepted'] === 0, 'Unknown outcome was blindly retried.');
 
 $retryQueued = $service->enqueueTransactional(
-    $actor, $scope, '09123456789', 'قابل تلاش مجدد', 'ci-sms-outbox-retry-0001',
+    $actor, $scope, '09123456789', 'قابل تلاش مجدد لغو11', 'ci-sms-outbox-retry-0001',
     $requestId, $ip, $customerPublicId,
 );
 $provider->failure = new SmsProviderException('sms_provider_request_rejected', 429, true, false);
@@ -218,7 +218,7 @@ $assert($retryResult['retryable'] === 1, 'Retryable provider rejection was not s
 $provider->failure = null;
 
 $staleQueued = $service->enqueueTransactional(
-    $actor, $scope, '09123456789', 'پردازش متوقف‌شده', 'ci-sms-outbox-stale-0001',
+    $actor, $scope, '09123456789', 'پردازش متوقف‌شده لغو11', 'ci-sms-outbox-stale-0001',
     $requestId, $ip, $customerPublicId,
 );
 $stalePublicId = (string) $staleQueued['body']['data']['message']['id'];
