@@ -9,22 +9,22 @@ final readonly class SmsServiceTemplateService
     private const CATALOG = [
       'order.created' => [
         ['key'=>'order_number','label'=>'شماره سفارش','source'=>'orders.order_number','example'=>'1205'],
-        ['key'=>'customer_name','label'=>'نام مشتری','source'=>'customers.display_name','example'=>'علی رضایی'],
+        ['key'=>'customer_name','label'=>'نام مشتری','source'=>'customers.name','example'=>'علی رضایی'],
         ['key'=>'total_amount','label'=>'مبلغ نهایی','source'=>'orders.total_amount','example'=>'۲۵۰٬۰۰۰'],
         ['key'=>'created_at','label'=>'زمان ثبت سفارش','source'=>'orders.created_at','example'=>'۱۴۰۵/۰۸/۳۰ ۱۲:۳۰'],
       ],
       'order.status_changed' => [
         ['key'=>'order_number','label'=>'شماره سفارش','source'=>'orders.order_number','example'=>'1205'],
-        ['key'=>'customer_name','label'=>'نام مشتری','source'=>'customers.display_name','example'=>'علی رضایی'],
+        ['key'=>'customer_name','label'=>'نام مشتری','source'=>'customers.name','example'=>'علی رضایی'],
         ['key'=>'order_status','label'=>'وضعیت سفارش','source'=>'orders.order_status','example'=>'در حال آماده‌سازی'],
       ],
       'order.ready' => [
         ['key'=>'order_number','label'=>'شماره سفارش','source'=>'orders.order_number','example'=>'1205'],
-        ['key'=>'customer_name','label'=>'نام مشتری','source'=>'customers.display_name','example'=>'علی رضایی'],
+        ['key'=>'customer_name','label'=>'نام مشتری','source'=>'customers.name','example'=>'علی رضایی'],
       ],
       'order.completed' => [
         ['key'=>'order_number','label'=>'شماره سفارش','source'=>'orders.order_number','example'=>'1205'],
-        ['key'=>'customer_name','label'=>'نام مشتری','source'=>'customers.display_name','example'=>'علی رضایی'],
+        ['key'=>'customer_name','label'=>'نام مشتری','source'=>'customers.name','example'=>'علی رضایی'],
       ],
     ];
     public function __construct(private PDO $db) {}

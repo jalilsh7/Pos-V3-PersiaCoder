@@ -1093,3 +1093,21 @@ export async function getSmsServiceTemplates(): Promise<{ templates: SmsServiceT
 export async function saveSmsServiceTemplate(payload: { trigger_key: string; provider_body_id: number; enabled: boolean; variable_keys: string[] }): Promise<SmsServiceTemplate> {
  const data=await request<{template:SmsServiceTemplate}>("/communications/sms/service-templates",{method:"PUT",body:JSON.stringify(payload)});return data.template;
 }
+
+export type SmsServiceOutboxMessage = {
+  id: string;
+  trigger_key: string;
+  provider: string;
+  provider_body_id: number;
+  status: string;
+  attempt_count: number;
+  failure_code: string | null;
+  created_at: string;
+  updated_at: string;
+};
+export async function getSmsServiceOutboxMessages(filters: { status?: string; limit?: number } = {}): Promise<{ messages: SmsServiceOutboxMessage[] }> {
+  const query = new URLSearchParams();
+  if (filters.status && filters.status !== "all") query.set("status", filters.status);
+  query.set("limit", String(filters.limit ?? 50));
+  return request<{ messages: SmsServiceOutboxMessage[] }>(`/communications/sms/service-outbox?${query.toString()}`);
+}
