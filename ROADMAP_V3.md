@@ -1207,3 +1207,19 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - تست: Backend Validation run 44810239937 روی PHP 8.2/8.3/8.4 موفق؛ تست‌ها از fake HTTP transport استفاده کردند و ارسال واقعی انجام نشد.
 - موارد باقی‌مانده: outbox/queue، worker، persistence provider IDs، polling گزارش تحویل، retry policy کنترل‌شده، consent/opt-out، تفکیک پیام transactional/marketing، UI تنظیمات امن، shared-number delivery report و scheduled send.
 
+
+## SMS-MIG-2026-003 — صف پایدار و worker پیامک (2026-11-20)
+
+- وضعیت: **پیاده‌سازی و integration test روی MySQL/MariaDB PASS**؛ ارسال واقعی و اتصال به رویداد سفارش هنوز باز است.
+- Migration 013: جدول‌های pos_sms_outbox و pos_sms_delivery_attempts با business/branch/customer scope.
+- شماره موبایل و متن پیام با AES-256-GCM رمزگذاری می‌شوند؛ HMAC برای integrity و hash شماره مقصد استفاده می‌شود.
+- SmsOutboxService فقط transactional SMS را idempotent صف می‌کند؛ مجوز pos.sell لازم است و در صورت اتصال مشتری، شماره باید با موبایل فعال همان مشتری منطبق باشد.
+- پیام marketing عمداً پشتیبانی نمی‌شود. SmartSMS suffix اجباری لغو11 باید در متن باشد و سیستم آن را خودکار اضافه نمی‌کند.
+- SmsOutboxWorker تا 100 پیام را با SKIP LOCKED claim می‌کند، از SendMultiple استفاده می‌کند، provider ID و attempt را ذخیره می‌کند و گیرنده تکراری را برای نوبت بعد defer می‌کند.
+- HTTP 429 با backoff محدود و حداکثر 3 تلاش مدیریت می‌شود؛ transport/timeout/5xx unknown و بدون retry هستند. processing قدیمی‌تر از 10 دقیقه نیز unknown می‌شود تا ارسال دوباره رخ ندهد.
+- SmsOutboxDeliveryPoller وضعیت SmartSMS را با GetDeliveries به‌روزرسانی می‌کند.
+- CLI worker و poller اضافه شدند.
+- DB integration روی MySQL 8.4 و MariaDB 10.6 موفق: run 44811930818.
+- Backend validation و تست‌های SmartSMS/SharedNumber روی PHP 8.2/8.3/8.4 موفق: run 44812010216.
+- محدودیت‌ها: هیچ ارسال واقعی انجام نشده؛ صف هنوز از رویدادهای سفارش فراخوانی نمی‌شود و مدیریت UI ندارد؛ SharedNumber به outbox وصل نیست؛ marketing consent/opt-out، زمان‌بندی، تنظیمات UI و SharedNumber delivery report باقی‌اند.
+
