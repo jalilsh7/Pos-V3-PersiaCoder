@@ -449,11 +449,23 @@ export function InventoryWorkspace() {
     }
   }
 
-  const totals = balances.reduce((result, balance) => ({
-    onHand: result.onHand + Number(balance.quantity_on_hand),
-    reserved: result.reserved + Number(balance.quantity_reserved),
-    available: result.available + Number(balance.quantity_available),
-  }), { onHand: 0, reserved: 0, available: 0 });
+  const totalsByUnit = useMemo(() => {
+    const grouped = new Map<string, { unitCode: string; unitName: string; onHand: number; available: number }>();
+    for (const balance of balances) {
+      const unitCode = balance.base_unit_code;
+      const unit = units.find((entry) => entry.code === unitCode);
+      const current = grouped.get(unitCode) ?? {
+        unitCode,
+        unitName: unit?.name ?? unitCode,
+        onHand: 0,
+        available: 0,
+      };
+      current.onHand += Number(balance.quantity_on_hand);
+      current.available += Number(balance.quantity_available);
+      grouped.set(unitCode, current);
+    }
+    return Array.from(grouped.values()).sort((left, right) => left.unitCode.localeCompare(right.unitCode));
+  }, [balances, units]);
 
   return (
     <div className="page-stack inventory-workspace">
@@ -473,8 +485,20 @@ export function InventoryWorkspace() {
 
       <div className="inventory-metrics">
         <Surface padding="sm"><span>اقلام فعال</span><strong>{loading ? "—" : quantity(activeItems.length)}</strong></Surface>
-        <Surface padding="sm"><span>موجودی فیزیکی (جمع واحدها)</span><strong>{loading ? "—" : quantity(totals.onHand)}</strong></Surface>
-        <Surface padding="sm"><span>موجودی قابل استفاده</span><strong>{loading ? "—" : quantity(totals.available)}</strong></Surface>
+        <Surface padding="sm">
+          <span>موجودی فیزیکی · به تفکیک واحد</span>
+          <div className="inventory-metric-breakdown">
+            {loading ? <span>—</span> : totalsByUnit.map((total) => <span key={total.unitCode}><b>{quantity(total.onHand)}</b> {total.unitName}</span>)}
+            {!loading && totalsByUnit.length === 0 ? <span>بدون موجودی ثبت‌شده</span> : null}
+          </div>
+        </Surface>
+        <Surface padding="sm">
+          <span>موجودی قابل استفاده · به تفکیک واحد</span>
+          <div className="inventory-metric-breakdown">
+            {loading ? <span>—</span> : totalsByUnit.map((total) => <span key={total.unitCode}><b>{quantity(total.available)}</b> {total.unitName}</span>)}
+            {!loading && totalsByUnit.length === 0 ? <span>بدون موجودی ثبت‌شده</span> : null}
+          </div>
+        </Surface>
       </div>
 
       <Surface padding="md" className="inventory-document-composer">
