@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require dirname(__DIR__, 4) . '/bootstrap.php';
+require dirname(__DIR__, 3) . '/bootstrap.php';
 
 use PersiaCoder\PosV3\Communications\Sms\LegacySmsParser;
 
