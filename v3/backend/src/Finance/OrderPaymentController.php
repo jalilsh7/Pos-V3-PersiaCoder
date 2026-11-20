@@ -45,6 +45,26 @@ final readonly class OrderPaymentController
             ->withHeader('Idempotency-Replayed', $result['replayed'] ? 'true' : 'false');
     }
 
+    public function refundCash(Request $request, array $parameters): Response
+    {
+        $contentType = strtolower(trim($request->header('content-type') ?? ''));
+        if (!preg_match('/^application\\/json(?:\\s*;|$)/', $contentType)) {
+            throw new HttpException(415, 'unsupported_media_type', 'Content-Type must be application/json.');
+        }
+        $result = $this->payments->refundCash(
+            $this->principal($request),
+            $this->scope($request),
+            (string) ($parameters['orderPublicId'] ?? ''),
+            (string) ($parameters['paymentPublicId'] ?? ''),
+            $request->json(),
+            $request->header('idempotency-key') ?? '',
+            $request->requestId,
+            (string) ($request->attribute('remote_ip') ?? ''),
+        );
+        return Response::json($result['body'], $result['status'])
+            ->withHeader('Idempotency-Replayed', $result['replayed'] ? 'true' : 'false');
+    }
+
     private function principal(Request $request): AuthenticatedPrincipal
     {
         $principal = $request->attribute('principal');
