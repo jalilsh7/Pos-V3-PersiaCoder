@@ -668,3 +668,9 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - در UI جزئیات سفارش، وجود پرداخت نقدی قابل بازپرداخت بدون شیفت باز اکنون با پیام روشن توضیح داده می‌شود؛ دکمه بازپرداخت بدون شیفت همچنان نمایش داده نمی‌شود.
 - commits: `e6a761acbcf84aa04fc37f021f02692a616c9cc8`, `327164804de9929f40703cc33da26cc93c98b9b1`.
 - کنترل static regression در اسکریپت پرداخت اضافه شده؛ منتظر نتیجه workflowهای جدید بمان.
+
+
+## CI follow-up — syntax fix for payment integration test (2026-11-20)
+- Backend CI روی `327164804de9929f40703cc33da26cc93c98b9b1` به خاطر parse error در فایل جدید `scripts/check-v3-order-payment-integration.php` شکست خورد؛ علت prefix ناقص autoloader بود.
+- اصلاح در commit `491faecd8e585ef894d5643f3d8d6026bff1629f` انجام شد: namespace prefix به double-quoted escaped string تغییر یافت.
+- DB workflow از قبل هم lint و هم اجرای واقعی این integration script را در مسیر MySQL/MariaDB دارد و با تغییر script باید اجرا شود؛ نتیجه جدید را بررسی کن.
