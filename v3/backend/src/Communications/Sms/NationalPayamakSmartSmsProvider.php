@@ -257,7 +257,12 @@ final readonly class NationalPayamakSmartSmsProvider implements SmsProvider
         $raw = $decoded['ReqStatus'] ?? $decoded['Value'] ?? $decoded['RetStatus'] ?? null;
         $code = is_numeric($raw) ? (int) $raw : null;
         $message = match ($code) {
+            -10 => 'sms_provider_delivery_report_error',
+            -3 => 'sms_provider_delivery_not_available',
+            -2 => 'sms_provider_delivery_id_invalid',
+            -1 => 'sms_provider_delivery_credentials_invalid',
             0 => 'sms_provider_credentials_invalid',
+            1 => 'sms_provider_recipient_text_count_mismatch',
             2 => 'sms_provider_insufficient_credit',
             4 => 'sms_provider_batch_limit_exceeded',
             5 => 'sms_provider_sender_invalid',
