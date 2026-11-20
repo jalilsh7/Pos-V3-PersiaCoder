@@ -245,3 +245,24 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - بررسی مستقیم `database/v3/schema.sql` و migration 011 نشان داد `pos_order_items` ستون `recipe_version_id` دارد و snapshot نام محصول/تنوع/SKU/قیمت/مالیات را نگه می‌دارد؛ `pos_order_item_options` نیز نام گروه/گزینه و اختلاف قیمت را snapshot می‌کند.
 - **اما جدول snapshot خطوط مواد مصرفی برای هر order item در schema بررسی‌شده مشاهده نشد.** بنابراین عبارت قبلی handoff درباره «snapshot خطوط مواد سفارش» دقیق نبود و اصلاح می‌شود: فقط reference نسخه رسپی در order item وجود دارد؛ snapshot مواد مصرفی سفارش اثبات نشده است.
 - در ممیزی بعدی باید OrderService را بررسی کرد که آیا recipe_version_id را هنگام ساخت سفارش ثبت می‌کند یا خیر؛ وجود ستون FK به معنی مقداردهی آن نیست. همچنین اتصال واقعی posting/consumption انبار به سفارش باید جداگانه اثبات شود.
+
+
+## بسته طراحی D-09 — انبار، موجودی و اسناد گردش کالا (2026-11-20)
+
+- سند UX ایجاد شد: [INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md](design/INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md)، شناسه `DESIGN-INVENTORY-2026-001`، نسخه 0.1، وضعیت «آماده بازبینی و نمونه‌سازی».
+- بررسی کد ثابت کرد جریان واقعی در Backend وجود دارد: `InventoryController`، `InventoryService`، `InventoryDocumentService`، `InventoryPostingService`، `SupplierService` و repositoryهای مربوط؛ UI نیز در `v3/frontend/src/features/inventory/InventoryWorkspace.tsx` به API متصل است.
+- قابلیت‌های فعلی: مواد اولیه، واحدهای مرجع، مکان‌های شعبه، تأمین‌کننده، مانده فیزیکی/رزرو/قابل استفاده، ledger cursor-based، سندهای draft چندردیفی، valuation، و posting با idempotency/audit.
+- انواع postable فعلی: purchase_receipt، transfer، adjustment_in، adjustment_out، consumption و waste. نوع return در create/list وجود دارد اما posting آن به‌علت نبود سیاست return valuation/source-linked فعلاً صریحاً مسدود است.
+- ریسک UX شناسایی‌شده: UI فعلی مقادیر موجودی واحدهای متفاوت را در یک total جمع می‌زند؛ این جمع از نظر dimension معتبر نیست و باید به تفکیک واحد/بعد اصلاح شود.
+- ریسک دیگر: quick submit در صورت شکست افزودن خط یا posting می‌تواند draft ناقص باقی بگذارد؛ UI باید بازیابی پیش‌نویس را شفاف کند و retry کور نداشته باشد.
+- وضعیت voided در مدل داده وجود دارد اما عملیات void در controller/service بررسی‌شده مشاهده نشد؛ دکمه void عملیاتی نساز.
+- اتصال خودکار سفارش/رسپی به رزرو و مصرف انبار در این بررسی اثبات نشده و همچنان کار باز فاز 5 است.
+- سند در design README نمایه شد و D-09 در backlog به «آماده بازبینی و نمونه‌سازی» ارتقا یافت.
+- این بسته فقط طراحی است؛ اصلاح کد UI، تست runtime و پذیرش فاز 5 انجام نشده‌اند.
+
+### نقطه ادامه
+
+- بسته بعدی طراحی: **D-10 — مشتری، وفاداری و پیامک**.
+- ابتدا آخرین HEAD و سند تصمیمات را تازه fetch کن؛ سپس CustomerService/Repository، SMS module/provider/queue/consent، schema، routes و UI را بررسی کن.
+- تفکیک «پروفایل و سابقه مشتری»، «ledger امتیاز/اعتبار» و «رضایت/opt-out پیامک» الزامی است. consent تبلیغاتی نباید از checkbox پیش‌فرض یا صرف وجود شماره تلفن استنتاج شود.
+- در طراحی، قابلیت‌های موجود را از انتقال ناقص parser پیامک جدا کن؛ ارسال واقعی، صف، delivery report یا opt-out فقط در صورت وجود قرارداد و پیاده‌سازی اثبات‌شده نمایش داده شوند.
