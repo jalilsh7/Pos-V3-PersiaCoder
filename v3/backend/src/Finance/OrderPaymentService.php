@@ -205,9 +205,10 @@ final readonly class OrderPaymentService
                 );
 
                 $capturedAfter = $totals['captured'] + $amount;
-                $paymentStatus = $capturedAfter >= (int) $order['total_amount']
+                $netPaidAfter = $capturedAfter - $totals['refunded'];
+                $paymentStatus = $netPaidAfter >= (int) $order['total_amount']
                     ? 'paid'
-                    : 'partially_paid';
+                    : ($netPaidAfter > 0 ? 'partially_paid' : 'unpaid');
                 $update = $connection->prepare(
                     'UPDATE pos_orders
                      SET payment_status = :payment_status
@@ -282,24 +283,34 @@ final readonly class OrderPaymentService
     /** @return array{captured:int,refunded:int} */
     private function paymentTotals(BusinessScope $scope, int $orderId): array
     {
-        $statement = $this->connection->prepare(
-            "SELECT
-                COALESCE(SUM(CASE WHEN p.status IN ('captured','partially_refunded','refunded') THEN p.amount ELSE 0 END), 0) AS captured,
-                COALESCE((
-                    SELECT SUM(r.amount) FROM pos_refunds r
-                    WHERE r.business_id = p.business_id AND r.branch_id = p.branch_id
-                      AND r.order_id = p.order_id AND r.status = 'succeeded'
-                ), 0) AS refunded
-             FROM pos_payments p
-             WHERE p.business_id = :business_id AND p.branch_id = :branch_id AND p.order_id = :order_id"
+        $payments = $this->connection->prepare(
+            "SELECT COALESCE(SUM(amount), 0)
+             FROM pos_payments
+             WHERE business_id = :business_id AND branch_id = :branch_id AND order_id = :order_id
+               AND status IN ('captured','partially_refunded','refunded')"
         );
-        $statement->execute([
+        $payments->execute([
             'business_id' => $scope->businessId,
             'branch_id' => $scope->branchId,
             'order_id' => $orderId,
         ]);
-        $row = $statement->fetch(PDO::FETCH_ASSOC) ?: [];
-        return ['captured' => (int) ($row['captured'] ?? 0), 'refunded' => (int) ($row['refunded'] ?? 0)];
+
+        $refunds = $this->connection->prepare(
+            "SELECT COALESCE(SUM(amount), 0)
+             FROM pos_refunds
+             WHERE business_id = :business_id AND branch_id = :branch_id
+               AND order_id = :order_id AND status = 'succeeded'"
+        );
+        $refunds->execute([
+            'business_id' => $scope->businessId,
+            'branch_id' => $scope->branchId,
+            'order_id' => $orderId,
+        ]);
+
+        return [
+            'captured' => (int) $payments->fetchColumn(),
+            'refunded' => (int) $refunds->fetchColumn(),
+        ];
     }
 
     private static function parseAmount(mixed $value): int
