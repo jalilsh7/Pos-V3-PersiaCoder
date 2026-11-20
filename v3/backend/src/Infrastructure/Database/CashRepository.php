@@ -156,6 +156,27 @@ final readonly class CashRepository
         ]);
     }
 
+    public function decreaseExpectedCash(int $businessId, int $branchId, int $sessionId, int $amount): void
+    {
+        $statement = $this->connection->prepare(
+            'UPDATE pos_cash_sessions
+             SET expected_cash_amount = expected_cash_amount - :amount
+             WHERE id = :id AND business_id = :business_id AND branch_id = :branch_id
+               AND status = :status AND expected_cash_amount >= :minimum_amount'
+        );
+        $statement->execute([
+            'amount' => $amount,
+            'id' => $sessionId,
+            'business_id' => $businessId,
+            'branch_id' => $branchId,
+            'status' => 'open',
+            'minimum_amount' => $amount,
+        ]);
+        if ($statement->rowCount() !== 1) {
+            throw new \\RuntimeException('The cash session does not have enough expected cash or is no longer open.');
+        }
+    }
+
     /** @return array<string,mixed>|null */
     public function findOpenSessionForUpdate(int $businessId, int $branchId, string $publicId): ?array
     {
