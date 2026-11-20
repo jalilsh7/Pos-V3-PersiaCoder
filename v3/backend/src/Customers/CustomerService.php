@@ -281,7 +281,7 @@ final readonly class CustomerService
         }
         try {
             $data = json_decode($decoded, true, 8, JSON_THROW_ON_ERROR);
-        } catch (\\JsonException) {
+        } catch (\JsonException) {
             throw new HttpException(400, 'customer_cursor_invalid', 'The customer pagination cursor is invalid.');
         }
         if (!is_array($data) || !isset($data['updated_at'], $data['id'])
