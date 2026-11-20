@@ -125,6 +125,10 @@ export function PosWorkspace() {
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [customerOptions, setCustomerOptions] = useState<PosCustomerOption[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<PosCustomerOption | null>(null);
+  const [customerLookupError, setCustomerLookupError] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<ProductOption[]>([]);
