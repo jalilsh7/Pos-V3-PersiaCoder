@@ -14,8 +14,10 @@ import {
   createPosOrder,
   getOpenCashPaymentSessions,
   getPosCatalogProductDetails,
+  searchPosCustomers,
   getPosCatalogProducts,
   type OpenCashPaymentSession,
+  type PosCustomerOption,
   type PosCatalogProduct,
   type PosCatalogProductDetail,
 } from "../../shared/api/client";
@@ -163,6 +165,30 @@ export function PosWorkspace() {
   }, []);
 
   useEffect(() => {
+    const query = customerSearch.trim();
+    if (!query || selectedCustomer?.name === query) {
+      setCustomerOptions([]);
+      setCustomerLookupError(null);
+      return;
+    }
+    let active = true;
+    searchPosCustomers(query)
+      .then((customers) => {
+        if (!active) return;
+        setCustomerOptions(customers);
+        setCustomerLookupError(null);
+      })
+      .catch((cause: unknown) => {
+        if (!active) return;
+        setCustomerOptions([]);
+        setCustomerLookupError(cause instanceof ApiError
+          ? cause.message
+          : "جست‌وجوی مشتری در دسترس نیست؛ می‌توانید سفارش را بدون اتصال مشتری ثبت کنید.");
+      });
+    return () => { active = false; };
+  }, [customerSearch, selectedCustomer?.name]);
+
+  useEffect(() => {
     if (!createdOrder) {
       setOpenCashSessions([]);
       setCashSessionId("");
@@ -306,6 +332,7 @@ export function PosWorkspace() {
     const payload = {
       source_channel: "pos" as const,
       fulfillment_method: orderType === "dine-in" ? "dine_in" as const : orderType as "takeaway" | "delivery",
+      customer_id: selectedCustomer?.id ?? null,
       ...(orderType === "delivery" ? {
         recipient_name: recipientName.trim(),
         recipient_phone: normalizeDigits(recipientPhone).trim(),
@@ -343,6 +370,10 @@ export function PosWorkspace() {
       setRecipientName("");
       setRecipientPhone("");
       setDeliveryAddress("");
+      setCustomerSearch("");
+      setCustomerOptions([]);
+      setSelectedCustomer(null);
+      setCustomerLookupError(null);
       idempotencyAttempt.current = null;
     } catch (cause) {
       const message = cause instanceof ApiError
@@ -620,6 +651,34 @@ export function PosWorkspace() {
           )}
 
           <div className="pos-cart-options">
+            <div className="pos-customer-picker">
+              <label htmlFor="pos-customer-search">مشتری (اختیاری)</label>
+              {selectedCustomer ? (
+                <div className="pos-selected-customer">
+                  <span><strong>{selectedCustomer.name}</strong><small>{selectedCustomer.phone || "بدون شماره همراه"}</small></span>
+                  <button type="button" onClick={() => { setSelectedCustomer(null); setCustomerSearch(""); }} aria-label="حذف مشتری انتخاب‌شده"><X size={14} /></button>
+                </div>
+              ) : (
+                <>
+                  <input id="pos-customer-search" value={customerSearch} onChange={(event) => setCustomerSearch(event.target.value)} placeholder="جست‌وجوی نام یا موبایل مشتری" />
+                  {customerOptions.length ? (
+                    <div className="pos-customer-results">
+                      {customerOptions.map((customer) => (
+                        <button type="button" key={customer.id} onClick={() => {
+                          setSelectedCustomer(customer);
+                          setCustomerSearch(customer.name);
+                          setCustomerOptions([]);
+                          setCustomerLookupError(null);
+                        }}>
+                          <strong>{customer.name}</strong><small>{customer.phone || "بدون شماره همراه"}</small>
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                  {customerLookupError ? <small className="pos-customer-error">{customerLookupError}</small> : null}
+                </>
+              )}
+            </div>
             <SelectField label="نوع سفارش" value={orderType} onChange={(event) => setOrderType(event.target.value)}
               options={orderTypes} placeholder="نوع سفارش را انتخاب کنید" />
             {orderType === "delivery" ? (
