@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import {
   attachCatalogOptionGroup, createCatalogOptionGroup, createCatalogVariant,
-  updateCatalogOption, updateCatalogOptionGroup, updateCatalogVariant,
+  updateCatalogOption, updateCatalogVariant,
   type PosCatalogProductDetail,
 } from "../../shared/api/client";
 import { Button, StatusBadge } from "../../shared/ui";
@@ -84,8 +84,7 @@ export function CatalogOptionsEditor({ productId, detail, onSaved }: {
       <strong>گروه‌های گزینه متصل به محصول</strong>
       {detail.option_groups.map((group) => <div className="catalog-editor-group" key={group.id}>
         <div className="catalog-editor-row"><span><b>{group.name}</b><small>{group.selection_type === "single" ? "تک‌انتخابی" : "چندانتخابی"} · حداقل {group.min_select} / حداکثر {group.max_select} · {group.is_required ? "اجباری برای این محصول" : "اختیاری"}</small></span>
-          <StatusBadge variant={group.is_active ? "success" : "neutral"}>{group.is_active ? "فعال" : "غیرفعال"}</StatusBadge>
-          <Button size="sm" variant="secondary" disabled={busy} onClick={() => void toggle(() => updateCatalogOptionGroup(group.id, { is_active: !group.is_active }))}>{group.is_active ? "غیرفعال‌سازی" : "فعال‌سازی"}</Button>
+          <StatusBadge variant="success">متصل</StatusBadge>
         </div>
         {group.options.map((option) => <div className="catalog-editor-row catalog-editor-option" key={option.id}>
           <span><b>{option.name}</b><small>{option.price_delta_amount > 0 ? "+" : ""}{money(option.price_delta_amount)} تومان</small></span>
