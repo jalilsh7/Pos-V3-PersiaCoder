@@ -39,7 +39,7 @@ $sendHttp = new FakeSmsHttpClient(new SmsHttpResponse(
     json_encode(['Value' => '10001,10002', 'RetStatus' => 1, 'StrRetStatus' => 'OK'], JSON_THROW_ON_ERROR),
 ));
 $provider = new NationalPayamakSmartSmsProvider($config, $sendHttp);
-$sent = $provider->send('پیام آزمایشی', ['09123456789', '+989361234567']);
+$sent = $provider->send('پیام آزمایشی لغو11', ['09123456789', '+989361234567']);
 $assert($sent['accepted'] === true && count($sent['messages']) === 2, 'SmartSMS send result was not accepted.');
 $assert($sent['messages'][0]['provider_id'] === '10001' && $sent['messages'][1]['mobile'] === '09361234567',
     'SmartSMS send IDs/mobile mapping is incorrect.');
@@ -64,13 +64,13 @@ $multipleHttp = new FakeSmsHttpClient(new SmsHttpResponse(
 ));
 $multipleProvider = new NationalPayamakSmartSmsProvider($config, $multipleHttp);
 $multiple = $multipleProvider->sendPersonalized([
-    ['to' => '09123456789', 'text' => 'سلام علی'],
-    ['to' => '09361234567', 'text' => 'سلام سارا'],
+    ['to' => '09123456789', 'text' => 'سلام علی لغو11'],
+    ['to' => '09361234567', 'text' => 'سلام سارا لغو11'],
 ]);
 $assert($multiple['accepted'] === true && $multiple['messages'][1]['provider_id'] === '20002',
     'SmartSMS SendMultiple response mapping is incorrect.');
 $assert($multipleHttp->calls[0]['payload']['to'] === ['09123456789', '09361234567']
-    && $multipleHttp->calls[0]['payload']['text'] === ['سلام علی', 'سلام سارا'],
+    && $multipleHttp->calls[0]['payload']['text'] === ['سلام علی لغو11', 'سلام سارا لغو11'],
     'SmartSMS SendMultiple did not preserve recipient/text ordering.');
 
 $deliveryHttp = new FakeSmsHttpClient(new SmsHttpResponse(
@@ -92,7 +92,7 @@ $errorProvider = new NationalPayamakSmartSmsProvider(
 );
 $linkBlocked = false;
 try {
-    $errorProvider->send('https://example.test', ['09123456789']);
+    $errorProvider->send('https://example.test لغو11', ['09123456789']);
 } catch (SmsProviderException $exception) {
     $linkBlocked = $exception->providerCode === 14
         && $exception->getMessage() === 'sms_provider_link_not_allowed'
@@ -112,7 +112,7 @@ $assert($batchRejected && $noCallHttp->calls === [], 'Oversized SMS batch reache
 
 $duplicateRejected = false;
 try {
-    $noCallProvider->send('duplicate', ['09123456789', '+989123456789']);
+    $noCallProvider->send('duplicate لغو11', ['09123456789', '+989123456789']);
 } catch (SmsProviderException $exception) {
     $duplicateRejected = $exception->getMessage() === 'sms_duplicate_recipient';
 }
@@ -123,7 +123,7 @@ $unknownHttp->failure = new SmsProviderException('sms_provider_transport_outcome
 $unknownProvider = new NationalPayamakSmartSmsProvider($config, $unknownHttp);
 $unknownOutcome = false;
 try {
-    $unknownProvider->send('may have been accepted', ['09123456789']);
+    $unknownProvider->send('may have been accepted لغو11', ['09123456789']);
 } catch (SmsProviderException $exception) {
     $unknownOutcome = $exception->deliveryUnknown && !$exception->retryable;
 }
