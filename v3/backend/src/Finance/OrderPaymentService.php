@@ -94,7 +94,9 @@ final readonly class OrderPaymentService
             'total_amount' => (int) $order['total_amount'],
             'captured_amount' => $totals['captured'],
             'refunded_amount' => $totals['refunded'],
-            'due_amount' => max(0, (int) $order['total_amount'] - $totals['captured'] + $totals['refunded']),
+            'due_amount' => (string) $order['payment_status'] === 'refunded'
+                ? 0
+                : max(0, (int) $order['total_amount'] - $totals['captured'] + $totals['refunded']),
             'payments' => $rows,
             'refunds' => $refundRows,
         ];
@@ -181,6 +183,9 @@ final readonly class OrderPaymentService
                 }
                 if (in_array((string) $order['order_status'], ['cancelled', 'rejected', 'completed'], true)) {
                     throw new HttpException(409, 'order_not_payable', 'This order can no longer receive a cashier payment.');
+                }
+                if ((string) $order['payment_status'] === 'refunded') {
+                    throw new HttpException(409, 'order_fully_refunded', 'A fully refunded order cannot receive another payment until it is explicitly reopened.');
                 }
 
                 $session = $this->cash->findOpenSessionForUpdate(
@@ -560,7 +565,9 @@ final readonly class OrderPaymentService
                             'payment_status' => $orderPaymentStatus,
                             'captured_amount' => $totals['captured'],
                             'refunded_amount' => $totals['refunded'],
-                            'due_amount' => max(0, (int) $order['total_amount'] - $netPaid),
+                            'due_amount' => $orderPaymentStatus === 'refunded'
+                                ? 0
+                                : max(0, (int) $order['total_amount'] - $netPaid),
                         ],
                     ], 'meta' => (object) []],
                 ];
