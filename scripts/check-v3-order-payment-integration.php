@@ -11,7 +11,7 @@ use PersiaCoder\PosV3\Infrastructure\Database\PermissionRepository;
 $root = dirname(__DIR__);
 require_once $root . '/database/v3/bin/bootstrap.php';
 spl_autoload_register(static function (string $class) use ($root): void {
-    $prefix = 'PersiaCoder\PosV3\';
+    $prefix = "PersiaCoder\\PosV3\\";
     if (!str_starts_with($class, $prefix)) return;
     $file = $root . '/v3/backend/src/' . str_replace('\\', DIRECTORY_SEPARATOR, substr($class, strlen($prefix))) . '.php';
     if (is_file($file)) require $file;
