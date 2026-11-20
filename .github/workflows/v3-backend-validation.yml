@@ -3,7 +3,11 @@ name: V3 Backend Validation
 on:
   push:
     branches:
-      - feature/3food-pos-next-release-v2
+      - main
+    paths:
+      - "v3/backend/**"
+      - "scripts/**"
+      - ".github/workflows/v3-backend-validation.yml"
   pull_request:
   workflow_dispatch:
 
