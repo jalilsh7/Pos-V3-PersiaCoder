@@ -4,6 +4,7 @@ import {
   ApiError,
   closeCashSession,
   createCashRegister,
+  createManualCashMovement,
   getCashRegisters,
   openCashSession,
   reviewCashSession,
@@ -33,6 +34,10 @@ export function FinanceWorkspace() {
   const [openingAmount, setOpeningAmount] = useState("0");
   const [countedAmount, setCountedAmount] = useState("");
   const [reviewNote, setReviewNote] = useState("");
+  const [showMovement, setShowMovement] = useState(false);
+  const [movementDirection, setMovementDirection] = useState<"in" | "out">("in");
+  const [movementAmount, setMovementAmount] = useState("");
+  const [movementReason, setMovementReason] = useState("");
 
   async function refresh() {
     setLoading(true);
@@ -101,6 +106,27 @@ export function FinanceWorkspace() {
     } finally { setBusy(false); }
   }
 
+  async function submitManualMovement() {
+    if (!activeSession || !movementReason.trim()) return;
+    const amount = parseAmount(movementAmount);
+    if (!Number.isSafeInteger(amount) || amount <= 0) return;
+    setBusy(true); setError(null); setNotice(null);
+    try {
+      const result = await createManualCashMovement(activeSession.id, {
+        direction: movementDirection,
+        amount,
+        reason: movementReason.trim(),
+      });
+      await refresh();
+      setMovementAmount("");
+      setMovementReason("");
+      setShowMovement(false);
+      setNotice(`گردش نقدی ثبت شد. موجودی مورد انتظار: ${money(result.expected_cash_amount)} تومان.`);
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : "ثبت گردش نقدی انجام نشد.");
+    } finally { setBusy(false); }
+  }
+
   async function resolveReview() {
     if (!activeSession || !reviewNote.trim()) return;
     setBusy(true); setError(null); setNotice(null);
@@ -151,6 +177,25 @@ export function FinanceWorkspace() {
           {!selected ? <Button variant="primary" onClick={() => setShowCreate((value) => !value)} disabled={busy}><Plus size={14} /> ایجاد اولین صندوق</Button> : null}
         </div>
         {selected && activeSession?.status === "open" ? (
+        <div className="finance-movement-form">
+          <div className="finance-panel-heading"><strong>ثبت دریافت یا پرداخت نقدی</strong><Button variant="secondary" size="sm" onClick={() => setShowMovement((value) => !value)}><Plus size={13} /> گردش جدید</Button></div>
+          {showMovement ? <>
+            <div className="finance-kind-tabs">
+              <button type="button" className={movementDirection === "in" ? "is-active" : ""} onClick={() => setMovementDirection("in")}>دریافت نقدی</button>
+              <button type="button" className={movementDirection === "out" ? "is-active" : ""} onClick={() => setMovementDirection("out")}>پرداخت نقدی</button>
+            </div>
+            <div className="finance-form-fields">
+              <TextField label="مبلغ (تومان)" value={movementAmount} onChange={(event) => setMovementAmount(event.target.value)} placeholder="مثلاً ۲۵۰۰۰۰" />
+              <TextField label="علت گردش" value={movementReason} onChange={(event) => setMovementReason(event.target.value)} placeholder="شرح دریافت یا پرداخت" maxLength={500} />
+            </div>
+            <div className="finance-panel-actions">
+              <Button variant="secondary" onClick={() => setShowMovement(false)}>انصراف</Button>
+              <Button variant="primary" onClick={() => void submitManualMovement()} disabled={busy || parseAmount(movementAmount) <= 0 || !movementReason.trim()}>ثبت گردش</Button>
+            </div>
+          </> : null}
+        </div>
+      ) : null}
+      {selected && activeSession?.status === "open" ? (
           <div className="finance-movement-form">
             <div className="finance-panel-heading"><strong>بستن شیفت</strong><LockKeyhole size={16} /></div>
             <TextField label="مبلغ شمارش‌شده واقعی (تومان)" value={countedAmount} onChange={(event) => setCountedAmount(event.target.value)} placeholder="مبلغ وجه نقد شمارش‌شده" />
