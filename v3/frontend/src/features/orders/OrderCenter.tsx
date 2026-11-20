@@ -217,8 +217,11 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
     }
     let active = true;
     setPaymentLoading(true);
+    setPaymentSummary(null);
+    setRefundPaymentId(null);
     setRefundError(null);
     setRefundSuccess(null);
+    refundAttempt.current = null;
     getOrderDetails(selectedId)
       .then((result) => { if (active) setDetail(result); })
       .catch((cause: unknown) => {
