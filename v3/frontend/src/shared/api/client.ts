@@ -619,11 +619,11 @@ export async function getCustomers(options: {
   if (options.status) params.set("status", options.status);
   if (options.limit) params.set("limit", String(options.limit));
   const suffix = params.toString();
-  return request(`/customers${suffix ? `?${suffix}` : ""}`);
+  return request<{ customers: CustomerSummary[] }>(`/customers${suffix ? `?${suffix}` : ""}`);
 }
 
 export async function getCustomerDetails(customerId: string): Promise<CustomerDetail> {
-  return request(`/customers/${encodeURIComponent(customerId)}`);
+  return request<CustomerDetail>(`/customers/${encodeURIComponent(customerId)}`);
 }
 
 export async function createCustomer(
