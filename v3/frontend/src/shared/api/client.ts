@@ -69,7 +69,7 @@ async function request<T>(path: string, options: RequestInit = {}, context: { bu
   if (scope?.branchId && !headers.has("X-Branch-ID")) headers.set("X-Branch-ID", scope.branchId);
   if (options.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   let pendingIdempotencySignature: string | null = null;
-  if ((path.startsWith("/inventory/") || path.startsWith("/catalog/") || path.startsWith("/orders/")) && !["GET", "HEAD", "OPTIONS"].includes(method)
+  if ((path.startsWith("/inventory/") || path.startsWith("/catalog/") || path.startsWith("/orders/") || path.startsWith("/cash/")) && !["GET", "HEAD", "OPTIONS"].includes(method)
     && !headers.has("Idempotency-Key")) {
     pendingIdempotencySignature = JSON.stringify([method, path, typeof options.body === "string" ? options.body : ""]);
     let key = pendingMutationIdempotencyKeys.get(pendingIdempotencySignature);
@@ -692,4 +692,58 @@ export async function getOrders(filters: {
 
 export async function getOrderDetails(orderId: string): Promise<OrderDetail> {
   return request<OrderDetail>(`/orders/${encodeURIComponent(orderId)}`);
+}
+
+
+export type CashSessionSummary = {
+  id: string;
+  status: "open" | "requires_review";
+  opening_amount: number;
+  expected_cash_amount: number;
+  opened_at: string;
+};
+
+export type CashRegisterSummary = {
+  id: string;
+  code: string;
+  name: string;
+  is_active: boolean;
+  active_session: CashSessionSummary | null;
+};
+
+export async function getCashRegisters(): Promise<CashRegisterSummary[]> {
+  const data = await request<{ registers: CashRegisterSummary[] }>("/cash/registers");
+  return data.registers;
+}
+
+export async function createCashRegister(payload: { code: string; name: string }): Promise<CashRegisterSummary> {
+  const data = await request<{ register: CashRegisterSummary }>("/cash/registers", {
+    method: "POST",
+    body: JSON.stringify({ code: payload.code.trim().toUpperCase(), name: payload.name.trim() }),
+  });
+  return data.register;
+}
+
+export async function openCashSession(registerId: string, openingAmount: number): Promise<CashSessionSummary> {
+  const data = await request<{ session: CashSessionSummary }>(`/cash/registers/${encodeURIComponent(registerId)}/sessions`, {
+    method: "POST",
+    body: JSON.stringify({ opening_amount: openingAmount }),
+  });
+  return data.session;
+}
+
+export async function closeCashSession(sessionId: string, countedCashAmount: number): Promise<{
+  session_id: string; status: string; expected_cash_amount: number; counted_cash_amount: number; difference_amount: number;
+}> {
+  return request(`/cash/sessions/${encodeURIComponent(sessionId)}/close`, {
+    method: "PATCH",
+    body: JSON.stringify({ counted_cash_amount: countedCashAmount }),
+  });
+}
+
+export async function reviewCashSession(sessionId: string, reviewNote: string): Promise<void> {
+  await request(`/cash/sessions/${encodeURIComponent(sessionId)}/review`, {
+    method: "POST",
+    body: JSON.stringify({ review_note: reviewNote.trim() }),
+  });
 }
