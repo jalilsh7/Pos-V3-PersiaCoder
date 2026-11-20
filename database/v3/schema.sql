@@ -346,7 +346,7 @@ CREATE TABLE pos_orders (
   CONSTRAINT fk_orders_creator FOREIGN KEY (created_by) REFERENCES app_users(id) ON DELETE SET NULL,
   CONSTRAINT chk_orders_channel CHECK (source_channel IN ('pos','phone','manual','table','takeaway','storefront')),
   CONSTRAINT chk_orders_status CHECK (order_status IN ('draft','awaiting_payment','accepted','preparing','ready','completed','cancelled','rejected')),
-  CONSTRAINT chk_orders_payment_status CHECK (payment_status IN ('unpaid','partial','paid','refunded','partially_refunded','failed','pending')),
+  CONSTRAINT chk_orders_payment_status CHECK (payment_status IN ('unpaid','partially_paid','paid','refunded','partially_refunded','failed','pending')),
   CONSTRAINT chk_orders_currency CHECK (currency_code = 'IRT'),
   CONSTRAINT chk_orders_discount CHECK (discount_amount <= subtotal_amount)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
