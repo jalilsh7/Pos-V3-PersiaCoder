@@ -1188,3 +1188,22 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
   - ساخت مشتری از داخل POS هنوز نیست؛ انتخاب مشتری موجود فعال است.
   - سیاست loyalty، رضایت بازاریابی، تولد و گروه‌بندی مشتری هنوز باید جداگانه تصمیم‌گیری شود.
 
+
+## SMS-MIG-2026-002 — آداپتورهای National Payamak (2026-11-20)
+
+- وضعیت: **دو آداپتور ارسال و تست واحد موفق؛ صف و ارسال عملیاتی هنوز تکمیل نشده‌اند.**
+- SmartSMS:
+  - Send برای متن یکسان تا 100 گیرنده.
+  - SendMultiple برای متن متفاوت تا 100 گیرنده.
+  - GetDeliveries برای استعلام گروهی.
+  - نگاشت کدهای تحویل مستندشده و خطاهای provider.
+- Shared Service Number:
+  - BaseServiceNumber برای یک گیرنده و bodyId تأییدشده.
+  - متغیرها با ; و به ترتیب الگو ارسال می‌شوند.
+  - شناسه بیش از 15 رقم در پاسخ موفق ذخیره‌پذیر است.
+  - BaseServiceNumberSchedule هنوز پیاده‌سازی نشده؛ timezone و پنجره 07:00–22:00 باید در queue مشخص شوند.
+- امنیت: HTTPS، TLS verification، بدون redirect، timeout محدود، API key فقط در environment سرور و private config property.
+- رفتار failure: timeout/network/5xx به‌عنوان deliveryUnknown ثبت‌پذیر است؛ retry کور ممنوع.
+- تست: Backend Validation run 44810239937 روی PHP 8.2/8.3/8.4 موفق؛ تست‌ها از fake HTTP transport استفاده کردند و ارسال واقعی انجام نشد.
+- موارد باقی‌مانده: outbox/queue، worker، persistence provider IDs، polling گزارش تحویل، retry policy کنترل‌شده، consent/opt-out، تفکیک پیام transactional/marketing، UI تنظیمات امن، shared-number delivery report و scheduled send.
+
