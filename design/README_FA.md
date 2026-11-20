@@ -27,6 +27,7 @@
 | [INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md](INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md) | داشبورد موجودی، مواد اولیه، مکان‌ها، تأمین‌کنندگان، اسناد چندردیفی، posting، valuation و ledger | آماده بازبینی و نمونه‌سازی |
 | [CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md](CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md) | پرونده مشتری، تاریخچه سفارش، ledger وفاداری، رضایت/opt-out و معماری پیامک تراکنشی/تبلیغاتی | آماده بازبینی مفهومی؛ نیازمند تکمیل Backend |
 | [FINANCE_CASH_AND_RECONCILIATION_UX_V3_FA.md](FINANCE_CASH_AND_RECONCILIATION_UX_V3_FA.md) | مدیریت صندوق و شیفت، دفتر پرداخت، بازپرداخت، هزینه، تسویه و مغایرت | آماده بازبینی؛ پرداخت و گزارش مالی نیازمند تکمیل Backend |
+| [ACCESS_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md](ACCESS_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md) | کاربران، نقش‌ها، مجوزها، شعبه‌ها، تنظیمات و تفکیک entitlement از RBAC | آماده بازبینی معماری؛ نیازمند تکمیل Backend |
 
 ## سندهای مرتبط بیرون از پوشه
 
