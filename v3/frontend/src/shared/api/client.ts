@@ -602,6 +602,17 @@ export type OrderPaymentSummary = {
     captured_at: string | null;
     created_at: string;
   }[];
+  refunds: {
+    id: string;
+    payment_id: string;
+    amount: number;
+    method: string;
+    status: string;
+    reason: string;
+    provider_reference: string | null;
+    created_at: string;
+    completed_at: string | null;
+  }[];
 };
 
 export async function getOrderPayments(orderId: string): Promise<OrderPaymentSummary> {
@@ -624,6 +635,27 @@ export async function captureCashPayment(
     method: "POST",
     headers: { "Idempotency-Key": idempotencyKey },
     body: JSON.stringify({ cash_session_id: cashSessionId, amount }),
+  });
+}
+
+export async function refundCashPayment(
+  orderId: string,
+  paymentId: string,
+  cashSessionId: string,
+  amount: number,
+  reason: string,
+  idempotencyKey: string,
+): Promise<{
+  refund: { id: string; payment_id: string; amount: number; method: "cash"; status: "succeeded"; reason: string };
+  order: { id: string; order_number: number; payment_status: string; captured_amount: number; refunded_amount: number; due_amount: number };
+}> {
+  return request<{
+    refund: { id: string; payment_id: string; amount: number; method: "cash"; status: "succeeded"; reason: string };
+    order: { id: string; order_number: number; payment_status: string; captured_amount: number; refunded_amount: number; due_amount: number };
+  }>(`/orders/${encodeURIComponent(orderId)}/payments/${encodeURIComponent(paymentId)}/refunds/cash`, {
+    method: "POST",
+    headers: { "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify({ cash_session_id: cashSessionId, amount, reason: reason.trim(), confirm: true }),
   });
 }
 
