@@ -235,7 +235,7 @@ export function CustomersWorkspace() {
         <Surface padding="md" className="customers-detail">
           {detailLoading ? <Notice variant="info">در حال دریافت پروفایل مشتری...</Notice> : null}
           {detailError ? <Notice variant="warning">{detailError}</Notice> : null}
-          {selected ? (
+          {selected && detail ? (
             <>
               <div className="customers-profile-head">
                 <span className="customer-avatar large">{selected.name.slice(0, 1)}</span>
