@@ -43,7 +43,7 @@
 | مرکز سفارش | D-07 | list/detail/status history/transitions | مرکز کامل در مسیرهای بررسی‌شده اثبات نشده | UI، search، payment timeline | Order workflow tests |
 | کاتالوگ/افزودنی | D-08 | CatalogService و routes دسته/محصول/variant/options | POS catalog مصرف می‌کند | UI مدیریت کامل/ detach/ترتیب | Catalog API/UI tests |
 | رسپی | D-08 | RecipeService: GET recipe، create draft version، activate version | UI رسپی در مسیر بررسی‌شده اثبات نشده | UI، draft edit/list، order-reservation-consumption | Recipe integration tests |
-| انبار و گردش | D-09 | Inventory/Document/Posting/Supplier services و ledger | InventoryWorkspace به API وصل | dimension-safe totals، return/void، order integration | Inventory concurrency/valuation |
+| انبار و گردش | D-09 | Inventory/Document/Posting/Supplier services و ledger | InventoryWorkspace به API وصل؛ جمع موجودی فیزیکی/قابل استفاده اکنون بر اساس واحد پایه جدا شده | return/void، order integration؛ build/typecheck اصلاح UI هنوز لازم است | Inventory concurrency/valuation + UI build |
 | مشتری و وفاداری | D-10 | pos_customers و customer_ledger schema | CustomersWorkspace seed/local | Customer API، ledger service و consent | CRM/ledger tests |
 | پیامک | D-10 | LegacySmsParser فقط inbound parsing | UI اجرایی اثبات نشده | provider adapter، queue، delivery، consent/opt-out | Provider + consent tests |
 | کاربران/RBAC | D-12 | Auth, Permission, User/Role services و middleware | UI کامل مدیریت اثبات نشده | user/role UI و تکمیل lifecycle | Security/RBAC tests |
@@ -191,5 +191,6 @@
 ## 9. ثبت تغییرات
 
 - 2026-11-20 — ایجاد D-16، نسخه 0.1؛ traceability و quality gates بر اساس تصمیمات محصول و اسناد D-01 تا D-15.
+- 2026-11-20 — اصلاح شاخص‌های موجودی ناهمگون در `InventoryWorkspace.tsx`؛ مقادیر اکنون بر اساس واحد پایه جدا نمایش داده می‌شوند. کد در commitهای `c876b1b` و `1dfa0ff` ثبت شد؛ build/typecheck/test هنوز pending است.
 - وضعیت: گزارش بازبینی اولیه؛ نیازمند اجرای نمونه‌سازی، تست‌های فنی و تأیید مالک.
 - این سند به معنی تکمیل فازهای فنی یا آمادگی تجاری نیست.
