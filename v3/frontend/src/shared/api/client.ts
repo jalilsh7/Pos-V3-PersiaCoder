@@ -602,10 +602,13 @@ export async function createCatalogOptionGroup(payload: {
 export async function attachCatalogOptionGroup(productId: string, payload: { option_group_id: string; sort_order: number; is_required: boolean }): Promise<void> {
   await request(`/catalog/products/${encodeURIComponent(productId)}/option-groups`, { method: "POST", body: JSON.stringify(payload) });
 }
-export async function updateCatalogOptionGroup(groupId: string, payload: { is_active?: boolean }): Promise<void> {
+export async function updateCatalogOptionGroup(groupId: string, payload: {
+  name?: string; selection_type?: "single" | "multiple"; min_select?: number; max_select?: number;
+  is_required_default?: boolean; is_active?: boolean;
+}): Promise<void> {
   await request(`/catalog/option-groups/${encodeURIComponent(groupId)}`, { method: "PATCH", body: JSON.stringify(payload) });
 }
-export async function updateCatalogOption(optionId: string, payload: { is_active?: boolean }): Promise<void> {
+export async function updateCatalogOption(optionId: string, payload: { name?: string; price_delta_amount?: number; is_active?: boolean }): Promise<void> {
   await request(`/catalog/options/${encodeURIComponent(optionId)}`, { method: "PATCH", body: JSON.stringify(payload) });
 }
 
