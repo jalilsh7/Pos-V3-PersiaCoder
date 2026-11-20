@@ -612,3 +612,13 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - ادامه اولویت عرضه اولیه: تکمیل فروش POS end-to-end تا پرداخت و رسید.
 - ابتدا HEAD و `FINAL_PRODUCT_DECISIONS_FA.md` را تازه بخوان؛ سپس OrderService، POS frontend، CashRegisterService، schema payment/cash و هر تست موجود را تطبیق بده.
 - هدف: بستن شکاف ثبت سفارش draft/unpaid با payment واقعی و cash ledger، بدون جعل پرداخت و بدون retry کور؛ تا وقتی payment service/endpoint واقعی وجود ندارد، آن را به‌صورت امن و مستند طراحی و سپس مرحله‌ای پیاده‌سازی کن.
+
+
+## نقطه ادامه پس از POS-PAY-00 (2026-11-20)
+- آخرین تغییرات: `c4e9e33083e9c3ce201ebb3f0cd0b29add2ce018` و `4f3b0ecf907e0999d8e6f497fdba9cd6b9014fd5`؛ allowlist سرویس و CHECK دیتابیس برای پرداخت جزئی هر دو از `partial` به `partially_paid` همسان شدند.
+- شواهد بررسی: جدول‌های `pos_payments`، `pos_payment_events`، `pos_refunds` و `pos_cash_movements` در schema پایه موجودند؛ migration 009 scope کسب‌وکار/شعبه را اعمال می‌کند. اما در tree فعلی، PaymentService/Controller/Repository و route پرداخت سفارش پیدا نشدند.
+- POS frontend هنوز فقط سفارش `draft/unpaid` می‌سازد و صریحاً اعلام می‌کند پرداخت/تخفیف/مشتری فعال نیستند. CashRegisterService فقط صندوق/شیفت و گردش دستی را پوشش می‌دهد؛ اتصال پرداخت سفارش به ledger/cash هنوز پیاده‌سازی نشده است.
+- گام اجرایی بعد: افزودن ماژول backend پرداخت نقدی مطابق `PAYMENT_LEDGER_V3.md`، بدون افزودن پرداخت جعلی کارتخوان/درگاه. ابتدا مسیر DI و route registration، permissionهای موجود، idempotency و transaction boundaries را بررسی کن؛ سپس PaymentRepository/Service/Controller و API خلاصه پرداخت را بساز و در همان DB transaction payment + event + cash movement + order payment_status را به‌روزرسانی کن.
+- الزام نقدی: شیفت باز و مجاز، مبلغ <= مانده، lock order/session، duplicate prevention، audit و cash movement یکتا. اگر شیفت باز نیست، دریافت نقدی رد شود؛ موجودی صندوق دستی نباید به‌صورت دوباره‌شماری افزایش یابد.
+- سپس UI پرداخت و رسید فقط با پاسخ سرور، نمایش مانده و وضعیت واقعی را اضافه کن. پرداخت ترکیبی/نسیه، refund و terminal provider را جداگانه و با قرارداد/driver واقعی تکمیل کن.
+- تست‌های PHP/DB/HTTP و build هنوز اجرا نشده‌اند؛ وضعیت PASS اعلام نشود.
