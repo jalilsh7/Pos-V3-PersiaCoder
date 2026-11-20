@@ -159,7 +159,7 @@ final readonly class SmsOutboxRepository
             }
             $this->connection->commit();
             return count($rows);
-        } catch (\\Throwable $error) {
+        } catch (\Throwable $error) {
             if ($this->connection->inTransaction()) $this->connection->rollBack();
             throw $error;
         }
