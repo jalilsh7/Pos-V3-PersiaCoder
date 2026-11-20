@@ -177,3 +177,7 @@ PersiaCoder POS V3 فقط یک صندوق فروشگاهی نیست؛ یک سا�
 ---
 
 **PersiaCoder.ir — Powered by PersiaCoder.ir**
+
+
+## سند معماری فنی مادر
+- [ARCHITECTURE_MASTER_V3_FA.md](ARCHITECTURE_MASTER_V3_FA.md) — مرجع معماری کلان، مرز ماژول‌ها، جریان‌های تجاری، امنیت، استقرار و تصمیم‌های باز؛ در حال تکمیل فاز 1.
