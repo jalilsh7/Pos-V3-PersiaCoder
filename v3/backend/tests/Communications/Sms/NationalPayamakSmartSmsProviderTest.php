@@ -1,7 +1,13 @@
 <?php
 declare(strict_types=1);
 
-require dirname(__DIR__, 3) . '/bootstrap.php';
+$backendRoot = dirname(__DIR__, 3);
+spl_autoload_register(static function (string $class) use ($backendRoot): void {
+    $prefix = "PersiaCoder\\PosV3\\";
+    if (!str_starts_with($class, $prefix)) return;
+    $file = $backendRoot . '/src/' . str_replace('\\', DIRECTORY_SEPARATOR, substr($class, strlen($prefix))) . '.php';
+    if (is_file($file)) require $file;
+});
 
 use PersiaCoder\PosV3\Communications\Sms\NationalPayamakSmartSmsProvider;
 use PersiaCoder\PosV3\Communications\Sms\SmartSmsConfig;
