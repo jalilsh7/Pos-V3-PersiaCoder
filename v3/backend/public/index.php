@@ -406,6 +406,11 @@ try {
         [$sessionMiddleware, $makePermissionMiddleware('finance.manage', true), $csrfMiddleware, $originMiddleware],
     );
 
+    $router->add('GET', '/api/v1/pos/customers',
+        static fn (Request $request): Response => $getCustomerController()->quickSearch($request),
+        [$sessionMiddleware, $makePermissionMiddleware('pos.sell')],
+    );
+
     $router->add('GET', '/api/v1/customers',
         static fn (Request $request): Response => $getCustomerController()->list($request),
         [$sessionMiddleware, $makePermissionMiddleware('customers.read')],
