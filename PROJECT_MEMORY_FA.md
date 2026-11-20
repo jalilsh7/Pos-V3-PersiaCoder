@@ -370,3 +370,16 @@
 - پرداخت کارتخوان، online storefront، refund، پرداخت ترکیبی، رسید چاپی، تست MySQL و E2E هنوز باز هستند.
 - HEAD زمان ثبت: `5675a542fff85546abb6baa2e0048b3ac8136f0f`؛ جزئیات وضعیت جاری را از GitHub و ROADMAP/HANDOFF تازه بررسی کن.
 
+
+## POS-PAY-06 و POS-CUST-01 — شواهد جدید (2026-11-20)
+
+- پرداخت نقدی POS و بازپرداخت نقدی کامل/جزئی به دفتر پرداخت و صندوق متصل شد؛ refund فقط با finance.manage، دلیل و تأیید صریح و شیفت باز دارای وجه کافی.
+- رسید چاپی نقدی و تاریخچه پرداخت/بازپرداخت در جزئیات سفارش اضافه شد.
+- تست integration مالی روی MySQL 8.4 و MariaDB 10.6 موفق شد؛ دریافت جزئی، idempotency، overpayment، بازپرداخت چندمرحله‌ای و تطبیق cash drawer بررسی شد.
+- CRM مشتری اکنون API واقعی business-scoped دارد: create/update/list/detail، نرمال‌سازی شماره موبایل ایران، جلوگیری از duplicate، audit، idempotency و سوابق سفارش.
+- total_spent مشتری از net captured payment منهای refund موفق محاسبه می‌شود.
+- POS quick-search مشتری فعال با مجوز pos.sell و ارسال customer_id در سفارش اضافه شد.
+- تست integration مشتری روی MySQL و MariaDB موفق شد؛ نرمال‌سازی موبایل، duplicate، idempotency، business isolation و net spend بررسی شد.
+- Loyalty، consent تبلیغاتی، تولد، segmentation، pagination و ساخت مشتری inline در POS هنوز باز هستند و نباید fake یا فرض شوند.
+- HEAD زمان ثبت: 9b6ee79c8a7f9bd76a9b11f05d1f4a254ad8094b؛ نتیجه Frontend workflow باید مجدداً بررسی شود.
+
