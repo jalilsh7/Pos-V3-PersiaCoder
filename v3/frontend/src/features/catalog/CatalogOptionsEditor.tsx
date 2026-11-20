@@ -9,8 +9,8 @@ import { Button, StatusBadge } from "../../shared/ui";
 const money = (value: number) => new Intl.NumberFormat("fa-IR").format(value);
 const parseSignedInteger = (value: string) => {
   const normalized = value.replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
-    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit))).replace(/[،,٬\\s]/g, "");
-  return /^-?\\d+$/.test(normalized) ? Number(normalized) : Number.NaN;
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit))).replace(/[،,٬\s]/g, "");
+  return /^-?\d+$/.test(normalized) ? Number(normalized) : Number.NaN;
 };
 
 export function CatalogOptionsEditor({ productId, detail, onSaved }: {
