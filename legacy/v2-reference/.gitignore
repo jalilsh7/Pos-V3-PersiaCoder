@@ -1,0 +1,16 @@
+node_modules/
+.vercel/
+.tanstack/
+dist/
+.output/
+.env
+.env.*
+!.env.example
+*.log
+.node_modules.lock
+.DS_Store
+screenshots/
+dist-cpanel/
+
+# Private POS V3 media uploads (never commit customer files)
+v3/backend/var/private-media/
