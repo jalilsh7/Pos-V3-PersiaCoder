@@ -197,6 +197,9 @@ final readonly class NationalPayamakSmartSmsProvider implements SmsProvider
         if ($text === '' || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/u', $text)) {
             throw new SmsProviderException('sms_text_invalid');
         }
+        if (!str_ends_with($text, 'لغو11')) {
+            throw new SmsProviderException('sms_provider_unsubscribe_marker_required');
+        }
         return $text;
     }
 
