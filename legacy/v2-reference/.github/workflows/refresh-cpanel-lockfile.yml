@@ -1,0 +1,49 @@
+name: Refresh cPanel dependency lockfile
+
+on:
+  pull_request:
+    branches:
+      - migration/php-mysql
+    paths:
+      - package.json
+      - .github/workflows/refresh-cpanel-lockfile.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-cpanel-lockfile
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out cleanup branch
+        uses: actions/checkout@v4
+        with:
+          ref: cleanup/remove-grok-dependencies
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Regenerate and verify dependency lockfile
+        run: |
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run typecheck
+          npm test
+          npm run lint
+          npm run build:cpanel
+      - name: Commit lockfile when changed
+        run: |
+          if git diff --quiet -- package-lock.json; then
+            echo "package-lock.json is already synchronized"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "chore: refresh lockfile after UI dependency pruning [skip ci]"
+          git push origin HEAD:cleanup/remove-grok-dependencies
