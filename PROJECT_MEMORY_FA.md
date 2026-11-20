@@ -405,3 +405,10 @@
 - DB integration روی MySQL 8.4/MariaDB 10.6 و backend tests روی PHP 8.2/8.3/8.4 موفق شدند.
 - هیچ پیام واقعی ارسال نشده و اتصال به order lifecycle، consent/opt-out، UI مدیریت و SharedNumber delivery polling هنوز باقی است.
 
+
+## SMS-API-01 — اصلاح مرز ارسال پیامک (2026-11-20)
+
+- endpoint متن آزاد transactional به دلیل ناسازگاری با قاعده D-10 (رویداد معتبر + template کنترل‌شده) حذف شد.
+- SmsOutboxService و زیرساخت queue/worker/poller باقی‌اند اما enqueue باید از application event و template registry داخلی فراخوانی شود؛ API ارسال دلخواه وجود ندارد.
+- Marketing تا consent معتبر، evidence و opt-out/suppression سمت سرور پیاده‌سازی نشود، ممنوع است.
+
