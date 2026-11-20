@@ -573,6 +573,17 @@ export async function createPosOrder(payload: CreatePosOrderPayload, idempotency
   return data.order;
 }
 
+export type OpenCashPaymentSession = {
+  id: string;
+  register_name: string;
+  register_code: string;
+};
+
+export async function getOpenCashPaymentSessions(): Promise<OpenCashPaymentSession[]> {
+  const data = await request<{ sessions: OpenCashPaymentSession[] }>("/cash/payment-sessions");
+  return data.sessions;
+}
+
 export type OrderPaymentSummary = {
   order_id: string;
   order_number: number;
@@ -606,7 +617,10 @@ export async function captureCashPayment(
   payment: { id: string; method: "cash"; amount: number; status: "captured"; captured_at: string };
   order: { id: string; order_number: number; payment_status: string; captured_amount: number; due_amount: number };
 }> {
-  return request(`/orders/${encodeURIComponent(orderId)}/payments/cash`, {
+  return request<{
+    payment: { id: string; method: "cash"; amount: number; status: "captured"; captured_at: string };
+    order: { id: string; order_number: number; payment_status: string; captured_amount: number; due_amount: number };
+  }>(`/orders/${encodeURIComponent(orderId)}/payments/cash`, {
     method: "POST",
     headers: { "Idempotency-Key": idempotencyKey },
     body: JSON.stringify({ cash_session_id: cashSessionId, amount }),
