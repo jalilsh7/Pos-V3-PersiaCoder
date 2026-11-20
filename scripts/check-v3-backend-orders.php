@@ -56,7 +56,7 @@ $assert(str_contains($posWorkspace, 'createPosOrder(payload, idempotencyAttempt.
 $assert(str_contains($posWorkspace, 'product_id: line.product.id') && str_contains($posWorkspace, 'options: line.selectedOptions.map'), 'Cashier order payload does not use public product and option IDs.');
 $assert(str_contains($posWorkspace, 'delivery_address: { street: deliveryAddress.trim() }'), 'POS delivery fulfillment address is not mapped to the API contract.');
 $assert(!str_contains($posWorkspace, 'sampleProducts'), 'Cashier workspace still contains hard-coded sample products.');
-$assert(str_contains($posWorkspace, 'محاسبه در سرور') && str_contains($posWorkspace, 'وضعیت «پیش‌نویس»'), 'Cashier UI must communicate server-authoritative pricing and draft/unpaid creation.');
+$assert(str_contains($posWorkspace, 'محاسبه قیمت در سرور') && str_contains($posWorkspace, 'وضعیت پرداخت:') && str_contains($posWorkspace, 'مانده:'), 'Cashier UI must communicate server-authoritative pricing and server-returned payment balance/status.');
 
 $catalogWorkspace = file_get_contents(__DIR__ . '/../v3/frontend/src/features/catalog/CatalogWorkspace.tsx');
 $assert(str_contains($client, 'getCatalogCategories') && str_contains($client, 'getCatalogProducts'), 'Catalog management read API client is incomplete.');
