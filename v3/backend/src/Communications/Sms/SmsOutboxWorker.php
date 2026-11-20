@@ -21,13 +21,15 @@ final readonly class SmsOutboxWorker
         $this->crypto = new SmsOutboxCrypto($applicationKey);
     }
 
-    /** @return array{claimed:int,accepted:int,rejected:int,unknown:int,retryable:int,deferred:int} */
+    /** @return array{claimed:int,accepted:int,rejected:int,unknown:int,retryable:int,deferred:int,recovered_unknown:int} */
     public function processBatch(int $limit = 100): array
     {
+        $recovered = $this->outbox->recoverStaleProcessing();
         $rows = $this->outbox->claimQueuedBatch($limit);
         $counts = [
             'claimed' => count($rows), 'accepted' => 0, 'rejected' => 0,
             'unknown' => 0, 'retryable' => 0, 'deferred' => 0,
+            'recovered_unknown' => $recovered,
         ];
         $prepared = [];
         $seenRecipients = [];
