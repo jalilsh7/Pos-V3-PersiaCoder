@@ -1,0 +1,42 @@
+:root {
+  font-family: Tahoma, Arial, sans-serif;
+  color: #172a27;
+  background: #f3f6f4;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+
+  --pc-brand: #123a35;
+  --pc-brand-hover: #0d302b;
+  --pc-brand-soft: #e6efec;
+  --pc-ink: #172a27;
+  --pc-muted: #71817c;
+  --pc-subtle: #99a7a1;
+  --pc-line: #e3eae6;
+  --pc-surface: #ffffff;
+  --pc-canvas: #f3f6f4;
+  --pc-success: #24734e;
+  --pc-success-soft: #eaf5ee;
+  --pc-warning: #8c682e;
+  --pc-warning-soft: #fcf6e9;
+  --pc-danger: #a33e3e;
+  --pc-danger-soft: #fbefef;
+  --pc-info: #356b83;
+  --pc-info-soft: #edf5f8;
+
+  --pc-radius-sm: 9px;
+  --pc-radius-md: 12px;
+  --pc-radius-lg: 17px;
+  --pc-radius-xl: 22px;
+  --pc-shadow-sm: 0 4px 14px rgb(22 52 42 / 4%);
+  --pc-shadow-md: 0 8px 26px rgb(22 52 42 / 5%);
+  --pc-focus-ring: 0 0 0 3px rgb(18 58 53 / 18%);
+
+  --brand: var(--pc-brand);
+  --brand-soft: var(--pc-brand-soft);
+  --ink: var(--pc-ink);
+  --muted: var(--pc-muted);
+  --line: var(--pc-line);
+  --surface: var(--pc-surface);
+  --canvas: var(--pc-canvas);
+}
