@@ -1140,3 +1140,11 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - کنترل regression این شرط در `scripts/check-v3-order-payments.php` اضافه شد.
 - commitها: `e6a761acbcf84aa04fc37f021f02692a616c9cc8` و `327164804de9929f40703cc33da26cc93c98b9b1`.
 - این بهبود صرفاً راهنمای UI است؛ عملیات مالی همچنان فقط با تأیید و کنترل سمت Backend انجام می‌شود.
+
+
+## اصلاح مانع CI در تست یکپارچگی پرداخت — 2026-11-20
+
+- اجرای Backend Validation روی commit `327164804de9929f40703cc33da26cc93c98b9b1` به علت خطای syntax در فایل تازه‌افزوده‌شده `scripts/check-v3-order-payment-integration.php` متوقف شد؛ مشکل در تعریف prefix مربوط به autoloader بود، نه در سرویس پرداخت.
+- اصلاح انجام شد: `$prefix` اکنون با رشته double-quoted و escape صحیح namespace تعریف می‌شود.
+- commit اصلاح: `491faecd8e585ef894d5643f3d8d6026bff1629f`.
+- Workflow دیتابیس، این فایل را با `php -l` بررسی و سپس تست integration پرداخت را روی MySQL و MariaDB اجرا می‌کند؛ اجرای مربوط به اصلاح جدید باید نتیجه‌اش دوباره بررسی شود.
