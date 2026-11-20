@@ -37,8 +37,6 @@ export function ProductRecipeEditor({ productId, variants }: {
 
   useEffect(() => {
     let current = true;
-    setLoading(true);
-    setError(null);
     Promise.all([
       getProductRecipe(productId, variantId || undefined),
       getInventoryStockItems("", true),
