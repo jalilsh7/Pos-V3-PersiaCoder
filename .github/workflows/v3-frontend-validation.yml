@@ -4,13 +4,7 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "v3/frontend/**"
-      - ".github/workflows/v3-frontend-validation.yml"
   pull_request:
-    paths:
-      - "v3/frontend/**"
-      - ".github/workflows/v3-frontend-validation.yml"
   workflow_dispatch:
 
 permissions:
