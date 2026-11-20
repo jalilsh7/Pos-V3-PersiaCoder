@@ -22,8 +22,8 @@
 | D-12 | تنظیمات، کاربران، نقش‌ها و entitlement | آماده نمونه‌سازی مرحله‌ای | ACCESS_CONTROL_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md؛ RBAC Backend وجود دارد؛ UI مدیریت و Central entitlement enforcement باقی است |
 | D-13 | فروشگاه آنلاین و checkout عمومی | آماده بازبینی مفهومی | STOREFRONT_AND_PUBLIC_CHECKOUT_UX_V3_FA.md؛ قالب عمومی/UX تعریف شده؛ public API، cart/quote/checkout و payment باقی است |
 | D-14 | آشپزخانه، KDS و تحویل | آماده بازبینی مفهومی | KITCHEN_KDS_AND_FULFILLMENT_UX_V3_FA.md؛ kitchen transition پایه و KitchenBoard موجود؛ station routing/KOT/fulfillment پیشرفته باقی است |
-| D-15 | یکپارچگی‌ها و سخت‌افزار | آماده بازبینی معماری | INTEGRATIONS_SMS_TERMINALS_AND_PRINTING_UX_V3_FA.md + ضمیمه INTEGRATIONS_SMS_TERMINALS_AND_PRINTING_UX_V3_FA.md؛ adapter/runtime و protocol واقعی باقی است |
-| D-16 | بازبینی یکپارچگی و تحویل به توسعه | بازبینی اولیه انجام شد | DESIGN_INTEGRATION_REVIEW_AND_HANDOFF_V3_FA.md؛ canonical map ثبت شد؛ تبدیل gapها به task، نمونه‌سازی و تأیید مالک باقی است |
+| D-15 | یکپارچگی‌ها و سخت‌افزار | آماده بازبینی معماری | INTEGRATIONS_AND_HARDWARE_UX_V3_FA.md + ضمیمه پیامک INTEGRATIONS_SMS_TERMINALS_AND_PRINTING_UX_V3_FA.md؛ adapter/runtime و protocol واقعی باقی است |
+| D-16 | بازبینی یکپارچگی و تحویل به توسعه | بازبینی اولیه انجام شد | FINAL_DESIGN_REVIEW_AND_DEVELOPMENT_HANDOFF_V3_FA.md؛ traceability و gapها ثبت شده؛ تبدیل به task، نمونه‌سازی و تأیید مالک باقی است |
 
 ## قواعد
 
