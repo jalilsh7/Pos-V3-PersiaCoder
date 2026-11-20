@@ -75,3 +75,11 @@ php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
 - The outbox is not yet triggered automatically by order events and has no management UI. SharedNumber template sending is not wired into the queue.
 - Marketing consent/opt-out registry, provider settings UI, scheduled sending and SharedNumber delivery reconciliation remain pending.
 
+
+## Transactional outbox API entry point
+
+- Added authenticated API endpoint: POST /api/v1/communications/sms/transactional.
+- The endpoint uses the existing SmsOutboxService; it requires an authenticated business context, pos.sell permission, CSRF/origin protection and an Idempotency-Key.
+- JSON payload: recipient, message, optional customer_public_id. The service normalizes Iranian mobile numbers, checks the mandatory SmartSMS لغو11 suffix, encrypts recipient/message, enforces customer-phone match when linked, and stores an idempotent transactional outbox record.
+- The endpoint only queues the message. It does not contact National Payamak; the separate CLI worker remains responsible for provider delivery. No automatic order-event trigger or real SMS send is enabled.
+- UI, queue/report browsing and provider configuration remain pending. No tests were run for this API wiring in this batch; include it in the consolidated end-of-phase validation.
