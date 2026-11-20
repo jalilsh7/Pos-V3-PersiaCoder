@@ -943,3 +943,13 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - commitهای کد: `d099f9ea287b62fdceaee6edcfdb93e694d9d5ec`، `f6a17976889666b6e1ee9faecdb27ace9ed9f3ac`، `61273565b89a5e7881a0d9d9cf5c3e6655754da5`، `3dbbfc516a0d1b8949cb427ff8779f030cbcf3e3`.
 - تست typecheck/build و API/E2E هنوز اجرا نشده؛ بسته باز است و نباید «تکمیل‌شده» اعلام شود.
 - خارج از دامنه FIN-01 و باقی‌مانده: ثبت دریافت/پرداخت دستی، هزینه‌ها، ثبت مالی یکپارچه با پرداخت/فروش، دفترکل و گزارش‌های سود/زیان.
+
+
+## FIN-02 — ثبت دریافت و پرداخت نقدی دستی (2026-11-20)
+- وضعیت: **کد ثبت‌شده؛ تست و پذیرش فنی در انتظار**.
+- Backend endpoint: `POST /api/v1/cash/sessions/{sessionPublicId}/movements`؛ فقط برای شیفت باز، جهت `in/out`، مبلغ مثبت و علت اجباری؛ برداشت بیشتر از موجودی مورد انتظار رد می‌شود.
+- کنترل‌ها: نشست احراز‌شده، business/branch scope، `finance.manage`، CSRF، same-origin، idempotency و audit log. تغییر موجودی مورد انتظار و درج گردش در یک transaction انجام می‌شود.
+- Frontend: فرم ثبت دریافت/پرداخت در FinanceWorkspace و به‌روزرسانی مقدار مورد انتظار از پاسخ سرور.
+- فایل‌ها و commitها در PROJECT_MEMORY_FA.md، بخش FIN-02 ثبت شده‌اند.
+- تست‌های PHP syntax، integration، DB، typecheck/build و E2E اجرا نشده‌اند؛ این بسته هنوز باز است.
+- باقی‌مانده: تاریخچه گردش‌ها، هزینه‌ها، پرداخت/refund خودکار، تطبیق مالی، دفترکل و گزارش‌های سود/زیان.
