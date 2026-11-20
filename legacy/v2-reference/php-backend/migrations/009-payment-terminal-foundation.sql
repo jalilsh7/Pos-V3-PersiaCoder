@@ -1,0 +1,70 @@
+-- LAN/Wi-Fi terminal integration foundation.
+-- No provider-specific protocol is assumed; a local agent and verified driver are required.
+CREATE TABLE IF NOT EXISTS app_terminal_agents (
+  id CHAR(36) NOT NULL,
+  name VARCHAR(120) NOT NULL,
+  token_hash CHAR(64) NOT NULL,
+  enabled TINYINT(1) NOT NULL DEFAULT 1,
+  agent_version VARCHAR(40) NULL,
+  last_seen_at DATETIME NULL,
+  created_by BIGINT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_terminal_agent_token_hash (token_hash),
+  KEY idx_terminal_agents_enabled_seen (enabled, last_seen_at),
+  CONSTRAINT fk_terminal_agent_creator FOREIGN KEY (created_by) REFERENCES app_users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS pos_payment_terminals (
+  id VARCHAR(100) NOT NULL,
+  agent_id CHAR(36) NOT NULL,
+  local_terminal_key VARCHAR(100) NOT NULL,
+  name VARCHAR(120) NOT NULL,
+  provider_code VARCHAR(64) NOT NULL DEFAULT 'unknown',
+  model_name VARCHAR(120) NULL,
+  driver_code VARCHAR(80) NOT NULL DEFAULT 'unconfigured',
+  connection_type ENUM('lan','wifi') NOT NULL DEFAULT 'lan',
+  host VARCHAR(45) NOT NULL,
+  port SMALLINT UNSIGNED NOT NULL,
+  enabled TINYINT(1) NOT NULL DEFAULT 1,
+  is_default TINYINT(1) NOT NULL DEFAULT 0,
+  last_seen_at DATETIME NULL,
+  created_by BIGINT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_terminal_agent_local_key (agent_id, local_terminal_key),
+  KEY idx_payment_terminals_enabled (enabled, is_default),
+  KEY idx_payment_terminals_agent (agent_id),
+  CONSTRAINT fk_payment_terminal_agent FOREIGN KEY (agent_id) REFERENCES app_terminal_agents(id) ON DELETE RESTRICT,
+  CONSTRAINT fk_payment_terminal_creator FOREIGN KEY (created_by) REFERENCES app_users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS pos_terminal_payments (
+  id CHAR(36) NOT NULL,
+  idempotency_key CHAR(36) NOT NULL,
+  terminal_id VARCHAR(100) NOT NULL,
+  order_id BIGINT UNSIGNED NULL,
+  amount BIGINT UNSIGNED NOT NULL,
+  currency CHAR(3) NOT NULL DEFAULT 'IRT',
+  status ENUM('queued','processing','approved','declined','cancelled','unknown','expired') NOT NULL DEFAULT 'queued',
+  external_transaction_id VARCHAR(120) NULL,
+  trace_number VARCHAR(80) NULL,
+  retrieval_reference_number VARCHAR(80) NULL,
+  response_code VARCHAR(40) NULL,
+  response_message VARCHAR(240) NULL,
+  safe_response JSON NULL,
+  created_by BIGINT UNSIGNED NOT NULL,
+  requested_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  completed_at DATETIME NULL,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_terminal_payment_idempotency (idempotency_key),
+  KEY idx_terminal_payment_status_time (status, requested_at),
+  KEY idx_terminal_payment_terminal_time (terminal_id, requested_at),
+  KEY idx_terminal_payment_order (order_id),
+  CONSTRAINT fk_terminal_payment_device FOREIGN KEY (terminal_id) REFERENCES pos_payment_terminals(id) ON DELETE RESTRICT,
+  CONSTRAINT fk_terminal_payment_order FOREIGN KEY (order_id) REFERENCES pos_orders(id) ON DELETE RESTRICT,
+  CONSTRAINT fk_terminal_payment_actor FOREIGN KEY (created_by) REFERENCES app_users(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
