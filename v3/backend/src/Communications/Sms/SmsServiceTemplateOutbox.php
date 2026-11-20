@@ -73,21 +73,30 @@ final readonly class SmsServiceTemplateOutbox
             (string) ($context['order_status'] ?? 'created'),
         ]));
 
+        $publicId = self::uuidV4();
         $insert = $this->db->prepare(
             'INSERT IGNORE INTO pos_sms_service_outbox
-                (business_id, branch_id, order_id, trigger_key, provider_code, provider_body_id,
+                (business_id, branch_id, public_id, order_id, trigger_key, provider_code, provider_body_id,
                  recipient_ciphertext, recipient_nonce, recipient_tag, recipient_hash,
                  variables_ciphertext, variables_nonce, variables_tag, variables_hash,
                  status, idempotency_key)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, \'queued\', ?)'
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, \'queued\', ?)'
         );
         $insert->execute([
-            $scope->businessId, $scope->branchId, $orderId, $trigger,
+            $scope->businessId, $scope->branchId, $publicId, $orderId, $trigger,
             'national_payamak_shared_number', (int) $template['provider_body_id'],
             $recipientCipher['ciphertext'], $recipientCipher['nonce'], $recipientCipher['tag'], $recipientCipher['hash'],
             $variables['ciphertext'], $variables['nonce'], $variables['tag'], $variables['hash'],
             $idempotency,
         ]);
         return $insert->rowCount() === 1;
+    }
+    private static function uuidV4(): string
+    {
+        $bytes = random_bytes(16);
+        $bytes[6] = chr((ord($bytes[6]) & 0x0f) | 0x40);
+        $bytes[8] = chr((ord($bytes[8]) & 0x3f) | 0x80);
+        $hex = bin2hex($bytes);
+        return substr($hex,0,8).'-'.substr($hex,8,4).'-'.substr($hex,12,4).'-'.substr($hex,16,4).'-'.substr($hex,20);
     }
 }

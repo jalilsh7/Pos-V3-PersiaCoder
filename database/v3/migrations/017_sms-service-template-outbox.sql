@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS pos_sms_service_outbox (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   business_id BIGINT UNSIGNED NOT NULL,
   branch_id BIGINT UNSIGNED NOT NULL,
+  public_id CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   order_id BIGINT UNSIGNED NOT NULL,
   trigger_key VARCHAR(64) NOT NULL,
   provider_code VARCHAR(64) NOT NULL,
