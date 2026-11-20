@@ -110,7 +110,7 @@ final readonly class CustomerRepository
         if ($status === 'active') $where[] = 'c.is_active = 1';
         if ($status === 'inactive') $where[] = 'c.is_active = 0';
         if ($search !== '') {
-            $where[] = '(c.name LIKE :search_name OR c.phone_display LIKE :search_phone_display OR c.phone_normalized LIKE :search_phone)';
+            $where[] = '(c.name LIKE :search_name OR c.phone_display LIKE :search_phone_display OR CONVERT(c.phone_normalized USING utf8mb4) COLLATE utf8mb4_unicode_ci LIKE :search_phone)';
             $needle = '%' . $search . '%';
             $params['search_name'] = $needle;
             $params['search_phone_display'] = $needle;
