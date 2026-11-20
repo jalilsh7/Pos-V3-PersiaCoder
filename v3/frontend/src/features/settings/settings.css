@@ -1,0 +1,19 @@
+.business-settings { gap:17px; }
+.business-settings-heading, .business-settings-panel-heading, .business-settings-option, .business-settings-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.business-settings-heading h1 { margin:7px 0 4px; color:var(--pc-ink); font-size:clamp(20px,2vw,27px); font-weight:800; }
+.business-settings-heading p, .business-settings-panel-heading p { margin:0; color:var(--pc-muted); font-size:10px; }
+.business-settings-panel { display:flex; flex-direction:column; gap:16px; }
+.business-settings-panel-heading { justify-content:flex-start; }
+.business-settings-panel-heading h2 { margin:0 0 4px; color:var(--pc-ink); font-size:12px; }
+.business-settings-icon { width:35px; height:35px; display:grid; place-items:center; border-radius:10px; background:var(--pc-brand-soft); color:var(--pc-brand); }
+.business-settings-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px; }
+.business-settings-wide { grid-column:1/-1; }
+.business-settings-options { display:flex; flex-direction:column; }
+.business-settings-option { padding:11px 0; border-top:1px solid var(--pc-line); }
+.business-settings-option .ui-checkbox-field { flex:1; }
+.business-settings-days { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+.business-settings-hours { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.business-settings-hint { margin:0; color:var(--pc-muted); font-size:9px; line-height:1.9; }
+.business-settings-footer { justify-content:flex-end; padding-top:5px; }
+.business-settings-footer > span { display:flex; align-items:center; gap:6px; margin-left:auto; color:var(--pc-muted); font-size:9px; }
+@media(max-width:700px) { .business-settings-heading { align-items:flex-start; flex-direction:column; } .business-settings-fields, .business-settings-hours { grid-template-columns:1fr; } .business-settings-days { grid-template-columns:repeat(2,minmax(0,1fr)); } .business-settings-footer { align-items:stretch; flex-direction:column; } .business-settings-footer > span { margin-left:0; } .business-settings-footer .ui-button { width:100%; } }
