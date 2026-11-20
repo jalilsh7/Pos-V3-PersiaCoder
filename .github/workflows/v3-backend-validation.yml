@@ -1,6 +1,21 @@
 name: V3 Backend Validation
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'v3/backend/**'
+      - 'database/v3/**'
+      - 'scripts/check-v3-backend-*.php'
+      - 'scripts/check-v3-order-payments.php'
+      - '.github/workflows/v3-backend-validation.yml'
+  pull_request:
+    paths:
+      - 'v3/backend/**'
+      - 'database/v3/**'
+      - 'scripts/check-v3-backend-*.php'
+      - 'scripts/check-v3-order-payments.php'
+      - '.github/workflows/v3-backend-validation.yml'
   workflow_dispatch:
 
 permissions:
@@ -41,3 +56,5 @@ jobs:
         run: php scripts/check-v3-backend-inventory-documents.php
       - name: Order pagination and timezone-aware date filter contract checks
         run: php scripts/check-v3-backend-orders.php
+      - name: Order cash payment ledger contract checks
+        run: php scripts/check-v3-order-payments.php
