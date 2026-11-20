@@ -152,3 +152,14 @@
 
 - 2026-11-20 — ممیزی اولیه D-16 و تعریف canonical map و موج‌های تحویل.
 - وضعیت: **بازبینی اولیه انجام شد؛ پاک‌سازی ارجاع‌های تکراری و تبدیل طراحی به taskهای توسعه باقی است**.
+
+
+## اصلاح canonical map پس از تطبیق اسناد موازی — 2026-11-20
+
+- D-11 مرجع نهایی: `FINANCE_CASH_AND_RECONCILIATION_UX_V3_FA.md`.
+- D-12 مرجع نهایی: `ACCESS_CONTROL_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md`.
+- D-13 مرجع نهایی: `STOREFRONT_AND_PUBLIC_CHECKOUT_UX_V3_FA.md`.
+- D-14 مرجع نهایی: `KITCHEN_KDS_AND_FULFILLMENT_UX_V3_FA.md`.
+- D-15 مرجع سخت‌افزار: `INTEGRATIONS_AND_HARDWARE_UX_V3_FA.md`؛ ضمیمه مستندات و الزامات پیامک: `INTEGRATIONS_SMS_TERMINALS_AND_PRINTING_UX_V3_FA.md`.
+- نسخه‌های موازی D-11 تا D-14 به archive stub با لینک سند canonical تبدیل شدند؛ پیش‌نویس قدیمی D-08 نیز منسوخ باقی می‌ماند.
+- README و backlog بازنویسی شدند تا فقط یک ردیف canonical برای هر بسته داشته باشند.
