@@ -25,7 +25,7 @@
 | D-07 | [ORDER_CENTER_AND_DETAILS_UX_V3_FA.md](ORDER_CENTER_AND_DETAILS_UX_V3_FA.md) | مرکز سفارش چندکاناله، فیلتر، جزئیات و transitionهای مجاز | آماده نمونه‌سازی؛ بازبینی مالک باقی است |
 | D-08 | [CATALOG_OPTIONS_AND_RECIPES_UX_V3_FA.md](CATALOG_OPTIONS_AND_RECIPES_UX_V3_FA.md) | دسته/محصول، تنوع، افزودنی و رسپی نسخه‌دار | آماده نمونه‌سازی مشروط؛ UI/API client و اتصال end-to-end باقی است |
 | D-09 | [INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md](INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md) | مواد، واحدها، مکان، مانده، ledger، اسناد و posting | آماده بازبینی و نمونه‌سازی |
-| D-10 | [CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md](CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md) | پرونده مشتری، سفارش، وفاداری، consent/opt-out و پیامک | آماده بازبینی مفهومی؛ Backend مشتری/پیامک باقی است |
+| D-10 | [CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md](CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md) | پرونده مشتری، سفارش، وفاداری، consent/opt-out و پیامک | آماده بازبینی مفهومی؛ CRM پایه و زیرساخت SMS پیاده‌سازی شده؛ وفاداری، consent، event templates و UI مدیریتی باقی است |
 | D-11 | [FINANCE_CASH_AND_RECONCILIATION_UX_V3_FA.md](FINANCE_CASH_AND_RECONCILIATION_UX_V3_FA.md) | صندوق/شیفت، دفتر پرداخت، refund، هزینه، settlement و مغایرت | آماده بازبینی؛ Backend مالی تکمیلی باقی است |
 | D-12 | [ACCESS_CONTROL_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md](ACCESS_CONTROL_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md) | تنظیمات، کاربران، نقش‌ها، RBAC و entitlement Central | آماده نمونه‌سازی مرحله‌ای؛ entitlement runtime باقی است |
 | D-13 | [STOREFRONT_AND_PUBLIC_CHECKOUT_UX_V3_FA.md](STOREFRONT_AND_PUBLIC_CHECKOUT_UX_V3_FA.md) | قالب عمومی صنفی، منو، سبد، checkout و سفارش آنلاین | آماده بازبینی مفهومی؛ public API/checkout باقی است |
