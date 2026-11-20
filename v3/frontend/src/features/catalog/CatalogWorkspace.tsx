@@ -8,6 +8,7 @@ import {
   getCatalogCategories,
   getCatalogProducts,
   getPosCatalogProductDetails,
+  updateCatalogCategory,
   updateCatalogProduct,
   type CatalogCategory,
   type PosCatalogProduct,
@@ -63,6 +64,7 @@ export function CatalogWorkspace() {
   const [newCategoryId, setNewCategoryId] = useState("none");
   const [newProductType, setNewProductType] = useState("prepared");
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [categoryDrafts, setCategoryDrafts] = useState<Record<string, string>>({});
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -230,6 +232,19 @@ export function CatalogWorkspace() {
     }
   }
 
+  async function saveCategory(categoryItem: CatalogCategory) {
+    const name = (categoryDrafts[categoryItem.id] ?? categoryItem.name).trim();
+    if (!name) { setActionError("نام دسته‌بندی نمی‌تواند خالی باشد."); return; }
+    setSaving(true); setActionError(null); setSuccessMessage(null);
+    try {
+      await updateCatalogCategory(categoryItem.id, { name });
+      await refreshCatalog(selectedId ?? undefined);
+      setSuccessMessage("دسته‌بندی به‌روزرسانی شد.");
+    } catch (cause) {
+      setActionError(cause instanceof ApiError ? cause.message : cause instanceof Error ? cause.message : "ویرایش دسته‌بندی انجام نشد.");
+    } finally { setSaving(false); }
+  }
+
   async function toggleAvailability(product: PosCatalogProduct) {
     setSaving(true);
     setActionError(null);
@@ -281,8 +296,16 @@ export function CatalogWorkspace() {
       {showNewCategory ? (
         <Surface padding="md" className="catalog-create">
           <div className="catalog-create-heading"><strong>دسته‌بندی جدید</strong><button type="button" onClick={() => setShowNewCategory(false)} aria-label="بستن"><X size={16} /></button></div>
-          <div className="catalog-create-fields"><TextField label="نام دسته‌بندی" value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} placeholder="مثلاً نوشیدنی گرم" /></div>
+          <div className="catalog-create-fields"><TextField label="نام دسته‌بندی جدید" value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} placeholder="مثلاً نوشیدنی گرم" /></div>
           <div className="catalog-create-footer"><span>دسته‌بندی به همین کسب‌وکار اضافه می‌شود.</span><Button variant="primary" onClick={() => { void addCategory(); }} disabled={!newCategoryName.trim() || saving}>ثبت دسته‌بندی</Button></div>
+          <div className="catalog-category-management">
+            <strong>ویرایش دسته‌بندی‌های فعال</strong>
+            {categories.map((item) => <div className="catalog-category-edit-row" key={item.id}>
+              <TextField label="نام دسته‌بندی" value={categoryDrafts[item.id] ?? item.name} onChange={(event) => setCategoryDrafts((current) => ({ ...current, [item.id]: event.target.value }))} />
+              <Button size="sm" variant="secondary" disabled={saving || !(categoryDrafts[item.id] ?? item.name).trim() || (categoryDrafts[item.id] ?? item.name).trim() === item.name} onClick={() => void saveCategory(item)}>ذخیره</Button>
+            </div>)}
+            {!categories.length ? <small>دسته‌بندی فعالی ثبت نشده است.</small> : null}
+          </div>
         </Surface>
       ) : null}
 
