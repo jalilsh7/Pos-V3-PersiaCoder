@@ -536,3 +536,20 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - بسته بعدی: **D-16 — بازبینی یکپارچگی طراحی و تحویل به توسعه**.
 - پیش از آن، آخرین HEAD و همه اسناد D-01 تا D-15 را تازه fetch کن؛ تعارض‌ها و اسناد تکراری را حذف/ادغام کن؛ شکاف طراحی در برابر کد و تصمیمات محصول را گزارش کن.
 - سپس پیشنهاد اجرای نمونه‌سازی UI را بر اساس اولویت عرضه اولیه مالک (POS، انبار، مشتری/وفاداری و پیامک) مرتب کن و هر مورد را به criteria و API موجود/مانده متصل کن.
+
+
+## بسته طراحی D-15 — یکپارچگی‌ها و سخت‌افزار (2026-11-20)
+
+- سند UX/معماری ایجاد شد: [INTEGRATIONS_AND_HARDWARE_UX_V3_FA.md](design/INTEGRATIONS_AND_HARDWARE_UX_V3_FA.md)، شناسه `DESIGN-INTEGRATIONS-HARDWARE-2026-001`، نسخه 0.1، وضعیت «آماده بازبینی معماری».
+- schema دارای `app_terminal_agents`، `pos_payment_terminals`، `pos_terminal_transactions`، `pos_preparation_stations` و `pos_order_item_preparations` است. این ساختار مدل داده پایه است؛ در مسیرهای بررسی‌شده Terminal Agent/Driver/Printer runtime و routeهای آن‌ها پیدا نشد.
+- کارتخوان‌ها در schema connection_typeهای lan/wifi/usb/serial/agent و statusهای created/sent/approved/declined/cancelled/unknown/reversed دارند. هیچ پروتکل یا پورت مدل خاصی حدس زده نشده است.
+- MediaService واقعی برای upload و attach/detach تصاویر کاتالوگ وجود دارد؛ MIME، ابعاد، اندازه، hash، private storage، idempotency و audit کنترل می‌شوند. public media delivery برای Storefront همچنان نیازمند policy/route است.
+- سند در design README نمایه و D-15 در backlog به «آماده بازبینی معماری» ارتقا یافت.
+- این بسته فقط طراحی است؛ agent, driver, terminal transaction runtime، printer queue و hardware-in-the-loop tests پیاده‌سازی/اجرا نشده‌اند.
+
+### نقطه ادامه
+
+- بسته بعدی طراحی: **D-16 — یکپارچگی نهایی تجربه، کیفیت و تحویل به توسعه**.
+- ابتدا آخرین HEAD، سند تصمیمات، همه اسناد D-01 تا D-15 و کد فعلی را تازه بررسی کن؛ سپس traceability matrix بین تصمیم محصول، UX, API, DB, permission, entitlement و تست بساز.
+- موارد متعارض/تکراری و لینک‌های شکسته اسناد طراحی را اصلاح کن. وضعیت هر سند را از وضعیت کد جدا نگه دار.
+- D-16 باید معیارهای readiness، accessibility, responsive, RTL, security, performance, offline, upgrade/install, observability و release gate را پوشش دهد؛ هیچ قابلیت را فقط به دلیل وجود سند یا schema «آماده تجاری» اعلام نکن.
