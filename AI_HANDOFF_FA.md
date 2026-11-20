@@ -449,3 +449,19 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - ابتدا آخرین HEAD و تصمیمات محصول را تازه بررسی کن؛ سپس وضعیت dining/table sessions، order status/kitchen status، event/history، چاپگر و هر فایل/route مرتبط را از کد استخراج کن.
 - نقش‌های آشپزخانه، ایستگاه‌ها، اولویت، زمان آماده‌سازی و تحویل را فقط مطابق state machine/داده موجود طراحی کن؛ هیچ SLA یا transition جدیدی را حدس نزن.
 - کارتخوان/چاپگر و تجهیزات به‌عنوان integrationهای جدا از workflow سفارش طراحی شوند؛ پروتکل سخت‌افزار بدون مدل/مستند واقعی قطعی نشود.
+
+
+## بسته طراحی D-13 — فروشگاه آنلاین و checkout مشتری (2026-11-20)
+
+- سند UX ایجاد شد: [STOREFRONT_AND_CUSTOMER_CHECKOUT_UX_V3_FA.md](design/STOREFRONT_AND_CUSTOMER_CHECKOUT_UX_V3_FA.md)، شناسه `DESIGN-STOREFRONT-CHECKOUT-2026-001`، نسخه 0.1، وضعیت «آماده نمونه‌سازی مفهومی».
+- کد بررسی‌شده: `StorefrontWorkspace.tsx`، `PosWorkspace.tsx`، `OrderService` و routeهای جاری.
+- Storefront فعلی preview مستقل با menu seed، cart local، pickup/delivery محلی و دکمه ادامه غیرفعال است؛ ساعات کاری نمایشی است و ثبت سفارش/پرداخت به Backend وصل نیست.
+- route عمومی storefront/checkout در Backend بررسی‌شده پیدا نشد؛ routeهای سفارش موجود پشت session و permission هستند. public checkout نباید بدون طراحی امن tenant resolution، rate limit، idempotency، payment callback و customer privacy باز شود.
+- تصمیم قطعی: یک قالب عمومی صنفی و موتور سفارش مشترک؛ سفارش آنلاین باید در مرکز سفارش POS ظاهر شود. موتور سفارش موازی ممنوع.
+- سند در README طراحی نمایه و D-13 در backlog به «آماده نمونه‌سازی مفهومی» ارتقا یافت. تست E2E یا runtime جدید اجرا نشده است.
+
+### نقطه ادامه
+
+- بسته بعدی: **D-14 — آشپزخانه/KDS، آماده‌سازی و تحویل**.
+- پیش از طراحی، آخرین HEAD، تصمیمات محصول و order state machine را تازه بررسی کن؛ سپس Dining/Kitchen/Preparation routes، schema و UI موجود را تطبیق بده.
+- وضعیت سفارش، fulfillment و preparation جدا بمانند؛ transition یا رفتار زمان‌بندی که در Backend نیست به‌عنوان قابلیت موجود معرفی نشود.
