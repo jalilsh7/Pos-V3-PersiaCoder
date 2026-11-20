@@ -577,6 +577,9 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
                         <b>−{money(refund.amount)} تومان</b>
                       </article>
                     ))}
+                    {refundSessions.length === 0 && paymentSummary.payments.some((payment) =>
+                      payment.method === "cash" && refundableAmount(payment.id, payment.amount) > 0
+                    ) ? <Notice variant="warning">برای ثبت بازپرداخت نقدی، ابتدا یک شیفت صندوق باز کنید.</Notice> : null}
                   </>
                 ) : null}
                 {refundSuccess ? <div className="auth-success" role="status">{refundSuccess}</div> : null}
