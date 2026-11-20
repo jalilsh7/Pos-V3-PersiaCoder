@@ -831,7 +831,7 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 
 ## نقطه ادامه پس از SMS-TEMPLATE-03 — order lifecycle و Shared Number outbox (2026-11-21)
 
-- HEAD: `5ecd47ad7d97cf11899e8329c97c90e61154428d`.
+- آخرین commit کد (پیش از همگام‌سازی handoff): `5ecd47ad7d97cf11899e8329c97c90e61154428d`؛ commit بعدی فقط همگام‌سازی همین سند است.
 - پیاده‌سازی branch-scoped template config از migration 016 به رویدادهای واقعی سفارش متصل شد؛ migration 017 صف مستقل Shared Number را می‌سازد.
 - `OrderService` اکنون `order.created`، `order.status_changed`، `order.ready` و `order.completed` را مطابق lifecycle موجود enqueue می‌کند. رویدادهای ready/completed از trigger عمومی مستثنا شده‌اند تا ارسال تکراری از دو trigger جلوگیری شود.
 - متغیرهای مجاز از اطلاعات واقعی سفارش/مشتری استخراج، مرتب و رمزنگاری می‌شوند؛ recipient نیز رمزنگاری می‌شود. snapshot شامل bodyId و values است؛ متن اصلی پیامک هرگز وارد POS نمی‌شود.
