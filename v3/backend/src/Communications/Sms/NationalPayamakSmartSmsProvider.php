@@ -168,7 +168,7 @@ final readonly class NationalPayamakSmartSmsProvider implements SmsProvider
     /** @return array<string,string> */
     private function credentials(): array
     {
-        return ['username' => $this->config->username, 'password' => $this->config->apiKey];
+        return ['username' => $this->config->username, 'password' => $this->config->apiKey()];
     }
 
     /** @return array<string,string> */
