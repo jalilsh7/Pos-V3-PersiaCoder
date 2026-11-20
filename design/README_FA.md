@@ -22,7 +22,9 @@
 | [UI_SHELL_DASHBOARD_V3_FA.md](UI_SHELL_DASHBOARD_V3_FA.md) | مشخصات پوسته اصلی، داشبورد مدیر و صفحات آغازین نقش‌ها | آماده نمونه‌سازی |
 | [POS_SALES_WORKSPACE_V3_FA.md](POS_SALES_WORKSPACE_V3_FA.md) | مشخصات UX فروش POS دسکتاپ، تبلت و نمایشگر کوچک با سبک مینیمال و شیک | آماده نمونه‌سازی |
 | [PAYMENT_AND_RECEIPT_UX_V3_FA.md](PAYMENT_AND_RECEIPT_UX_V3_FA.md) | طراحی پرداخت POS، تفکیک درگاه storefront، نتیجه تراکنش، رسید و بازپرداخت | آماده نمونه‌سازی |
-| [ORDER_CENTER_AND_DETAILS_UX_V3_FA.md](ORDER_CENTER_AND_DETAILS_UX_V3_FA.md) | مرکز سفارش چندکاناله، فیلترهای API، جزئیات، timeline وضعیت و اقدامات مجاز | آماده نمونه‌سازی؛ نیازمند بازبینی مالک |\n| [CATALOG_OPTIONS_AND_RECIPES_UX_V3_FA.md](CATALOG_OPTIONS_AND_RECIPES_UX_V3_FA.md) | طراحی کاتالوگ، دسته و محصول، تنوع، گروه افزودنی، رسپی نسخه‌دار و مرز اتصال به انبار | آماده نمونه‌سازی؛ نیازمند تکمیل UI و بازبینی مالک |\n| [INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md](INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md) | داشبورد موجودی، مواد اولیه، مکان‌ها، تأمین‌کنندگان، اسناد چندردیفی، posting، valuation و ledger | آماده بازبینی و نمونه‌سازی |
+| [ORDER_CENTER_AND_DETAILS_UX_V3_FA.md](ORDER_CENTER_AND_DETAILS_UX_V3_FA.md) | مرکز سفارش چندکاناله، فیلترهای API، جزئیات، timeline وضعیت و اقدامات مجاز | آماده نمونه‌سازی؛ نیازمند بازبینی مالک |
+| [CATALOG_OPTIONS_AND_RECIPES_UX_V3_FA.md](CATALOG_OPTIONS_AND_RECIPES_UX_V3_FA.md) | طراحی کاتالوگ، دسته و محصول، تنوع، گروه افزودنی، رسپی نسخه‌دار و مرز اتصال به انبار | آماده نمونه‌سازی؛ نیازمند تکمیل UI و بازبینی مالک |
+| [INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md](INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md) | داشبورد موجودی، مواد اولیه، مکان‌ها، تأمین‌کنندگان، اسناد چندردیفی، posting، valuation و ledger | آماده بازبینی و نمونه‌سازی |
 
 ## سندهای مرتبط بیرون از پوشه
 
