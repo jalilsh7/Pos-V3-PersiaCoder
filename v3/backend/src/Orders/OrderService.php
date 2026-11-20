@@ -539,7 +539,7 @@ final readonly class OrderService
                 }
                 $currentStatus = (string) $order['order_status'];
                 if (in_array($targetStatus, ['cancelled', 'rejected'], true)
-                    && in_array((string) $order['payment_status'], ['paid', 'partially_paid'], true)) {
+                    && in_array((string) $order['payment_status'], ['paid', 'partially_paid', 'partially_refunded'], true)) {
                     throw new HttpException(409, 'refund_required_before_cancellation', 'A paid order must go through the refund workflow before it can be cancelled or rejected.');
                 }
                 $allowed = self::transitions()[$currentStatus] ?? [];
