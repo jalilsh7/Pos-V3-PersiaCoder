@@ -1,0 +1,19 @@
+Options -Indexes
+DirectoryIndex index.html
+RewriteEngine On
+
+# Block direct access to dotfiles and private/config artefacts.
+<FilesMatch "^\.(?!well-known/)">
+  Require all denied
+</FilesMatch>
+
+# API requests are routed through one PHP front controller before the SPA.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api(?:/.*)?$ api/index.php [QSA,L]
+
+# Serve existing static files as-is; route all other client paths to the SPA.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{DOCUMENT_ROOT}/index.html -f
+RewriteRule ^ index.html [QSA,L]
