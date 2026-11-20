@@ -571,3 +571,20 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - فاز بعد از طراحی، «نمونه‌سازی و پیاده‌سازی دسته‌ای» بر اساس اولویت عرضه اولیه است؛ پیشنهاد شروع: ممیزی دوباره HEAD، سپس بستن جریان POS end-to-end تا پرداخت و رسید، و در ادامه اتصال فروش به انبار.
 - قبل از هر تغییر، سند تصمیمات محصول و کد/تست HEAD جاری دوباره بررسی شوند؛ اسناد UX جایگزین قرارداد فنی نیستند.
 - تست حیاتی مالی/امنیت/موجودی/داده حذف نشود؛ تست‌های کم‌اهمیت می‌توانند در دسته‌های بعدی اجرا شوند.
+
+
+## بسته D-16 — بازبینی یکپارچگی طراحی و تحویل به توسعه (2026-11-20)
+
+- سند بازبینی ایجاد شد: [DESIGN_INTEGRATION_REVIEW_AND_HANDOFF_V3_FA.md](design/DESIGN_INTEGRATION_REVIEW_AND_HANDOFF_V3_FA.md)، شناسه `DESIGN-INTEGRATION-REVIEW-2026-001`، نسخه 0.1.
+- canonical map بسته‌های D-01 تا D-15 تعیین شد؛ README طراحی و backlog بازنویسی شدند تا برای هر بسته یک سند مرجع داشته باشند.
+- نسخه‌های موازی D-11 تا D-14 به archive stub با لینک canonical تبدیل شدند؛ D-08 پیش‌نویس قدیمی از قبل منسوخ بود. اسناد آرشیوی برای تاریخچه حفظ شدند.
+- canonicalها: D-08 `CATALOG_OPTIONS_AND_RECIPES_UX_V3_FA.md`، D-09 `INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md`، D-10 `CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md`، D-11 `FINANCE_CASH_AND_RECONCILIATION_UX_V3_FA.md`، D-12 `ACCESS_CONTROL_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md`، D-13 `STOREFRONT_AND_PUBLIC_CHECKOUT_UX_V3_FA.md`، D-14 `KITCHEN_KDS_AND_FULFILLMENT_UX_V3_FA.md`، D-15 `INTEGRATIONS_AND_HARDWARE_UX_V3_FA.md` با ضمیمه `INTEGRATIONS_SMS_TERMINALS_AND_PRINTING_UX_V3_FA.md`.
+- گپ‌های مهم ثبت‌شده: ناسازگاری payment status در D-07؛ تکمیل UI/API client رسپی و option؛ snapshot/مصرف خودکار recipe-order-inventory؛ شاخص dimension-aware انبار؛ Customer API/loyalty/consent؛ پرداخت/expense/refund/settlement؛ Central entitlement enforcement؛ public checkout؛ KDS station/fulfillment؛ SMS provider/queue؛ protocol واقعی terminal/printer.
+- موج‌های تحویل به توسعه در D-16 بر اساس اولویت مالک مرتب شدند: POS و پرداخت/مرکز سفارش؛ کاتالوگ/رسپی و انبار؛ مشتری/وفاداری و SMS؛ مالی و Central؛ storefront و سخت‌افزار/KDS پیشرفته.
+- تست runtime، تست usability، نمونه‌سازی UI و پذیرش مالک در این بسته اجرا نشده‌اند. D-16 فقط بازبینی مستندات و canonicalization است.
+
+### نقطه ادامه توسعه
+
+- وارد مرحله تبدیل طراحی به taskهای پیاده‌سازی شو؛ اولویت موج اول POS، پرداخت/رسید، مرکز سفارش و تکمیل UI کاتالوگ/رسپی است.
+- قبل از کدنویسی، آخرین HEAD و `FINAL_PRODUCT_DECISIONS_FA.md` را تازه بخوان؛ ممیزی قدیمی را به HEAD جدید تعمیم نده.
+- پس از تکمیل موج اول، موج انبار/مشتری/وفاداری/پیامک را end-to-end ببند. تست‌های حیاتی امنیت، پرداخت، داده و مسیر فروش را حفظ کن.
