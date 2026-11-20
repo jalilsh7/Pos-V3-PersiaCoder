@@ -1,0 +1,178 @@
+name: PHP migration checks
+
+on:
+  push:
+    branches:
+      - migration/php-mysql
+      - cleanup/remove-grok-dependencies
+      - feature/3food-pos-next-release-v2
+  pull_request:
+    branches:
+      - migration/php-mysql
+      - cleanup/remove-grok-dependencies
+
+permissions:
+  contents: write
+
+jobs:
+  checks:
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root-ci-password
+          MYSQL_DATABASE: threefood_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot-ci-password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    runs-on: ubuntu-latest
+    env:
+      GIT_CONFIG_COUNT: 1
+      GIT_CONFIG_KEY_0: init.defaultBranch
+      GIT_CONFIG_VALUE_0: main
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo, pdo_mysql, pcntl
+      - name: Regenerate lockfile for the isolated cleanup branch
+        if: github.event_name == 'pull_request' && github.head_ref == 'cleanup/remove-grok-dependencies'
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Refresh dependency lockfile
+        run: |
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && ! git diff --quiet -- package-lock.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json
+            git commit -m "chore(deps): refresh npm lockfile [skip ci]"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi
+      - name: Install dependencies
+        run: npm ci
+      - name: PHP syntax
+        run: |
+          php -l php-backend/public/api/index.php
+          php -l scripts/check-mysql-schema.php
+          php -l scripts/check-mysql-transaction-invariants.php
+          php -l scripts/check-php-api-integration.php
+          php -l php-backend/private/birthday-sms.php
+          php -l scripts/check-birthday-sms-parser.php
+          php -l php-backend/private/birthday-sms-inbox.php
+          php -l scripts/check-birthday-sms-inbox.php
+          php scripts/check-birthday-sms-parser.php
+          php scripts/check-birthday-sms-inbox.php
+      - name: Install and verify fresh MySQL schema
+        env:
+          MYSQL_TEST_HOST: 127.0.0.1
+          MYSQL_TEST_PORT: 3306
+          MYSQL_TEST_DATABASE: threefood_test
+          MYSQL_TEST_USERNAME: root
+          MYSQL_TEST_PASSWORD: root-ci-password
+          MYSQL_PWD: root-ci-password
+        run: |
+          mysql --host=127.0.0.1 --user=root threefood_test < php-backend/schema.sql
+          php scripts/check-mysql-schema.php
+          php scripts/check-mysql-transaction-invariants.php
+      - name: Run PHP API integration tests
+        env:
+          MYSQL_TEST_HOST: 127.0.0.1
+          MYSQL_TEST_PORT: 3306
+          MYSQL_TEST_DATABASE: threefood_test
+          MYSQL_TEST_USERNAME: root
+          MYSQL_TEST_PASSWORD: root-ci-password
+          POS_TEST_BASE_URL: http://127.0.0.1:8099
+          POS_TEST_SETUP_TOKEN: ci-only-setup-token-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        run: |
+          mkdir -p php-backend/private
+          php -r '$c = require "php-backend/private/config.example.php"; $c["app_key"] = str_repeat("a", 64); $c["setup_token"] = getenv("POS_TEST_SETUP_TOKEN"); $c["db"] = ["host" => "127.0.0.1", "port" => 3306, "database" => "threefood_test", "username" => "root", "password" => "root-ci-password", "charset" => "utf8mb4"]; file_put_contents("php-backend/private/config.php", "<?php\ndeclare(strict_types=1);\nreturn " . var_export($c, true) . ";\n");'
+          php -S 127.0.0.1:8099 -t php-backend/public > /tmp/3food-pos-api.log 2>&1 &
+          echo $! > /tmp/3food-pos-api.pid
+          trap 'kill "$(cat /tmp/3food-pos-api.pid)" 2>/dev/null || true; rm -f php-backend/private/config.php' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8099/api/v1/health >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8099/api/v1/health >/dev/null
+          php scripts/check-php-api-integration.php
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Lint
+        run: npm run lint
+      - name: cPanel static SPA build
+        run: npm run build:cpanel
+      - name: Install Chromium for built-package smoke test
+        run: npx playwright install --with-deps chromium
+      - name: Smoke test packaged cPanel app and login typing
+        env:
+          MYSQL_TEST_HOST: 127.0.0.1
+          MYSQL_TEST_PORT: 3306
+          MYSQL_TEST_DATABASE: threefood_test
+          MYSQL_TEST_USERNAME: root
+          MYSQL_TEST_PASSWORD: root-ci-password
+          POS_TEST_SETUP_TOKEN: ci-only-browser-setup-token-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          POS_PUBLIC_ROOT: ${{ github.workspace }}/dist-cpanel/public
+        run: |
+          mkdir -p dist-cpanel/private screenshots
+          php -r '$c = require "dist-cpanel/private/config.example.php"; $c["app_key"] = str_repeat("a", 64); $c["setup_token"] = getenv("POS_TEST_SETUP_TOKEN"); $c["db"] = ["host" => "127.0.0.1", "port" => 3306, "database" => "threefood_test", "username" => "root", "password" => "root-ci-password", "charset" => "utf8mb4"]; file_put_contents("dist-cpanel/private/config.php", "<?php\ndeclare(strict_types=1);\nreturn " . var_export($c, true) . ";\n");'
+          php -l dist-cpanel/private/config.php
+          php -r '$c = require "dist-cpanel/private/config.php"; $d = $c["db"]; new PDO("mysql:host=" . $d["host"] . ";port=" . $d["port"] . ";dbname=" . $d["database"] . ";charset=" . $d["charset"], $d["username"], $d["password"]); echo "Packaged private config and MySQL connection OK\\n";'
+          cat > /tmp/3food-pos-cpanel-router.php <<'PHP'
+          <?php
+          $public = getenv('POS_PUBLIC_ROOT');
+          $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+          if (str_starts_with($path, '/api/v1/')) {
+              require $public . '/api/index.php';
+              return true;
+          }
+          $file = $public . $path;
+          if ($path !== '/' && is_file($file)) return false;
+          require $public . '/index.html';
+          PHP
+          PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:8099 -t dist-cpanel/public /tmp/3food-pos-cpanel-router.php > /tmp/3food-pos-cpanel.log 2>&1 &
+          echo $! > /tmp/3food-pos-cpanel.pid
+          trap 'kill "$(cat /tmp/3food-pos-cpanel.pid)" 2>/dev/null || true; rm -f dist-cpanel/private/config.php' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8099/api/v1/health >/dev/null; then break; fi
+            sleep 1
+          done
+          if ! curl -fsS http://127.0.0.1:8099/api/v1/health >/dev/null; then
+            echo "Packaged API health failed; PHP server log follows:"
+            curl -sS -i http://127.0.0.1:8099/api/v1/health || true
+            cat /tmp/3food-pos-cpanel.log
+            exit 1
+          fi
+          node scripts/browser-smoke.mjs http://127.0.0.1:8099/ screenshots/3food-pos-ci-smoke.png
+      - name: Desktop and mobile performance budget audit
+        run: |
+          mkdir -p performance-results
+          node scripts/performance-smoke.mjs http://127.0.0.1:8099/ | tee performance-results/performance.json
+      - name: Upload performance report
+        uses: actions/upload-artifact@v6
+        with:
+          name: 3food-pos-performance-report
+          path: performance-results/performance.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload cPanel deployment package
+        uses: actions/upload-artifact@v6
+        with:
+          name: 3food-pos-cpanel
+          path: dist-cpanel/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
