@@ -10,6 +10,7 @@ import {
   LogOut,
   Search,
   Settings,
+  ShieldCheck,
   ShoppingCart,
   Store,
   Users,
@@ -29,9 +30,10 @@ import { InventoryWorkspace } from "../features/inventory/InventoryWorkspace";
 import { CustomersWorkspace } from "../features/customers/CustomersWorkspace";
 import { FinanceWorkspace } from "../features/finance/FinanceWorkspace";
 import { BusinessSettingsWorkspace } from "../features/settings/BusinessSettingsWorkspace";
+import { AccessManagementWorkspace } from "../features/access/AccessManagementWorkspace";
 import { StorefrontWorkspace } from "../features/storefront/StorefrontWorkspace";
 
-type ViewId = "overview" | "pos" | "orders" | "kitchen" | "catalog" | "inventory" | "customers" | "finance" | "settings" | "storefront";
+type ViewId = "overview" | "pos" | "orders" | "kitchen" | "catalog" | "inventory" | "customers" | "finance" | "settings" | "storefront" | "access";
 
 type NavigationItem = {
   id: ViewId;
@@ -69,6 +71,7 @@ const navigation: NavigationGroup[] = [
     items: [
       { id: "finance", label: "مالی و صندوق‌ها", icon: Wallet, description: "پرداخت، شیفت و تسویه" },
       { id: "settings", label: "تنظیمات", icon: Settings, description: "تنظیمات کسب‌وکار و قابلیت‌ها" },
+      { id: "access", label: "کاربران و دسترسی‌ها", icon: ShieldCheck, description: "کاربران، نقش‌ها و مجوزها" },
     ],
   },
 ];
@@ -215,7 +218,7 @@ function AuthenticatedWorkspace({ user, business, branch, onLogout, actionError 
 
         <div className="content-area">
           {actionError ? <div className="auth-error" role="alert">{actionError}</div> : null}
-          {activeView === "overview" ? <Overview /> : activeView === "pos" ? <PosWorkspace /> : activeView === "orders" ? <OrderCenter timeZone={branch.timezone ?? business.timezone} /> : activeView === "kitchen" ? <KitchenBoard timeZone={branch.timezone ?? business.timezone} /> : activeView === "catalog" ? <CatalogWorkspace /> : activeView === "inventory" ? <InventoryWorkspace /> : activeView === "customers" ? <CustomersWorkspace /> : activeView === "finance" ? <FinanceWorkspace /> : activeView === "settings" ? <BusinessSettingsWorkspace /> : activeView === "storefront" ? <StorefrontWorkspace /> : (
+          {activeView === "overview" ? <Overview /> : activeView === "pos" ? <PosWorkspace /> : activeView === "orders" ? <OrderCenter timeZone={branch.timezone ?? business.timezone} /> : activeView === "kitchen" ? <KitchenBoard timeZone={branch.timezone ?? business.timezone} /> : activeView === "catalog" ? <CatalogWorkspace /> : activeView === "inventory" ? <InventoryWorkspace /> : activeView === "customers" ? <CustomersWorkspace /> : activeView === "finance" ? <FinanceWorkspace /> : activeView === "settings" ? <BusinessSettingsWorkspace /> : activeView === "storefront" ? <StorefrontWorkspace /> : activeView === "access" ? <AccessManagementWorkspace /> : (
             <div className="page-stack">
               <PageHeader
                 eyebrow={activeItem.description}
