@@ -110,6 +110,15 @@ try {
 }
 $assert($batchRejected && $noCallHttp->calls === [], 'Oversized SMS batch reached the provider transport.');
 
+$unsubscribeMarkerBlocked = false;
+try {
+    $noCallProvider->send('missing marker', ['09123456789']);
+} catch (SmsProviderException $exception) {
+    $unsubscribeMarkerBlocked = $exception->getMessage() === 'sms_provider_unsubscribe_marker_required';
+}
+$assert($unsubscribeMarkerBlocked && $noCallHttp->calls === [],
+    'SmartSMS message without the documented opt-out marker reached the provider.');
+
 $duplicateRejected = false;
 try {
     $noCallProvider->send('duplicate لغو11', ['09123456789', '+989123456789']);
