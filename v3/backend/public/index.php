@@ -308,6 +308,11 @@ try {
         [$sessionMiddleware, $makePermissionMiddleware('cash.session.close', true), $csrfMiddleware, $originMiddleware],
     );
 
+    $router->add('POST', '/api/v1/cash/sessions/{sessionPublicId}/movements',
+        static fn (Request $request, array $parameters): Response => $getCashRegisterController()->createManualMovement($request, $parameters),
+        [$sessionMiddleware, $makePermissionMiddleware('finance.manage', true), $csrfMiddleware, $originMiddleware],
+    );
+
     $router->add('POST', '/api/v1/cash/sessions/{sessionPublicId}/review',
         static fn (Request $request, array $parameters): Response => $getCashRegisterController()->reviewSession($request, $parameters),
         [$sessionMiddleware, $makePermissionMiddleware('finance.manage', true), $csrfMiddleware, $originMiddleware],
