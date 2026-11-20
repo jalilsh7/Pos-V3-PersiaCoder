@@ -101,3 +101,23 @@
 .pos-option-editor-footer strong { color: var(--pc-brand); font-size: 13px; }
 .pos-option-editor > .ui-button { width: 100%; }
 @media (max-width: 560px) { .pos-option-editor { padding: 12px; } .pos-option-list { grid-template-columns: 1fr; } }
+
+
+/* POS cash collection */
+.pos-payment-panel { display: flex; flex-direction: column; gap: 14px; border: 1px solid var(--pc-line); }
+.pos-payment-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.pos-payment-heading > div { display: flex; flex-direction: column; gap: 5px; }
+.pos-payment-heading h2 { margin: 0; color: var(--pc-ink); font-size: 14px; font-weight: 800; }
+.pos-payment-heading p { margin: 0; color: var(--pc-muted); font-size: 10px; }
+.pos-payment-field { display: flex; flex-direction: column; gap: 7px; color: var(--pc-ink); font-size: 10px; font-weight: 700; }
+.pos-payment-field select, .pos-payment-field input {
+  width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid var(--pc-line);
+  border-radius: 9px; background: #fff; color: var(--pc-ink); font: inherit;
+}
+.pos-payment-field select:focus, .pos-payment-field input:focus {
+  outline: 2px solid color-mix(in srgb, var(--pc-brand) 22%, transparent); border-color: var(--pc-brand);
+}
+.pos-payment-panel > .ui-button { width: 100%; }
+@media (max-width: 560px) {
+  .pos-payment-heading { flex-direction: column; }
+}
