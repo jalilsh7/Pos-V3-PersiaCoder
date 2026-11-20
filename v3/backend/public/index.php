@@ -122,6 +122,21 @@ try {
         return $cashRegisterController;
     };
 
+    $orderPaymentController = null;
+    $getOrderPaymentController = static function () use (&$orderPaymentController, $getConnection, $configuration): OrderPaymentController {
+        if (!$orderPaymentController instanceof OrderPaymentController) {
+            $permissionRepository = new PermissionRepository($getConnection());
+            $orderPaymentController = new OrderPaymentController(
+                new OrderPaymentService(
+                    $getConnection(),
+                    $configuration->applicationKey,
+                    new PermissionService($permissionRepository),
+                ),
+            );
+        }
+        return $orderPaymentController;
+    };
+
     $diningController = null;
     $getDiningController = static function () use (&$diningController, $getConnection, $configuration): DiningController {
         if (!$diningController instanceof DiningController) {
@@ -346,6 +361,16 @@ try {
     $router->add('GET', '/api/v1/orders',
         static fn (Request $request): Response => $getOrderController()->list($request),
         [$sessionMiddleware, $makePermissionMiddleware('orders.read', true)],
+    );
+
+    $router->add('GET', '/api/v1/orders/{orderPublicId}/payments',
+        static fn (Request $request, array $parameters): Response => $getOrderPaymentController()->list($request, $parameters),
+        [$sessionMiddleware, $makePermissionMiddleware('orders.read', true)],
+    );
+
+    $router->add('POST', '/api/v1/orders/{orderPublicId}/payments/cash',
+        static fn (Request $request, array $parameters): Response => $getOrderPaymentController()->captureCash($request, $parameters),
+        [$sessionMiddleware, $makePermissionMiddleware('pos.sell', true), $csrfMiddleware, $originMiddleware],
     );
 
     $router->add('GET', '/api/v1/orders/{orderPublicId}',
