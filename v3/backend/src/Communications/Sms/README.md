@@ -83,3 +83,5 @@ php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
 - JSON payload: recipient, message, optional customer_public_id. The service normalizes Iranian mobile numbers, checks the mandatory SmartSMS لغو11 suffix, encrypts recipient/message, enforces customer-phone match when linked, and stores an idempotent transactional outbox record.
 - The endpoint only queues the message. It does not contact National Payamak; the separate CLI worker remains responsible for provider delivery. No automatic order-event trigger or real SMS send is enabled.
 - UI, queue/report browsing and provider configuration remain pending. No tests were run for this API wiring in this batch; include it in the consolidated end-of-phase validation.
+
+- No public free-text enqueue endpoint is registered. Outbox enqueue is an internal application-service operation and must be called only by approved domain-event/template flows. Do not expose arbitrary message text under a generic transactional endpoint.
