@@ -928,3 +928,119 @@ export async function createManualCashMovement(sessionId: string, payload: {
     body: JSON.stringify(payload),
   });
 }
+
+
+export type AccessUserSummary = {
+  id: string;
+  username: string;
+  display_name: string;
+  is_active: boolean;
+  must_change_password: boolean;
+  last_login_at: string | null;
+  business_roles: string[];
+  branch_roles: string[];
+};
+
+export type AccessRoleSummary = {
+  id: number;
+  code: string;
+  name: string;
+  is_system: boolean;
+  permissions: string[];
+};
+
+export type AccessPermissionSummary = {
+  code: string;
+  description: string | null;
+};
+
+export type CreatedAccessUser = {
+  user: {
+    id: string;
+    username: string;
+    display_name: string;
+    role_code: string;
+    must_change_password: true;
+  };
+  temporary_password: string;
+  credential_notice: string;
+};
+
+export async function getAccessUsers(scope: "business" | "branch" = "business"): Promise<AccessUserSummary[]> {
+  const path = scope === "branch" ? "/access/branches/users" : "/access/users";
+  const data = await request<{ users: AccessUserSummary[] }>(path);
+  return data.users;
+}
+
+export async function createAccessUser(
+  scope: "business" | "branch",
+  payload: { username: string; display_name: string; role_code: string },
+  idempotencyKey: string,
+): Promise<CreatedAccessUser> {
+  const path = scope === "branch" ? "/access/branches/users" : "/access/users";
+  return request<CreatedAccessUser>(path, {
+    method: "POST",
+    headers: { "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getAccessRoles(): Promise<AccessRoleSummary[]> {
+  const data = await request<{ roles: AccessRoleSummary[] }>("/access/roles");
+  return data.roles;
+}
+
+export async function getAccessPermissions(): Promise<AccessPermissionSummary[]> {
+  const data = await request<{ permissions: AccessPermissionSummary[] }>("/access/permissions");
+  return data.permissions;
+}
+
+export async function createAccessRole(
+  payload: { code: string; name: string; permissions: string[] },
+  idempotencyKey: string,
+): Promise<{ created: boolean; code: string }> {
+  return request<{ created: boolean; code: string }>("/access/roles", {
+    method: "POST",
+    headers: { "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateAccessRole(
+  roleCode: string,
+  payload: { name: string; permissions: string[] },
+  idempotencyKey: string,
+): Promise<{ updated: boolean; code: string }> {
+  return request<{ updated: boolean; code: string }>(\`/access/roles/\${encodeURIComponent(roleCode)}\`, {
+    method: "PATCH",
+    headers: { "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function assignAccessRole(
+  userPublicId: string,
+  roleCode: string,
+  scope: "business" | "branch",
+  idempotencyKey: string,
+): Promise<{ assigned: boolean }> {
+  const suffix = scope === "branch" ? "branch-roles" : "business-roles";
+  return request<{ assigned: boolean }>(\`/access/users/\${encodeURIComponent(userPublicId)}/\${suffix}\`, {
+    method: "POST",
+    headers: { "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify({ role_code: roleCode }),
+  });
+}
+
+export async function removeAccessRole(
+  userPublicId: string,
+  roleCode: string,
+  scope: "business" | "branch",
+  idempotencyKey: string,
+): Promise<{ removed: boolean }> {
+  const suffix = scope === "branch" ? "branch-roles" : "business-roles";
+  return request<{ removed: boolean }>(
+    \`/access/users/\${encodeURIComponent(userPublicId)}/\${suffix}/\${encodeURIComponent(roleCode)}\`,
+    { method: "DELETE", headers: { "Idempotency-Key": idempotencyKey } },
+  );
+}
