@@ -500,3 +500,21 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - بسته بعدی: **D-15 — یکپارچگی‌ها، تجهیزات و سخت‌افزار**.
 - قبل از طراحی، آخرین HEAD و مستندات دستگاه‌های آپلودشده را بررسی کن؛ مستندات SharedNumber و SmartSMS و نمونه PHP/REST باید از محتوای واقعی استخراج شوند. سپس معماری adapter و قابلیت‌های کارتخوان/چاپگر/پیامک را از protocolهای مستند و کد جاری جدا کن.
 - هیچ پروتکل سخت‌افزاری را بدون مدرک مدل/نسخه دستگاه قطعی فرض نکن.
+
+
+## بسته طراحی D-14 — آشپزخانه، KDS و تحویل (2026-11-20)
+
+- سند UX ایجاد شد: [KITCHEN_KDS_AND_FULFILLMENT_UX_V3_FA.md](design/KITCHEN_KDS_AND_FULFILLMENT_UX_V3_FA.md)، شناسه `DESIGN-KITCHEN-FULFILLMENT-2026-001`، نسخه 0.1، وضعیت «آماده بازبینی مفهومی».
+- OrderService state machine و route `PATCH /orders/{id}/kitchen-status` بررسی شد؛ مسیر kitchen فقط preparing/ready را می‌پذیرد و permission `kitchen.update` دارد.
+- DiningService/Controller/Repository برای area، table، available/occupied، بازکردن و بستن table session وجود دارد؛ بستن نشست با سفارش فعال یا completed پرداخت‌نشده رد می‌شود.
+- KDS frontend، station routing، item-level kitchen progress، prep timers، print routing و courier/delivery workflow در مسیرهای بررسی‌شده اثبات نشدند.
+- طراحی KDS به‌عنوان projection از state machine موجود انجام شد؛ هیچ وضعیت جدیدی به order_status اضافه نشده است. وضعیت completed نیز بدون قرارداد جداگانه به معنی تحویل فیزیکی فرض نشده است.
+- سند در design README نمایه و D-14 در backlog به «آماده بازبینی مفهومی» ارتقا یافت.
+- این بسته فقط مستندات UX است؛ KDS UI، API صف آشپزخانه، station/fulfillment delivery و تست عملیاتی ایجاد نشده‌اند.
+
+### نقطه ادامه
+
+- بسته بعدی طراحی: **D-15 — یکپارچگی‌ها و سخت‌افزار (کارتخوان، چاپگر، دستگاه‌ها و اتصال)**.
+- ابتدا آخرین HEAD و تصمیمات محصول را تازه fetch کن؛ سپس terminal agent/service، payment terminal schema، routes، printer/media/communications و docs/integrations را بررسی کن.
+- پروتکل کارتخوان فقط بر اساس مدل/مستندات واقعی؛ status unknown و reconciliation باید صریح باشند. هیچ پروتکل LAN/Wi-Fi حدس زده نشود.
+- چاپگر، دستگاه و provider با adapterهای مستقل و وضعیت اتصال قابل پایش طراحی شوند؛ failure سخت‌افزار نباید سفارش یا ledger را خراب کند.
