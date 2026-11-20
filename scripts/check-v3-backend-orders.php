@@ -26,7 +26,7 @@ $assert(str_contains($controller, "query('before')"), 'Order controller does not
 $assert(str_contains($repository, 'o.payment_status = :payment_status'), 'Order repository payment filter is missing.');
 $assert(str_contains($repository, 'f.method = :fulfillment_method'), 'Order repository fulfillment filter is missing.');
 $assert(str_contains($service, 'paymentStatuses()') && str_contains($service, 'fulfillmentMethods()'), 'Order filter allow-lists are missing.');
-$assert(str_contains($service, "'partial'") && str_contains($service, "'partially_refunded'") && str_contains($service, "'pending'"), 'Order payment filter values must match the database CHECK constraint.');
+$assert(str_contains($service, "'partially_paid'") && str_contains($service, "'partially_refunded'") && str_contains($service, "'pending'"), 'Order payment filter values must match the database CHECK constraint.');
 $assert(str_contains($controller, "query('payment')") && str_contains($controller, "query('fulfillment')"), 'Order controller does not accept payment/fulfillment filters.');
 $assert(str_contains($client, 'payment?: string;') && str_contains($client, 'fulfillment?: string;'), 'Frontend order API filter contract is incomplete.');
 $assert(str_contains($workspace, 'payment: payment === "all"') && str_contains($workspace, 'fulfillment: fulfillment === "all"'), 'Order center does not send server-side payment/fulfillment filters.');
