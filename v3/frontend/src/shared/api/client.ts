@@ -573,6 +573,73 @@ export async function createPosOrder(payload: CreatePosOrderPayload, idempotency
   return data.order;
 }
 
+export type CustomerSummary = {
+  id: string;
+  name: string;
+  phone: string;
+  notes: string;
+  is_active: boolean;
+  order_count: number;
+  total_spent: number;
+  last_order_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CustomerDetail = {
+  customer: CustomerSummary;
+  stats: { order_count: number; total_spent: number; last_order_at: string | null };
+  recent_orders: {
+    id: string;
+    order_number: number;
+    source_channel: string;
+    order_status: string;
+    payment_status: string;
+    total_amount: number;
+    created_at: string;
+  }[];
+};
+
+export async function getCustomers(options: {
+  query?: string;
+  status?: "all" | "active" | "inactive";
+  limit?: number;
+} = {}): Promise<{ customers: CustomerSummary[] }> {
+  const params = new URLSearchParams();
+  if (options.query) params.set("q", options.query);
+  if (options.status) params.set("status", options.status);
+  if (options.limit) params.set("limit", String(options.limit));
+  const suffix = params.toString();
+  return request(`/customers${suffix ? `?${suffix}` : ""}`);
+}
+
+export async function getCustomerDetails(customerId: string): Promise<CustomerDetail> {
+  return request(`/customers/${encodeURIComponent(customerId)}`);
+}
+
+export async function createCustomer(
+  payload: { name: string; phone?: string; notes?: string },
+  idempotencyKey: string,
+): Promise<{ customer: CustomerSummary }> {
+  return request<{ customer: CustomerSummary }>("/customers", {
+    method: "POST",
+    headers: { "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateCustomer(
+  customerId: string,
+  payload: { name?: string; phone?: string; notes?: string; is_active?: boolean },
+  idempotencyKey: string,
+): Promise<CustomerDetail> {
+  return request<CustomerDetail>(`/customers/${encodeURIComponent(customerId)}`, {
+    method: "PATCH",
+    headers: { "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify(payload),
+  });
+}
+
 export type OpenCashPaymentSession = {
   id: string;
   register_name: string;
