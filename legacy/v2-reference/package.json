@@ -1,0 +1,51 @@
+{
+  "name": "3food-pos",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "overrides": {
+    "nf3": "0.3.17"
+  },
+  "scripts": {
+    "dev": "vite --mode cpanel --host 0.0.0.0 --port 8080",
+    "build": "vite build --mode cpanel",
+    "build:dev": "vite build --mode cpanel --mode development",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test 'scripts/**/*.test.mjs'",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "build:cpanel": "node scripts/audit-cpanel-source.mjs && vite build --mode cpanel && node scripts/audit-cpanel.mjs dist && node scripts/package-cpanel.mjs",
+    "test:performance": "node scripts/performance-smoke.mjs"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "@tanstack/react-router": "^1.170.0",
+    "@tanstack/router-plugin": "^1.168.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "lucide-react": "^0.510.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "recharts": "^3.10.1",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^5.7.0",
+    "vite": "^8.2.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.16.5",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "eslint": "^10.15.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.5.7",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.8",
+    "globals": "^15.15.0",
+    "playwright": "^1.62.0",
+    "prettier": "^3.4.0",
+    "typescript-eslint": "^8.56.1"
+  },
+  "description": "Standalone 3Food POS for cPanel with React, PHP and MySQL"
+}
