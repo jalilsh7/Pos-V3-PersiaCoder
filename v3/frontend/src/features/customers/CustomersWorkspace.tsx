@@ -1,122 +1,283 @@
-import { useMemo, useState } from "react";
-import { ArrowDownLeft, ArrowUpLeft, CirclePlus, Clock3, Search, ShoppingBag, UserRound, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { CirclePlus, Clock3, Search, ShoppingBag, UserRound, X } from "lucide-react";
+import {
+  ApiError,
+  createCustomer,
+  getCustomerDetails,
+  getCustomers,
+  updateCustomer,
+  type CustomerDetail,
+  type CustomerSummary,
+} from "../../shared/api/client";
 import { Button, Notice, StatusBadge, Surface, TextField } from "../../shared/ui";
 import "./customers.css";
 
-type Customer = {
-  id: number;
-  name: string;
-  phone: string;
-  orders: number;
-  spent: number;
-  points: number;
-  lastVisit: string;
-  segment: "regular" | "new" | "inactive";
-  note: string;
-  history: { code: string; date: string; total: number; status: "completed" | "cancelled" }[];
+const money = (value: number) => new Intl.NumberFormat("fa-IR").format(value);
+const dateTime = (value: string | null) => {
+  if (!value) return "بدون سفارش";
+  const date = new Date(value.includes("Z") || /[+-]\\d\\d:\\d\\d$/.test(value) ? value : `${value.replace(" ", "T")}Z`);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("fa-IR", { dateStyle: "short", timeStyle: "short" }).format(date);
+};
+const orderStatusLabel: Record<string, string> = {
+  draft: "پیش‌نویس", awaiting_payment: "در انتظار پرداخت", accepted: "پذیرفته‌شده",
+  preparing: "در حال آماده‌سازی", ready: "آماده تحویل", completed: "تکمیل‌شده",
+  cancelled: "لغوشده", rejected: "ردشده",
+};
+const paymentStatusLabel: Record<string, string> = {
+  unpaid: "پرداخت‌نشده", partially_paid: "پرداخت جزئی", paid: "تسویه‌شده",
+  partially_refunded: "بازپرداخت جزئی", refunded: "مستردشده", failed: "ناموفق",
+  pending: "در انتظار تأیید",
 };
 
-const seedCustomers: Customer[] = [
-  { id: 1, name: "سارا محمدی", phone: "0912 345 6789", orders: 18, spent: 8640000, points: 420, lastVisit: "۱۴۰۵/۰۸/۲۸", segment: "regular", note: "ترجیح: سفارش بیرون‌بر", history: [
-    { code: "ORD-1048", date: "۱۴۰۵/۰۸/۲۸", total: 485000, status: "completed" },
-    { code: "ORD-1012", date: "۱۴۰۵/۰۸/۲۱", total: 620000, status: "completed" },
-    { code: "ORD-0984", date: "۱۴۰۵/۰۸/۱۵", total: 310000, status: "cancelled" },
-  ] },
-  { id: 2, name: "علی رضایی", phone: "0935 222 1040", orders: 7, spent: 2940000, points: 135, lastVisit: "۱۴۰۵/۰۸/۲۶", segment: "regular", note: "بدون یادداشت", history: [
-    { code: "ORD-1039", date: "۱۴۰۵/۰۸/۲۶", total: 395000, status: "completed" },
-    { code: "ORD-0990", date: "۱۴۰۵/۰۸/۱۷", total: 275000, status: "completed" },
-  ] },
-  { id: 3, name: "نگار احمدی", phone: "0910 888 3210", orders: 1, spent: 185000, points: 10, lastVisit: "۱۴۰۵/۰۸/۲۷", segment: "new", note: "مشتری تازه", history: [
-    { code: "ORD-1044", date: "۱۴۰۵/۰۸/۲۷", total: 185000, status: "completed" },
-  ] },
-  { id: 4, name: "مهدی کریمی", phone: "0991 456 7832", orders: 3, spent: 970000, points: 25, lastVisit: "۱۴۰۵/۰۶/۱۰", segment: "inactive", note: "بدون یادداشت", history: [
-    { code: "ORD-0712", date: "۱۴۰۵/۰۶/۱۰", total: 420000, status: "completed" },
-  ] },
-];
-const money = (value: number) => new Intl.NumberFormat("fa-IR").format(value);
-const segmentLabel = (segment: Customer["segment"]) => segment === "regular" ? "فعال" : segment === "new" ? "تازه‌وارد" : "بدون مراجعه اخیر";
-
 export function CustomersWorkspace() {
-  const [customers, setCustomers] = useState(seedCustomers);
+  const [customers, setCustomers] = useState<CustomerSummary[]>([]);
   const [query, setQuery] = useState("");
-  const [segment, setSegment] = useState("all");
-  const [selectedId, setSelectedId] = useState<number | null>(1);
+  const [status, setStatus] = useState<"all" | "active" | "inactive">("all");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<CustomerDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [detailError, setDetailError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const selected = customers.find((customer) => customer.id === selectedId) ?? null;
-  const visible = useMemo(() => customers.filter((customer) =>
-    (segment === "all" || customer.segment === segment) &&
-    `${customer.name} ${customer.phone}`.toLocaleLowerCase("fa-IR").includes(query.trim().toLocaleLowerCase("fa-IR"))
-  ), [customers, query, segment]);
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+  const [editActive, setEditActive] = useState(true);
+  const createAttempt = useRef<{ signature: string; key: string } | null>(null);
+  const updateAttempt = useRef<{ signature: string; key: string } | null>(null);
 
-  function addCustomer() {
-    const cleanName = name.trim();
-    const cleanPhone = phone.trim();
-    if (!cleanName || !cleanPhone) return;
-    const id = Math.max(0, ...customers.map((customer) => customer.id)) + 1;
-    const customer: Customer = { id, name: cleanName, phone: cleanPhone, orders: 0, spent: 0, points: 0, lastVisit: "—", segment: "new", note: "مشتری نمونه جدید", history: [] };
-    setCustomers((current) => [customer, ...current]);
-    setSelectedId(id);
-    setName(""); setPhone(""); setShowCreate(false);
+  async function refreshCustomers() {
+    setError(null);
+    try {
+      const result = await getCustomers({ query, status, limit: 100 });
+      setCustomers(result.customers);
+      if (selectedId && !result.customers.some((customer) => customer.id === selectedId)) {
+        setSelectedId(null);
+        setDetail(null);
+      }
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : "دریافت فهرست مشتریان انجام نشد.");
+      setCustomers([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    getCustomers({ query, status, limit: 100 })
+      .then((result) => {
+        if (!active) return;
+        setCustomers(result.customers);
+        if (selectedId && !result.customers.some((customer) => customer.id === selectedId)) {
+          setSelectedId(null);
+          setDetail(null);
+        }
+        setError(null);
+      })
+      .catch((cause: unknown) => {
+        if (!active) return;
+        setError(cause instanceof ApiError ? cause.message : "دریافت فهرست مشتریان انجام نشد.");
+        setCustomers([]);
+      })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [query, status]);
+
+  useEffect(() => {
+    if (!selectedId) {
+      setDetail(null);
+      setEditing(false);
+      return;
+    }
+    let active = true;
+    setDetailLoading(true);
+    setDetailError(null);
+    getCustomerDetails(selectedId)
+      .then((result) => {
+        if (!active) return;
+        setDetail(result);
+        setEditName(result.customer.name);
+        setEditPhone(result.customer.phone);
+        setEditNotes(result.customer.notes);
+        setEditActive(result.customer.is_active);
+      })
+      .catch((cause: unknown) => {
+        if (!active) return;
+        setDetail(null);
+        setDetailError(cause instanceof ApiError ? cause.message : "دریافت پروفایل مشتری انجام نشد.");
+      })
+      .finally(() => { if (active) setDetailLoading(false); });
+    return () => { active = false; };
+  }, [selectedId]);
+
+  const selected = detail?.customer ?? null;
+  const visible = useMemo(() => customers, [customers]);
+  const activeCount = customers.filter((customer) => customer.is_active).length;
+  const orderCount = customers.reduce((sum, customer) => sum + customer.order_count, 0);
+
+  async function submitCreate() {
+    if (saving || !name.trim()) return;
+    const payload = { name: name.trim(), phone: phone.trim(), notes: notes.trim() };
+    const signature = JSON.stringify(payload);
+    if (!createAttempt.current || createAttempt.current.signature !== signature) {
+      createAttempt.current = { signature, key: globalThis.crypto.randomUUID() };
+    }
+    setSaving(true);
+    setActionError(null);
+    try {
+      const result = await createCustomer(payload, createAttempt.current.key);
+      createAttempt.current = null;
+      setShowCreate(false);
+      setName(""); setPhone(""); setNotes("");
+      setSelectedId(result.customer.id);
+      setStatus("all");
+      setQuery("");
+      await refreshCustomers();
+    } catch (cause) {
+      setActionError(cause instanceof ApiError ? cause.message : cause instanceof Error ? cause.message : "ثبت مشتری انجام نشد.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function submitUpdate() {
+    if (!selectedId || saving || !editName.trim()) return;
+    const payload = {
+      name: editName.trim(),
+      phone: editPhone.trim(),
+      notes: editNotes.trim(),
+      is_active: editActive,
+    };
+    const signature = JSON.stringify([selectedId, payload]);
+    if (!updateAttempt.current || updateAttempt.current.signature !== signature) {
+      updateAttempt.current = { signature, key: globalThis.crypto.randomUUID() };
+    }
+    setSaving(true);
+    setActionError(null);
+    try {
+      const result = await updateCustomer(selectedId, payload, updateAttempt.current.key);
+      updateAttempt.current = null;
+      setDetail(result);
+      setEditing(false);
+      await refreshCustomers();
+    } catch (cause) {
+      setActionError(cause instanceof ApiError ? cause.message : cause instanceof Error ? cause.message : "ذخیره تغییرات مشتری انجام نشد.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
     <div className="page-stack customers-workspace">
       <div className="customers-heading">
-        <div><span className="ui-eyebrow">CUSTOMER RELATIONSHIP</span><h1>مشتریان</h1><p>پروفایل، سوابق سفارش و نمای کلی ارتباط با مشتری</p></div>
-        <Button variant="primary" onClick={() => setShowCreate((value) => !value)}><CirclePlus size={15} /> مشتری جدید</Button>
+        <div><span className="ui-eyebrow">CUSTOMER RELATIONSHIP</span><h1>مشتریان</h1><p>پروفایل واقعی، سوابق سفارش و ارزش خرید ثبت‌شده</p></div>
+        <Button variant="primary" onClick={() => { setShowCreate((value) => !value); setActionError(null); }}>
+          <CirclePlus size={15} /> مشتری جدید
+        </Button>
       </div>
-      <Notice variant="warning">اطلاعات این صفحه کاملاً نمونه است. افزودن مشتری و تغییرات فقط در حافظه مرورگر انجام می‌شود؛ هنوز به API، دیتابیس، سفارش‌ها یا باشگاه مشتریان متصل نیست.</Notice>
+      {error ? <Notice variant="warning">{error}</Notice> : null}
+      {actionError ? <Notice variant="warning">{actionError}</Notice> : null}
       <div className="customers-metrics">
-        <Surface padding="sm"><span>مشتریان نمونه</span><strong>{money(customers.length)}</strong></Surface>
-        <Surface padding="sm"><span>مشتریان فعال</span><strong>{money(customers.filter((item) => item.segment === "regular").length)}</strong></Surface>
-        <Surface padding="sm"><span>امتیازهای نمایشی</span><strong>{money(customers.reduce((sum, item) => sum + item.points, 0))}</strong></Surface>
+        <Surface padding="sm"><span>مشتریان ثبت‌شده</span><strong>{money(customers.length)}</strong></Surface>
+        <Surface padding="sm"><span>مشتریان فعال</span><strong>{money(activeCount)}</strong></Surface>
+        <Surface padding="sm"><span>سفارش‌های مرتبط</span><strong>{money(orderCount)}</strong></Surface>
       </div>
-      {showCreate ? <Surface padding="md" className="customers-create">
-        <div className="customers-create-title"><strong>افزودن مشتری نمونه</strong><button type="button" onClick={() => setShowCreate(false)} aria-label="بستن"><X size={16} /></button></div>
-        <div className="customers-create-fields">
-          <TextField label="نام مشتری" value={name} onChange={(event) => setName(event.target.value)} placeholder="نام و نام خانوادگی" />
-          <TextField label="شماره همراه" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="09xxxxxxxxx" />
-        </div>
-        <div className="customers-create-footer"><span>ثبت واقعی و بررسی تکراری‌بودن شماره در Backend انجام خواهد شد.</span><Button variant="primary" onClick={addCustomer} disabled={!name.trim() || !phone.trim()}>افزودن نمونه</Button></div>
-      </Surface> : null}
+      {showCreate ? (
+        <Surface padding="md" className="customers-create">
+          <div className="customers-create-title"><strong>ثبت مشتری جدید</strong><button type="button" onClick={() => setShowCreate(false)} aria-label="بستن"><X size={16} /></button></div>
+          <div className="customers-create-fields">
+            <TextField label="نام مشتری" value={name} onChange={(event) => setName(event.target.value)} placeholder="نام و نام خانوادگی" />
+            <TextField label="شماره همراه (اختیاری)" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="09xxxxxxxxx" />
+            <TextField label="یادداشت (اختیاری)" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="یادداشت داخلی درباره مشتری" />
+          </div>
+          <div className="customers-create-footer">
+            <span>شماره موبایل ایران در سرور نرمال‌سازی و از تکرار آن جلوگیری می‌شود.</span>
+            <Button variant="primary" onClick={() => { void submitCreate(); }} disabled={saving || !name.trim()}>
+              {saving ? "در حال ثبت..." : "ثبت مشتری"}
+            </Button>
+          </div>
+        </Surface>
+      ) : null}
       <div className="customers-layout">
         <Surface padding="md" className="customers-list">
           <div className="customers-list-title"><div><h2><UserRound size={17} /> فهرست مشتریان</h2><p>{money(visible.length)} مورد</p></div></div>
-          <label className="customers-search"><Search size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="نام یا شماره همراه" /><button type="button" onClick={() => setQuery("")} aria-label="پاک کردن جست‌وجو" disabled={!query}><X size={14} /></button></label>
+          <label className="customers-search">
+            <Search size={16} />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="نام یا شماره همراه" />
+            <button type="button" onClick={() => setQuery("")} aria-label="پاک کردن جست‌وجو" disabled={!query}><X size={14} /></button>
+          </label>
           <div className="customers-filters">
-            {[["all", "همه"], ["regular", "فعال"], ["new", "تازه‌وارد"], ["inactive", "بدون مراجعه اخیر"]].map(([key, label]) => <button key={key} type="button" className={segment === key ? "is-active" : ""} onClick={() => setSegment(key)}>{label}</button>)}
+            {([["all", "همه"], ["active", "فعال"], ["inactive", "غیرفعال"]] as const).map(([key, label]) => (
+              <button key={key} type="button" className={status === key ? "is-active" : ""} onClick={() => setStatus(key)}>{label}</button>
+            ))}
           </div>
           <div className="customers-items">
-            {visible.map((customer) => <button type="button" key={customer.id} className={`customer-row ${selectedId === customer.id ? "is-selected" : ""}`} onClick={() => setSelectedId(customer.id)}>
-              <span className="customer-avatar">{customer.name.slice(0, 1)}</span>
-              <span className="customer-row-copy"><strong>{customer.name}</strong><small>{customer.phone}</small></span>
-              <span className="customer-row-meta"><strong>{money(customer.orders)}</strong><small>سفارش</small></span>
-            </button>)}
-            {visible.length === 0 ? <div className="customers-empty">مشتری‌ای با این مشخصات پیدا نشد.</div> : null}
+            {loading ? <div className="customers-empty">در حال دریافت مشتریان...</div> : visible.map((customer) => (
+              <button type="button" key={customer.id} className={`customer-row ${selectedId === customer.id ? "is-selected" : ""}`} onClick={() => setSelectedId(customer.id)}>
+                <span className="customer-avatar">{customer.name.slice(0, 1)}</span>
+                <span className="customer-row-copy"><strong>{customer.name}</strong><small>{customer.phone || "شماره همراه ثبت نشده"}</small></span>
+                <span className="customer-row-meta"><strong>{money(customer.order_count)}</strong><small>سفارش</small></span>
+              </button>
+            ))}
+            {!loading && visible.length === 0 ? <div className="customers-empty">مشتری‌ای با این مشخصات پیدا نشد.</div> : null}
           </div>
         </Surface>
         <Surface padding="md" className="customers-detail">
-          {selected ? <>
-            <div className="customers-profile-head"><span className="customer-avatar large">{selected.name.slice(0, 1)}</span><div><h2>{selected.name}</h2><p>{selected.phone}</p><StatusBadge variant={selected.segment === "inactive" ? "warning" : "success"}>{segmentLabel(selected.segment)}</StatusBadge></div></div>
-            <div className="customers-profile-stats">
-              <div><span>تعداد سفارش</span><strong>{money(selected.orders)}</strong></div>
-              <div><span>مجموع خرید</span><strong>{money(selected.spent)} <small>تومان</small></strong></div>
-              <div><span>امتیاز نمونه</span><strong>{money(selected.points)}</strong></div>
-            </div>
-            <div className="customers-last-visit"><Clock3 size={15} /><span>آخرین مراجعه</span><strong>{selected.lastVisit}</strong></div>
-            <div className="customers-note"><strong>یادداشت مشتری</strong><p>{selected.note}</p></div>
-            <div className="customers-history-title"><h3><ShoppingBag size={16} /> سوابق سفارش</h3><span>{money(selected.history.length)} سفارش اخیر نمونه</span></div>
-            <div className="customers-history">
-              {selected.history.map((order) => <div className="customers-order" key={order.code}>
-                <div><strong>{order.code}</strong><small>{order.date}</small></div>
-                <div className="customers-order-total"><strong>{money(order.total)} <small>تومان</small></strong><StatusBadge variant={order.status === "completed" ? "success" : "danger"}>{order.status === "completed" ? "تکمیل‌شده" : "لغوشده"}</StatusBadge></div>
-              </div>)}
-              {selected.history.length === 0 ? <div className="customers-empty">برای این مشتری هنوز سفارش نمونه‌ای وجود ندارد.</div> : null}
-            </div>
-            <div className="customers-detail-foot"><span><ArrowDownLeft size={14} /> سوابق صرفاً نمایشی</span><span><ArrowUpLeft size={14} /> اطلاعات مالی از سرور دریافت نشده</span></div>
-          </> : <div className="customers-empty">برای مشاهده پروفایل، یک مشتری را انتخاب کنید.</div>}
+          {detailLoading ? <Notice variant="info">در حال دریافت پروفایل مشتری...</Notice> : null}
+          {detailError ? <Notice variant="warning">{detailError}</Notice> : null}
+          {selected ? (
+            <>
+              <div className="customers-profile-head">
+                <span className="customer-avatar large">{selected.name.slice(0, 1)}</span>
+                <div><h2>{selected.name}</h2><p>{selected.phone || "شماره همراه ثبت نشده"}</p>
+                  <StatusBadge variant={selected.is_active ? "success" : "warning"}>{selected.is_active ? "فعال" : "غیرفعال"}</StatusBadge>
+                </div>
+              </div>
+              <div className="customers-profile-stats">
+                <div><span>تعداد سفارش</span><strong>{money(detail.stats.order_count)}</strong></div>
+                <div><span>خرید خالص ثبت‌شده</span><strong>{money(detail.stats.total_spent)} <small>تومان</small></strong></div>
+                <div><span>آخرین سفارش</span><strong>{dateTime(detail.stats.last_order_at)}</strong></div>
+              </div>
+              {editing ? (
+                <div className="customers-create customers-edit">
+                  <TextField label="نام مشتری" value={editName} onChange={(event) => setEditName(event.target.value)} />
+                  <TextField label="شماره همراه" value={editPhone} onChange={(event) => setEditPhone(event.target.value)} />
+                  <TextField label="یادداشت" value={editNotes} onChange={(event) => setEditNotes(event.target.value)} />
+                  <label className="customers-active-toggle"><input type="checkbox" checked={editActive} onChange={(event) => setEditActive(event.target.checked)} /> مشتری فعال باشد</label>
+                  <div className="customers-detail-actions">
+                    <Button variant="secondary" disabled={saving} onClick={() => setEditing(false)}>انصراف</Button>
+                    <Button variant="primary" disabled={saving || !editName.trim()} onClick={() => { void submitUpdate(); }}>{saving ? "در حال ذخیره..." : "ذخیره تغییرات"}</Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="customers-note"><strong>یادداشت مشتری</strong><p>{selected.notes || "یادداشتی ثبت نشده است."}</p></div>
+                  <div className="customers-detail-actions"><Button variant="secondary" onClick={() => setEditing(true)}>ویرایش اطلاعات</Button></div>
+                </>
+              )}
+              <div className="customers-history-title"><h3><ShoppingBag size={16} /> سوابق سفارش</h3><span>{money(detail.recent_orders.length)} سفارش اخیر</span></div>
+              <div className="customers-history">
+                {detail.recent_orders.map((order) => (
+                  <div className="customers-order" key={order.id}>
+                    <div><strong>#{money(order.order_number)}</strong><small>{dateTime(order.created_at)} · {orderStatusLabel[order.order_status] ?? order.order_status}</small></div>
+                    <div className="customers-order-total"><strong>{money(order.total_amount)} <small>تومان</small></strong><StatusBadge variant={order.payment_status === "paid" ? "success" : order.payment_status === "refunded" ? "danger" : "warning"}>{paymentStatusLabel[order.payment_status] ?? order.payment_status}</StatusBadge></div>
+                  </div>
+                ))}
+                {detail.recent_orders.length === 0 ? <div className="customers-empty">برای این مشتری هنوز سفارشی ثبت نشده است.</div> : null}
+              </div>
+              <div className="customers-detail-foot"><span><Clock3 size={14} /> آمار از سفارش‌ها و دفتر پرداخت سرور محاسبه می‌شود</span></div>
+            </>
+          ) : !detailLoading ? <div className="customers-empty">برای مشاهده پروفایل، یک مشتری را انتخاب کنید.</div> : null}
         </Surface>
       </div>
     </div>
