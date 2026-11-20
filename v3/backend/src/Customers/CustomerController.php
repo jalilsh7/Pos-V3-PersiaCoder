@@ -24,6 +24,7 @@ final readonly class CustomerController
             $request->query('q') ?? '',
             $request->query('status') ?? 'all',
             (int) $rawLimit,
+            $request->query('cursor'),
         ));
     }
 
