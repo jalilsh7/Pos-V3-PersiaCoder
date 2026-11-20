@@ -1,17 +1,17 @@
 <?php
 declare(strict_types=1);
 
-namespace PersiaCoder\\PosV3\\Finance;
+namespace PersiaCoder\PosV3\Finance;
 
 use PDO;
-use PersiaCoder\\PosV3\\Auth\\AuthenticatedPrincipal;
-use PersiaCoder\\PosV3\\Auth\\BusinessScope;
-use PersiaCoder\\PosV3\\Auth\\PermissionService;
-use PersiaCoder\\PosV3\\Http\\HttpException;
-use PersiaCoder\\PosV3\\Infrastructure\\Database\\AuditLogRepository;
-use PersiaCoder\\PosV3\\Infrastructure\\Database\\CashRepository;
-use PersiaCoder\\PosV3\\Security\\AuditLogService;
-use PersiaCoder\\PosV3\\Security\\IdempotencyService;
+use PersiaCoder\PosV3\Auth\AuthenticatedPrincipal;
+use PersiaCoder\PosV3\Auth\BusinessScope;
+use PersiaCoder\PosV3\Auth\PermissionService;
+use PersiaCoder\PosV3\Http\HttpException;
+use PersiaCoder\PosV3\Infrastructure\Database\AuditLogRepository;
+use PersiaCoder\PosV3\Infrastructure\Database\CashRepository;
+use PersiaCoder\PosV3\Security\AuditLogService;
+use PersiaCoder\PosV3\Security\IdempotencyService;
 
 final readonly class OrderPaymentService
 {
