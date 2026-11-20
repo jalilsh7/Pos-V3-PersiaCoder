@@ -40,7 +40,6 @@ export function AccessManagementWorkspace() {
   const [assigningUserId, setAssigningUserId] = useState<string | null>(null);
 
   const selectedRole = roles.find((role) => role.code === selectedRoleCode) ?? null;
-  const roleOptions = useMemo(() => roles.map((role) => ({ value: role.code, label: `${role.name} (${role.code})` })), [roles]);
   const assignableRoles = useMemo(() => roles.filter((role) => role.code !== "owner").map((role) => ({ value: role.code, label: role.name })), [roles]);
 
   async function refreshUsers() {
