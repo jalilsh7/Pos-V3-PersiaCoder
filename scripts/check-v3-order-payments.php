@@ -56,6 +56,9 @@ $checks = [
     'frontend partial-payment filter uses the backend canonical status' =>
         str_contains(file_get_contents($root . '/v3/frontend/src/features/orders/OrderCenter.tsx'), 'value: "partially_paid", label: "پرداخت بخشی"') &&
         !str_contains(file_get_contents($root . '/v3/frontend/src/features/orders/OrderCenter.tsx'), 'value: "partial", label: "پرداخت بخشی"'),
+    'order switch clears prior payment data before loading the next order' =>
+        str_contains(file_get_contents($root . '/v3/frontend/src/features/orders/OrderCenter.tsx'), 'setPaymentSummary(null);') &&
+        str_contains(file_get_contents($root . '/v3/frontend/src/features/orders/OrderCenter.tsx'), 'setRefundPaymentId(null);'),
 ];
 
 $failed = [];
