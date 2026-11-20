@@ -10,7 +10,7 @@ final class CurlSmsHttpClient implements SmsHttpClient
     public function postJson(string $url, array $payload, int $timeoutSeconds): SmsHttpResponse
     {
         if (!function_exists('curl_init')) {
-            throw new SmsProviderException('sms_http_transport_unavailable', null, false, true);
+            throw new SmsProviderException('sms_http_transport_unavailable', null, false, false);
         }
         if (!str_starts_with($url, 'https://')) {
             throw new RuntimeException('sms_provider_https_required');
