@@ -584,6 +584,11 @@ export async function getOpenCashPaymentSessions(): Promise<OpenCashPaymentSessi
   return data.sessions;
 }
 
+export async function getOpenCashRefundSessions(): Promise<OpenCashPaymentSession[]> {
+  const data = await request<{ sessions: OpenCashPaymentSession[] }>("/cash/refund-sessions");
+  return data.sessions;
+}
+
 export type OrderPaymentSummary = {
   order_id: string;
   order_number: number;
