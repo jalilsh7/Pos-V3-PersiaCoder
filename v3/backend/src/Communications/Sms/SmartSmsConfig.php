@@ -7,20 +7,28 @@ use InvalidArgumentException;
 
 final readonly class SmartSmsConfig
 {
+    private string $apiKey;
+
     public function __construct(
         public string $username,
-        public string $apiKey,
+        string $apiKey,
         public string $sender,
         public ?string $backupSenderOne = null,
         public ?string $backupSenderTwo = null,
         public int $timeoutSeconds = 20,
     ) {
+        $this->apiKey = $apiKey;
         if (trim($username) === '' || trim($apiKey) === '' || trim($sender) === '') {
             throw new InvalidArgumentException('sms_provider_configuration_incomplete');
         }
         if ($timeoutSeconds < 5 || $timeoutSeconds > 60) {
             throw new InvalidArgumentException('sms_provider_timeout_out_of_range');
         }
+    }
+
+    public function apiKey(): string
+    {
+        return $this->apiKey;
     }
 
     public static function fromEnvironment(): ?self
