@@ -280,7 +280,7 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 
 ## بسته طراحی D-09 — انبار، مکان‌ها، موجودی و اسناد (2026-11-20)
 
-- سند UX ایجاد شد: [INVENTORY_LOCATIONS_STOCK_AND_DOCUMENTS_UX_V3_FA.md](design/INVENTORY_LOCATIONS_STOCK_AND_DOCUMENTS_UX_V3_FA.md)، شناسه `DESIGN-INVENTORY-WORKSPACE-2026-001`، نسخه 0.1، آماده نمونه‌سازی.
+- سند UX ایجاد شد: [INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md](design/INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md)، شناسه `DESIGN-INVENTORY-WORKSPACE-2026-001`، نسخه 0.1، آماده نمونه‌سازی.
 - کد بررسی‌شده: `InventoryController`، `InventoryService`، `InventoryDocumentService`، `InventoryPostingService` و repositoryهای مرتبط؛ UI فعلی `InventoryWorkspace.tsx` و routeهای API.
 - موجودی on-hand/reserved/available و ledger، قلم و واحد، مکان شعبه، تأمین‌کننده و سند draft/posting در کد وجود دارند. writeها با idempotency و audit طراحی شده‌اند؛ posting سند با قفل balanceها و کنترل وضعیت draft انجام می‌شود.
 - انواع سند در سرویس: purchase_receipt، consumption، transfer، adjustment_in، adjustment_out، waste و return. نوع return فعلاً قابل posting نیست و به source-linked return valuation policy وابسته است؛ در UI نباید عملیاتی جلوه کند.
@@ -315,3 +315,9 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - ابتدا آخرین HEAD و تصمیمات محصول را تازه fetch کن؛ سپس Payment/Cash/Finance services، repositories، schema، controllers/routes و frontend را بررسی کن.
 - جریان واقعی payment و cash session را از هم تفکیک کن؛ وجود schema یا UI را به معنی reconciliation یا حسابداری کامل اعلام نکن. وضعیت پرداخت سفارش، گردش صندوق، refund و settlement باید از ledger/contract واقعی استخراج شوند.
 - موارد باز مثل split payment، نسیه، ارز و دامنه حسابداری رسمی را بدون تصمیم مالک قطعی نکن.
+
+
+### اصلاح ارجاع D-09
+
+- سند مرجع موجود و اصلی D-09 از قبل در مخزن `design/INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md` بوده است؛ سند موازی `INVENTORY_LOCATIONS_STOCK_AND_DOCUMENTS_UX_V3_FA.md` که در ادامه ساخته شد، تکراری بود و حذف شد.
+- README فقط سند اصلی D-09 را نمایه می‌کند. از این پس همین سند مرجع D-09 است و اصلاحات لازم باید در همان فایل انجام شود.
