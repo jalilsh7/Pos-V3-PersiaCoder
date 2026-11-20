@@ -269,7 +269,7 @@ final readonly class SmsOutboxRepository
             'delivered', 'failed', 'rejected', 'sent_to_carrier' => $status,
             default => $currentStatus,
         };
-        $deliveredAt = $nextStatus === 'delivered' ? 'UTC_TIMESTAMP(3)' : 'delivered_at';
+        $deliveredAt = $nextStatus === 'delivered' ? 'COALESCE(delivered_at, UTC_TIMESTAMP(3))' : 'delivered_at';
         $failureCode = in_array($nextStatus, ['failed', 'rejected'], true) ? 'provider_status_' . $rawStatus : null;
 
         $this->connection->beginTransaction();
@@ -278,13 +278,14 @@ final readonly class SmsOutboxRepository
                 'UPDATE pos_sms_outbox SET status = :status,
                     delivered_at = ' . $deliveredAt . ',
                     failure_code = :failure_code,
-                    failure_message = CASE WHEN :failure_code IS NULL THEN NULL ELSE \'Provider delivery report indicates failure\' END,
+                    failure_message = CASE WHEN :is_failure = 1 THEN \'Provider delivery report indicates failure\' ELSE NULL END,
                     updated_at = UTC_TIMESTAMP(3)
                  WHERE id = :id'
             );
             $statement->execute([
                 'status' => $nextStatus,
                 'failure_code' => $failureCode,
+                'is_failure' => $failureCode === null ? 0 : 1,
                 'id' => (int) $row['id'],
             ]);
             $this->insertAttempt(
