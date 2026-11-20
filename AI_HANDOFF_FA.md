@@ -162,3 +162,9 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - برای HEAD فعلی 32c79de اجرای CI یافت نشد؛ نتایج سبز commitهای قبلی را به HEAD فعلی تعمیم نده.
 - گام بعدی: ابتدا تکمیل POS end-to-end تا پرداخت/ثبت وجه و تطبیق شیفت؛ اتصال فروش به رسپی/انبار؛ API و باشگاه واقعی مشتریان؛ سپس پیامک تراکنشی و تبلیغاتی امن. تست‌های جامع مطابق سیاست پروژه در gate پایان فاز اجرا شوند.
 
+## انتقال جزئی پیامک V2 به V3 — SMS-MIG-2026-001
+- parserهای قابل استفاده V2 به کلاس namespaceدار `v3/backend/src/Communications/Sms/LegacySmsParser.php` منتقل شدند: تاریخ تولد شمسی با فرمان صریح، parser پاسخ inbox پنل پیامک، تبدیل ارقام و نرمال‌سازی موبایل ایران.
+- تست متمرکز: `v3/backend/tests/Communications/Sms/LegacySmsParserTest.php` (هنوز PASS اجراشده اعلام نشده).
+- مرجع APIهای ارائه‌شده: `docs/integrations/NATIONAL-PAYAMAK-SMS-FA.md`.
+- هنوز ارسال واقعی، صف، گزارش تحویل، provider adapter و consent/opt-out وجود ندارد. `SamplePHP.rar` قابل استخراج نبود؛ محتوایش منتقل نشده است.
+
