@@ -7,6 +7,9 @@
 .inventory-metrics span { color: var(--pc-muted); font-size: 10px; }
 .inventory-metrics strong { color: var(--pc-brand); font-size: 21px; font-weight: 900; }
 .inventory-metrics strong.is-low { color: #b64d43; }
+.inventory-metric-breakdown { display: flex; flex-wrap: wrap; gap: 5px; }
+.inventory-metric-breakdown span { display: inline-flex; align-items: baseline; gap: 4px; padding: 4px 7px; border: 1px solid var(--pc-line); border-radius: 7px; background: #fafcfb; color: var(--pc-muted); font-size: 9px; }
+.inventory-metric-breakdown b { color: var(--pc-brand); font-size: 12px; font-weight: 800; }
 .inventory-movement-form { display: flex; flex-direction: column; gap: 14px; }
 .inventory-form-heading strong { color: var(--pc-ink); font-size: 12px; }
 .inventory-form-grid { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 10px; }
