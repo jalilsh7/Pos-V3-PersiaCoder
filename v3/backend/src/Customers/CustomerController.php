@@ -27,6 +27,21 @@ final readonly class CustomerController
         ));
     }
 
+    public function quickSearch(Request $request): Response
+    {
+        $result = $this->customers->list(
+            $this->scope($request),
+            $request->query('q') ?? '',
+            'active',
+            20,
+        );
+        return Response::success(['customers' => array_map(static fn (array $customer): array => [
+            'id' => $customer['id'],
+            'name' => $customer['name'],
+            'phone' => $customer['phone'],
+        ], $result['customers'])]);
+    }
+
     public function show(Request $request, array $parameters): Response
     {
         return Response::success($this->customers->get(
