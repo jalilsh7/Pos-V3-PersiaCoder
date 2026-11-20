@@ -119,9 +119,16 @@ final readonly class CustomerRepository
         $sql = 'SELECT c.public_id, c.name, c.phone_display, c.notes, c.is_active, c.created_at, c.updated_at,
                     (SELECT COUNT(*) FROM pos_orders o
                      WHERE o.business_id = c.business_id AND o.customer_id = c.id) AS order_count,
-                    (SELECT COALESCE(SUM(o.total_amount), 0) FROM pos_orders o
+                    (SELECT COALESCE(SUM(
+                        COALESCE((SELECT SUM(p.amount) FROM pos_payments p
+                                  WHERE p.business_id = o.business_id AND p.branch_id = o.branch_id
+                                    AND p.order_id = o.id AND p.status IN (\'captured\',\'partially_refunded\',\'refunded\')), 0)
+                        - COALESCE((SELECT SUM(r.amount) FROM pos_refunds r
+                                    WHERE r.business_id = o.business_id AND r.branch_id = o.branch_id
+                                      AND r.order_id = o.id AND r.status = \'succeeded\'), 0)
+                    ), 0) FROM pos_orders o
                      WHERE o.business_id = c.business_id AND o.customer_id = c.id
-                       AND o.order_status = \'completed\' AND o.payment_status = \'paid\') AS total_spent,
+                       AND o.order_status = \'completed\') AS total_spent,
                     (SELECT MAX(o.created_at) FROM pos_orders o
                      WHERE o.business_id = c.business_id AND o.customer_id = c.id) AS last_order_at
                 FROM pos_customers c
@@ -144,8 +151,15 @@ final readonly class CustomerRepository
 
         $stats = $this->connection->prepare(
             'SELECT COUNT(*) AS order_count,
-                    COALESCE(SUM(CASE WHEN order_status = \'completed\' AND payment_status = \'paid\'
-                                      THEN total_amount ELSE 0 END), 0) AS total_spent,
+                    COALESCE(SUM(CASE WHEN order_status = \'completed\' THEN
+                        COALESCE((SELECT SUM(p.amount) FROM pos_payments p
+                                  WHERE p.business_id = pos_orders.business_id AND p.branch_id = pos_orders.branch_id
+                                    AND p.order_id = pos_orders.id
+                                    AND p.status IN (\'captured\',\'partially_refunded\',\'refunded\')), 0)
+                        - COALESCE((SELECT SUM(r.amount) FROM pos_refunds r
+                                    WHERE r.business_id = pos_orders.business_id AND r.branch_id = pos_orders.branch_id
+                                      AND r.order_id = pos_orders.id AND r.status = \'succeeded\'), 0)
+                      ELSE 0 END), 0) AS total_spent,
                     MAX(created_at) AS last_order_at
              FROM pos_orders
              WHERE business_id = :business_id AND customer_id = :customer_id'
