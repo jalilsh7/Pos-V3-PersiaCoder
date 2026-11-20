@@ -185,6 +185,14 @@ final readonly class CustomerService
     /** @return array{name:string,phone_normalized:?string,phone_display:?string,notes:?string,is_active:bool} */
     private static function validatePayload(array $payload, ?array $existing): array
     {
+        $allowed = $existing === null
+            ? ['name', 'phone', 'notes']
+            : ['name', 'phone', 'notes', 'is_active'];
+        foreach (array_keys($payload) as $key) {
+            if (!is_string($key) || !in_array($key, $allowed, true)) {
+                throw new HttpException(422, 'customer_field_invalid', 'The customer payload contains an unsupported field.');
+            }
+        }
         $name = array_key_exists('name', $payload) ? $payload['name'] : ($existing['name'] ?? null);
         $phone = array_key_exists('phone', $payload) ? $payload['phone'] : ($existing['phone_display'] ?? '');
         $notes = array_key_exists('notes', $payload) ? $payload['notes'] : ($existing['notes'] ?? '');
@@ -203,6 +211,9 @@ final readonly class CustomerService
             throw new HttpException(422, 'customer_active_invalid', 'Customer active state must be a boolean.');
         }
         $phone = trim($phone);
+        if (self::unicodeLength($phone) > 32) {
+            throw new HttpException(422, 'customer_phone_invalid', 'Customer phone display must not exceed 32 characters.');
+        }
         $normalized = $phone === '' ? null : self::normalizeIranMobile($phone);
         if ($phone !== '' && $normalized === null) {
             throw new HttpException(422, 'customer_phone_invalid', 'Enter a valid Iranian mobile number.');
