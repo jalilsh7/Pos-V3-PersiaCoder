@@ -385,7 +385,8 @@ try {
     };
 
     $router->add('GET', '/api/v1/communications/sms/outbox',
-        static fn (Request $request): Response => $getSmsOutboxReadController()->list($request),\n        [$sessionMiddleware, $makePermissionMiddleware('communications.read', true)],
+        static fn (Request $request): Response => $getSmsOutboxReadController()->list($request),
+        [$sessionMiddleware, $makePermissionMiddleware('communications.read', true)],
     );
 
     $router->add('GET', '/api/v1/orders',
