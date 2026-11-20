@@ -46,3 +46,7 @@
 .finance-empty { padding:22px; color:var(--pc-muted); font-size:10px; text-align:center; }
 @media(max-width:1000px) { .finance-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:700px) { .finance-heading { align-items:flex-start; flex-direction:column; } .finance-form-fields { grid-template-columns:1fr; } .finance-shift-bottom { align-items:flex-start; flex-direction:column; } .finance-shift-bottom .ui-button { width:100%; } .finance-metrics { gap:7px; } .finance-metrics .ui-surface { padding:10px; } .finance-metrics strong { font-size:13px; } .finance-close-values { grid-template-columns:1fr; } .finance-ledger-heading { align-items:flex-start; flex-direction:column; } .finance-ledger-heading .ui-button { width:100%; } }
+
+.finance-register-row { width:100%; border:0; background:transparent; text-align:inherit; cursor:pointer; }
+.finance-register-row:hover { background:var(--pc-brand-soft); }
+.finance-register-row:focus-visible { outline:2px solid var(--pc-brand); outline-offset:2px; border-radius:9px; }
