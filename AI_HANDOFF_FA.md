@@ -465,3 +465,22 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - بسته بعدی: **D-14 — آشپزخانه/KDS، آماده‌سازی و تحویل**.
 - پیش از طراحی، آخرین HEAD، تصمیمات محصول و order state machine را تازه بررسی کن؛ سپس Dining/Kitchen/Preparation routes، schema و UI موجود را تطبیق بده.
 - وضعیت سفارش، fulfillment و preparation جدا بمانند؛ transition یا رفتار زمان‌بندی که در Backend نیست به‌عنوان قابلیت موجود معرفی نشود.
+
+
+## بسته طراحی D-13 — فروشگاه آنلاین و checkout مشتری (2026-11-20)
+
+- سند UX موجود و بررسی شد: [STOREFRONT_AND_CUSTOMER_CHECKOUT_UX_V3_FA.md](design/STOREFRONT_AND_CUSTOMER_CHECKOUT_UX_V3_FA.md)، شناسه `DESIGN-STOREFRONT-CHECKOUT-2026-001`، نسخه 0.1.
+- `StorefrontWorkspace.tsx` از menu seed و cart محلی استفاده می‌کند؛ انتخاب pickup/delivery صرفاً state است؛ ادامه سفارش غیرفعال و ساعات کاری «باز · نمایشی» است.
+- `PosWorkspace.tsx` از Catalog API واقعی و جزئیات تنوع/گزینه استفاده می‌کند؛ این قرارداد مشترک باید مبنای storefront قرار گیرد.
+- `OrderService` و `OrderController` ثبت سفارش داخلی دارند؛ routeهای order پشت session و permission `orders.create` هستند. public customer checkout endpoint در routeهای بررسی‌شده مشاهده نشد.
+- تصمیم محصول یک قالب عمومی منودار با پیکربندی صنفی و یک موتور مشترک سفارش است؛ channel storefront باید در مرکز سفارش POS دیده شود.
+- سند در design README نمایه و D-13 در backlog به «آماده نمونه‌سازی مفهومی» ارتقا یافت.
+- در بازبینی تکمیلی D-08 روشن شد که `RecipeService` و `RecipeController` وجود دارند: GET recipe، ایجاد draft version و activate version با validation/idempotency/audit. سند D-08 اصلاح شد؛ UI رسپی و اتصال خودکار سفارش به رزرو/مصرف همچنان اثبات نشده‌اند.
+- این بسته فقط طراحی است؛ public storefront API، cart/checkout، payment integration و E2E تست در این commitها تکمیل نشده‌اند.
+
+### نقطه ادامه
+
+- بسته بعدی طراحی: **D-14 — آشپزخانه/KDS، آماده‌سازی، تحویل و نمایش وضعیت**.
+- ابتدا آخرین HEAD و تصمیمات محصول را تازه fetch کن؛ سپس DiningService، order state transitions، kitchen routes, order list UI و schema مربوط به table/session/fulfillment را بررسی کن.
+- سفارش POS و storefront باید یک شناسه و state machine مشترک داشته باشند؛ نمای آشپزخانه فقط projection/queue عملیاتی است و منبع حقیقت سفارش نیست.
+- زمان‌های آماده‌سازی، اولویت، station routing، چاپ و اعلان فقط در صورت وجود داده/قرارداد واقعی طراحی شوند؛ transitionهای جدید وضعیت سفارش را حدس نزن.
