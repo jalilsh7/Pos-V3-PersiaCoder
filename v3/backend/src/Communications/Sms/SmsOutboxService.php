@@ -61,6 +61,9 @@ final readonly class SmsOutboxService
             || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/u', $messageText) === 1) {
             throw new HttpException(422, 'sms_message_invalid', 'The transactional SMS text is invalid.');
         }
+        if (!str_ends_with($messageText, 'لغو11')) {
+            throw new HttpException(422, 'sms_unsubscribe_marker_required', 'SmartSMS messages must end with the documented لغو11 marker.');
+        }
 
         $customerId = null;
         if ($customerPublicId !== null) {
