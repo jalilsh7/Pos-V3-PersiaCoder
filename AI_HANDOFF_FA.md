@@ -733,3 +733,13 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
   4. تصمیم‌گیری timezone و scheduled send؛ BaseServiceNumberSchedule پنجره 07:00–22:00 دارد.
   5. ادامه Storefront و inventory-order integration پس از تعیین رزرو/مصرف.
 
+
+## SMS-API-01 — Transactional outbox API entry point (2026-11-21)
+
+- Added \`v3/backend/src/Communications/Sms/SmsOutboxController.php\` and wired it into \`v3/backend/public/index.php\`.
+- Endpoint: \`POST /api/v1/communications/sms/transactional\`.
+- Request fields: \`recipient\`, \`message\`, optional \`customer_public_id\`; response preserves the service status and \`Idempotency-Replayed\` header.
+- Route requires session authentication, \`pos.sell\`, CSRF and same-origin checks. Service-level permission, business scope, Iranian mobile normalization, mandatory \`لغو11\`, customer-phone match, encryption and idempotency remain enforced.
+- This endpoint only enqueues. It does not send SMS itself; worker delivery remains a separate CLI action. No automatic order lifecycle trigger or real provider send is enabled.
+- No test/build/lint was run for this wiring in this batch by request. Include it in the consolidated phase gate.
+- Next related work: queue/report read API and management UI, then event-triggered transactional templates only after message content and trigger policy are defined. Marketing remains blocked pending real consent/opt-out.
