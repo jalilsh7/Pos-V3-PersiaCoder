@@ -59,6 +59,8 @@ $checks = [
     'order switch clears prior payment data before loading the next order' =>
         str_contains(file_get_contents($root . '/v3/frontend/src/features/orders/OrderCenter.tsx'), 'setPaymentSummary(null);') &&
         str_contains(file_get_contents($root . '/v3/frontend/src/features/orders/OrderCenter.tsx'), 'setRefundPaymentId(null);'),
+    'cash refund explains the missing open-session prerequisite' =>
+        str_contains(file_get_contents($root . '/v3/frontend/src/features/orders/OrderCenter.tsx'), 'برای ثبت بازپرداخت نقدی، ابتدا یک شیفت صندوق باز کنید.'),
 ];
 
 $failed = [];
