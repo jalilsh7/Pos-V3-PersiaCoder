@@ -120,6 +120,51 @@ final readonly class SmsOutboxRepository
         }
     }
 
+    public function recoverStaleProcessing(int $ageSeconds = 600): int
+    {
+        $ageSeconds = max(300, min(3600, $ageSeconds));
+        $cutoff = gmdate('Y-m-d H:i:s', time() - $ageSeconds);
+        $this->connection->beginTransaction();
+        try {
+            $statement = $this->connection->prepare(
+                'SELECT id, business_id, branch_id, provider_code, attempt_count
+                 FROM pos_sms_outbox
+                 WHERE status = \'processing\' AND updated_at <= :cutoff
+                 ORDER BY id ASC
+                 LIMIT 100
+                 FOR UPDATE SKIP LOCKED'
+            );
+            $statement->execute(['cutoff' => $cutoff]);
+            $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($rows as $row) {
+                $attemptNumber = (int) $row['attempt_count'] + 1;
+                $update = $this->connection->prepare(
+                    'UPDATE pos_sms_outbox
+                     SET status = \'unknown\', attempt_count = :attempt_count,
+                         failure_code = \'sms_worker_stale_processing\',
+                         failure_message = \'Worker stopped while delivery outcome was unresolved\',
+                         next_attempt_at = NULL, updated_at = UTC_TIMESTAMP(3)
+                     WHERE id = :id AND status = \'processing\''
+                );
+                $update->execute(['attempt_count' => $attemptNumber, 'id' => (int) $row['id']]);
+                $this->insertAttempt(
+                    $row,
+                    $attemptNumber,
+                    'send',
+                    'unknown',
+                    null,
+                    null,
+                    'sms_worker_stale_processing',
+                );
+            }
+            $this->connection->commit();
+            return count($rows);
+        } catch (\\Throwable $error) {
+            if ($this->connection->inTransaction()) $this->connection->rollBack();
+            throw $error;
+        }
+    }
+
     public function releaseClaimed(int $messageId): void
     {
         $statement = $this->connection->prepare(
@@ -280,10 +325,12 @@ final readonly class SmsOutboxRepository
     public function applyDeliveryStatus(array $row, int $rawStatus, string $status, bool $terminal): void
     {
         $currentStatus = (string) $row['status'];
-        $nextStatus = match ($status) {
-            'delivered', 'failed', 'rejected', 'sent_to_carrier' => $status,
-            default => $currentStatus,
-        };
+        $nextStatus = in_array($currentStatus, ['delivered', 'failed', 'rejected', 'cancelled'], true)
+            ? $currentStatus
+            : match ($status) {
+                'delivered', 'failed', 'rejected', 'sent_to_carrier' => $status,
+                default => $currentStatus,
+            };
         $deliveredAt = $nextStatus === 'delivered' ? 'COALESCE(delivered_at, UTC_TIMESTAMP(3))' : 'delivered_at';
         $failureCode = in_array($nextStatus, ['failed', 'rejected'], true) ? 'provider_status_' . $rawStatus : null;
 
