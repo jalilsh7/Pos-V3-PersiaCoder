@@ -26,11 +26,11 @@
 - فایل lock برای `v3/frontend` هنوز وجود ندارد؛ نصب وابستگی‌ها فعلاً با `npm install` در workflow انجام می‌شود و نصب کاملاً reproducible هنوز برقرار نشده است.
 - Backend و baseline دیتابیس V3 پیاده‌سازی مرحله‌ای دارند؛ وجود کد و اسکریپت به‌تنهایی معادل پذیرش عملیاتی نیست.
 - نقشه راه `ROADMAP_V3.md` وضعیت پروژه و بسته کاری بعدی را ثبت می‌کند؛ قبل از شروع بسته جدید آن را به‌روز بخوانید.
-- workflowهای سه‌گانه V3 اصلاح شدند تا push روی `main` را هم پوشش دهند؛ اجرای موفق آن‌ها هنوز باید با run واقعی تأیید شود.
+- workflowهای سه‌گانه V3 اصلاح شدند تا روی هر push به `main` اجرا شوند. اجرای commit `fc1120e2e15b342742fefb863d5d86d1aeebef62` سبز شد: Backend run `44766929323` (PHP 8.2/8.3/8.4)، Frontend run `44766929617` (typecheck/build)، Database run `44766929722` (MySQL 8.4 و MariaDB 10.6).
 - سابقه نقشه راه در 2026-11-19 مشکل تخصیص GitHub Actions runner با `runner_id=0` را ثبت کرده بود. وضعیت جاری باید دوباره از Actions بررسی شود.
 
 ## گام‌های بعدی برای آماده‌سازی کامل
-1. اجرای workflowهای backend، database و frontend روی `main` و رفع هر خطای واقعی.
+1. اجرای مجدد workflowهای backend، database و frontend پس از تغییرات کد؛ آخرین اجرای ثبت‌شده روی commit `fc1120e2e15b342742fefb863d5d86d1aeebef62` برای هر سه موفق است.
 2. رفع مشکل تخصیص runner در GitHub Actions در صورت تداوم.
 3. تولید و commit کردن lockfile مستقل `v3/frontend/package-lock.json` و سپس استفاده از `npm ci`.
 4. ممیزی وابستگی‌ها و پوشش API بین Frontend و Backend؛ اتصال واقعی ورود، کاتالوگ، سفارش، پرداخت، انبار، مشتری، تنظیمات و گزارش‌ها.
