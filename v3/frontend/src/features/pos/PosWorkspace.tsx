@@ -10,9 +10,12 @@ import {
 } from "lucide-react";
 import {
   ApiError,
+  captureCashPayment,
   createPosOrder,
+  getCashRegisters,
   getPosCatalogProductDetails,
   getPosCatalogProducts,
+  type CashRegisterSummary,
   type PosCatalogProduct,
   type PosCatalogProductDetail,
 } from "../../shared/api/client";
@@ -126,8 +129,16 @@ export function PosWorkspace() {
   const [selectedVariantId, setSelectedVariantId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [createdOrder, setCreatedOrder] = useState<{ number: number; total: number; id: string } | null>(null);
+  const [createdOrder, setCreatedOrder] = useState<{
+    number: number; total: number; id: string; paymentStatus: string; capturedAmount: number; dueAmount: number;
+  } | null>(null);
+  const [cashRegisters, setCashRegisters] = useState<CashRegisterSummary[]>([]);
+  const [cashSessionId, setCashSessionId] = useState("");
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const idempotencyAttempt = useRef<{ signature: string; key: string } | null>(null);
+  const cashPaymentAttempt = useRef<{ signature: string; key: string } | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -147,6 +158,30 @@ export function PosWorkspace() {
       });
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    if (!createdOrder) {
+      setCashRegisters([]);
+      setCashSessionId("");
+      return;
+    }
+    let active = true;
+    getCashRegisters()
+      .then((registers) => {
+        if (!active) return;
+        setCashRegisters(registers);
+        const openSessions = registers.filter((register) => register.is_active && register.active_session?.status === "open");
+        setCashSessionId((current) => openSessions.some((register) => register.active_session?.id === current)
+          ? current
+          : openSessions[0]?.active_session?.id ?? "");
+        setPaymentError(null);
+      })
+      .catch((cause: unknown) => {
+        if (!active) return;
+        setPaymentError(cause instanceof Error ? cause.message : "دریافت شیفت‌های صندوق انجام نشد.");
+      });
+    return () => { active = false; };
+  }, [createdOrder?.id]);
 
   const categories = useMemo(
     () => ["همه", ...Array.from(new Set(products.map((product) => product.category?.name || "بدون دسته")))],
@@ -289,7 +324,17 @@ export function PosWorkspace() {
     setActionError(null);
     try {
       const order = await createPosOrder(payload, idempotencyAttempt.current.key);
-      setCreatedOrder({ number: order.order_number, total: order.total_amount, id: order.id });
+      setCreatedOrder({
+        number: order.order_number,
+        total: order.total_amount,
+        id: order.id,
+        paymentStatus: order.payment_status,
+        capturedAmount: 0,
+        dueAmount: order.total_amount,
+      });
+      setPaymentAmount(String(order.total_amount));
+      setPaymentError(null);
+      cashPaymentAttempt.current = null;
       setCart([]);
       setEditingProduct(null);
       setRecipientName("");
@@ -305,6 +350,52 @@ export function PosWorkspace() {
       setSubmitting(false);
     }
   }
+
+  async function submitCashPayment() {
+    if (!createdOrder || paymentSubmitting) return;
+    const normalizedAmount = normalizeDigits(paymentAmount).replace(/[,٬\\s]/g, "");
+    const amount = Number(normalizedAmount);
+    if (!Number.isSafeInteger(amount) || amount < 1) {
+      setPaymentError("مبلغ دریافتی باید عدد صحیح و بیشتر از صفر باشد.");
+      return;
+    }
+    if (!cashSessionId) {
+      setPaymentError("برای ثبت دریافت، یک شیفت صندوق باز انتخاب کنید.");
+      return;
+    }
+    const signature = JSON.stringify([createdOrder.id, cashSessionId, amount]);
+    if (!cashPaymentAttempt.current || cashPaymentAttempt.current.signature !== signature) {
+      cashPaymentAttempt.current = { signature, key: globalThis.crypto.randomUUID() };
+    }
+    setPaymentSubmitting(true);
+    setPaymentError(null);
+    try {
+      const result = await captureCashPayment(
+        createdOrder.id,
+        cashSessionId,
+        amount,
+        cashPaymentAttempt.current.key,
+      );
+      setCreatedOrder((current) => current ? {
+        ...current,
+        paymentStatus: result.order.payment_status,
+        capturedAmount: result.order.captured_amount,
+        dueAmount: result.order.due_amount,
+      } : current);
+      setPaymentAmount(String(result.order.due_amount));
+      cashPaymentAttempt.current = null;
+    } catch (cause) {
+      setPaymentError(cause instanceof ApiError
+        ? cause.message
+        : cause instanceof Error ? cause.message : "ثبت دریافت وجه انجام نشد.");
+    } finally {
+      setPaymentSubmitting(false);
+    }
+  }
+
+  const openCashSessions = cashRegisters.filter(
+    (register) => register.is_active && register.active_session?.status === "open",
+  );
 
   return (
     <div className="page-stack pos-workspace">
@@ -328,9 +419,54 @@ export function PosWorkspace() {
       {actionError ? <div className="auth-error" role="alert">{actionError}</div> : null}
       {createdOrder ? (
         <div className="auth-success" role="status" aria-live="polite">
-          سفارش شماره {money(createdOrder.number)} با موفقیت در سرور ثبت شد.
-          مبلغ نهایی سرور: {money(createdOrder.total)} تومان · وضعیت: پیش‌نویس · پرداخت: انجام‌نشده
+          سفارش شماره {money(createdOrder.number)} ثبت شد.
+          مبلغ کل: {money(createdOrder.total)} تومان · دریافت‌شده: {money(createdOrder.capturedAmount)} تومان · مانده: {money(createdOrder.dueAmount)} تومان
+          · وضعیت پرداخت: {createdOrder.paymentStatus === "paid" ? "تسویه‌شده" : createdOrder.paymentStatus === "partially_paid" ? "پرداخت جزئی" : "پرداخت‌نشده"}
         </div>
+      ) : null}
+      {createdOrder && createdOrder.dueAmount > 0 ? (
+        <Surface padding="md" className="pos-payment-panel">
+          <div className="pos-payment-heading">
+            <div><h2>دریافت وجه سفارش</h2><p>ثبت نقدی در دفتر پرداخت و شیفت صندوق فعال</p></div>
+            <StatusBadge variant={createdOrder.capturedAmount > 0 ? "warning" : "neutral"}>
+              مانده {money(createdOrder.dueAmount)} تومان
+            </StatusBadge>
+          </div>
+          {paymentError ? <div className="auth-error" role="alert">{paymentError}</div> : null}
+          {openCashSessions.length ? (
+            <>
+              <label className="pos-payment-field">
+                <span>شیفت صندوق</span>
+                <select value={cashSessionId} onChange={(event) => setCashSessionId(event.target.value)}>
+                  {openCashSessions.map((register) => (
+                    <option key={register.active_session!.id} value={register.active_session!.id}>
+                      {register.name} · {register.code}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="pos-payment-field">
+                <span>مبلغ دریافتی (تومان)</span>
+                <input
+                  type="number"
+                  min="1"
+                  max={createdOrder.dueAmount}
+                  step="1"
+                  inputMode="numeric"
+                  value={paymentAmount}
+                  onChange={(event) => setPaymentAmount(event.target.value)}
+                />
+              </label>
+              <Button onClick={() => { void submitCashPayment(); }} disabled={paymentSubmitting || !cashSessionId}>
+                {paymentSubmitting ? "در حال ثبت دریافت..." : "ثبت دریافت نقدی"}
+              </Button>
+            </>
+          ) : (
+            <Notice variant="warning">
+              شیفت صندوق باز پیدا نشد. ابتدا از بخش مدیریت صندوق یک صندوق فعال و شیفت باز ایجاد کنید؛ سفارش ثبت‌شده محفوظ است و پرداخت هنوز انجام نشده.
+            </Notice>
+          )}
+        </Surface>
       ) : null}
 
       <div className="pos-layout">
