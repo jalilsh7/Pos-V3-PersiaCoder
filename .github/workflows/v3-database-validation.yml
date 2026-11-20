@@ -75,6 +75,7 @@ jobs:
           php -l scripts/check-v3-inventory-posting-integration.php
           php -l scripts/check-v3-auth-integration.php
           php -l scripts/check-v3-order-payment-integration.php
+          php -l scripts/check-v3-customer-integration.php
           php scripts/check-v3-sql-parser.php
           python3 -m py_compile scripts/tamper-v3-backup.py
 
@@ -115,6 +116,7 @@ jobs:
           php scripts/check-v3-inventory-posting-integration.php
           php scripts/check-v3-auth-integration.php
           php scripts/check-v3-order-payment-integration.php
+          php scripts/check-v3-customer-integration.php
           export POS_V3_BACKUP_HMAC_KEY='ci-only-v3-backup-key-32-bytes-minimum'
           BACKUP_FILE="${RUNNER_TEMP}/persiacoder-pos-v3-ci-backup.jsonl.gz"
           TAMPERED_FILE="${RUNNER_TEMP}/persiacoder-pos-v3-ci-backup-tampered.jsonl.gz"
