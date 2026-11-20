@@ -58,3 +58,7 @@ jobs:
         run: php scripts/check-v3-backend-orders.php
       - name: Order cash payment ledger contract checks
         run: php scripts/check-v3-order-payments.php
+      - name: Legacy SMS parser and National Payamak SmartSMS adapter tests
+        run: |
+          php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
+          php v3/backend/tests/Communications/Sms/NationalPayamakSmartSmsProviderTest.php
