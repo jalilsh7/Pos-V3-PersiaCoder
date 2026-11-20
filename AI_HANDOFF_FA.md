@@ -276,3 +276,22 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - وضعیت واقعی: APIهای پایه رسپی وجود دارند؛ UI/API client کامل مدیریت رسپی و گزینه‌ها تکمیل نشده؛ اتصال انتهابه‌انتهای فروش به رزرو/مصرف انبار اثبات نشده است.
 - تفکیک Product و Stock Item حفظ شود؛ نوع محصول `ingredient` به‌تنهایی رابطه خودکار انبار ایجاد نمی‌کند. سیاست‌های زمان رزرو/مصرف، valuation، موجودی منفی فراتر از policy فعلی و اثر لغو/refund همچنان باز هستند.
 - README طراحی و backlog اصلاح شدند تا فقط سند canonical را معرفی کنند. D-08 «آماده نمونه‌سازی مشروط» است، نه تکمیل قابلیت.
+
+
+## بسته طراحی D-09 — انبار، مکان‌ها، موجودی و اسناد (2026-11-20)
+
+- سند UX ایجاد شد: [INVENTORY_LOCATIONS_STOCK_AND_DOCUMENTS_UX_V3_FA.md](design/INVENTORY_LOCATIONS_STOCK_AND_DOCUMENTS_UX_V3_FA.md)، شناسه `DESIGN-INVENTORY-WORKSPACE-2026-001`، نسخه 0.1، آماده نمونه‌سازی.
+- کد بررسی‌شده: `InventoryController`، `InventoryService`، `InventoryDocumentService`، `InventoryPostingService` و repositoryهای مرتبط؛ UI فعلی `InventoryWorkspace.tsx` و routeهای API.
+- موجودی on-hand/reserved/available و ledger، قلم و واحد، مکان شعبه، تأمین‌کننده و سند draft/posting در کد وجود دارند. writeها با idempotency و audit طراحی شده‌اند؛ posting سند با قفل balanceها و کنترل وضعیت draft انجام می‌شود.
+- انواع سند در سرویس: purchase_receipt، consumption، transfer، adjustment_in، adjustment_out، waste و return. نوع return فعلاً قابل posting نیست و به source-linked return valuation policy وابسته است؛ در UI نباید عملیاتی جلوه کند.
+- اسناد خرید و تعدیل افزایشی بهای کل خط لازم دارند؛ adjustment_in/out و waste دلیل اجباری دارند؛ transfer مقصد متفاوت می‌خواهد؛ سند بدون خط قابل posting نیست.
+- واحدها dimension و conversion factor snapshot دارند؛ موجودی منفی در posting کنترل می‌شود. جزئیات valuation و semantics همه حرکت‌ها باید با repository کامل و تست DB تطبیق داده شود.
+- UI فعلی انبار به API وصل است، اما بارگذاری اولیه از سقف‌های ثابت استفاده می‌کند؛ صفحه‌بندی کامل و جمع‌های کل نباید از نتایج محدود استنتاج شوند.
+- سیاست رزرو/مصرف خودکار سفارش، زمان مصرف، برگشت/refund، valuation نهایی، هشدار کمبود و بین‌شعبه‌ای همچنان تصمیم‌های باز هستند.
+- سند در README طراحی نمایه و D-09 در بک‌لاگ به «آماده نمونه‌سازی» ارتقا یافت؛ تست runtime جدید اجرا نشده است.
+
+### نقطه ادامه طراحی
+
+- بسته بعدی: **D-10 — مشتری، وفاداری و ارتباطات پیامکی**.
+- پیش از طراحی، آخرین HEAD و تصمیمات محصول را تازه بخوان؛ سپس Customer UI/API/Repository، schema و SMS integration فعلی را بررسی کن.
+- وضعیت consent تبلیغاتی، opt-out و جداسازی پیامک تراکنشی/تبلیغاتی باید دقیقاً مطابق تصمیمات مصوب باشد؛ checkbox فعال پیش‌فرض به‌تنهایی رضایت معتبر ایجاد نمی‌کند.
