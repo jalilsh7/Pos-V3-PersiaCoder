@@ -108,3 +108,19 @@
 
 
 - SmartSMS error code 15 explicitly indicates a missing لغو11 marker at the end of the message. V3 validates this suffix before enqueue/send and never appends or rewrites message text automatically.
+
+## صف پایدار و worker پیامک (2026-11-20)
+
+- Migration 013 دو جدول pos_sms_outbox و pos_sms_delivery_attempts را ایجاد می‌کند.
+- شماره مقصد و متن پیام با AES-256-GCM و nonce/tag مجزا رمزگذاری می‌شوند؛ HMAC integrity hash پیش از ارسال بررسی می‌شود.
+- SmsOutboxService فقط پیام transactional را idempotent وارد صف می‌کند و به مجوز pos.sell نیاز دارد. در صورت اتصال customer، شماره مقصد باید با شماره فعال و نرمال‌شده همان مشتری یکسان باشد.
+- پیام marketing فعلاً پشتیبانی نمی‌شود. متن SmartSMS باید با لغو11 تمام شود؛ سیستم متن را خودکار تغییر نمی‌دهد.
+- SmsOutboxWorker حداکثر 100 پیام را با SKIP LOCKED claim می‌کند، از SendMultiple استفاده می‌کند، provider ID و attempt را ذخیره می‌کند و گیرنده تکراری را به نوبت بعد موکول می‌کند.
+- خطای HTTP 429 با backoff محدود و حداکثر 3 تلاش مجدد می‌شود. timeout/transport/5xx به unknown می‌رود و retry نمی‌شود. processing قدیمی‌تر از 10 دقیقه نیز برای جلوگیری از ارسال تکراری unknown می‌شود.
+- SmsOutboxDeliveryPoller وضعیت‌های SmartSMS را با GetDeliveries می‌خواند و attempt جدا ثبت می‌کند.
+- اجرای CLI:
+  - php scripts/run-v3-sms-outbox-worker.php
+  - php scripts/poll-v3-sms-deliveries.php
+- تست DB روی MySQL 8.4 و MariaDB 10.6 موفق است (run 44811930818)؛ backend tests روی PHP 8.2/8.3/8.4 موفق‌اند (run 44812010216). تست‌ها fake provider بوده‌اند و پیام واقعی ارسال نشده است.
+- هنوز trigger خودکار از رویدادهای سفارش، داشبورد صف، تنظیمات provider، consent/opt-out بازاریابی، زمان‌بندی و reconciliation گزارش تحویل SharedNumber وجود ندارد. SharedNumber adapter فعلاً مستقل از outbox است.
+
