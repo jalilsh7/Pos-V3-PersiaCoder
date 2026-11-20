@@ -21,7 +21,7 @@
 | D-12 | تنظیمات، کاربران، نقش‌ها و entitlement | آماده نمونه‌سازی مرحله‌ای | طراحی business/branch settings، مدیریت کاربر و رمز موقت یک‌بارنمایش، custom roles و permission scope، جداسازی RBAC از Central entitlement و موارد باز LIC-MODULE-CONTROL-2026-001 در ACCESS_CONTROL_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md |
 | D-13 | فروشگاه آنلاین و checkout مشتری | آماده نمونه‌سازی مفهومی | طراحی قالب عمومی، منو/سبد، دریافت و ساعات کاری، checkout امن، payment state، و اتصال به موتور سفارش مشترک در STOREFRONT_AND_CUSTOMER_CHECKOUT_UX_V3_FA.md؛ public API و پرداخت عملیاتی باقی است |
 | D-14 | آشپزخانه، آماده‌سازی و تحویل | آماده بازبینی و نمونه‌سازی | صف سفارش accepted/preparing/ready، transitionهای مجاز، اقلام snapshot، تفکیک order/fulfillment، سالن/میز و roadmap KDS چندایستگاهی در KITCHEN_PREPARATION_AND_HANDOFF_UX_V3_FA.md |
-| D-15 | یکپارچگی و سخت‌افزار | ثبت‌شده | کارتخوان، چاپگر و وضعیت اتصال |
+| D-15 | یکپارچگی‌ها، پیامک و سخت‌افزار | آماده بازبینی معماری | SmartSMS/SharedNumber بر اساس مستندات آپلودی، provider adapter، queue/delivery/consent، کارتخوان LAN/Wi-Fi مدل‌محور و print/KOT jobs در INTEGRATIONS_SMS_TERMINALS_AND_PRINTING_UX_V3_FA.md؛ اجرای provider/device و پروتکل واقعی باقی است |
 | D-16 | بازبینی یکپارچگی و تحویل به توسعه | ثبت‌شده | انطباق طراحی، تصمیمات و معیارهای پذیرش |
 
 ## قواعد
