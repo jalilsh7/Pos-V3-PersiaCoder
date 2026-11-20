@@ -105,3 +105,7 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 صفحه مالی از داده ساختگی به API واقعی صندوق V3 متصل شده است: فهرست/ایجاد صندوق، بازکردن شیفت، بستن با شمارش واقعی و ثبت بررسی اختلاف. تغییرات در `client.ts`، `FinanceWorkspace.tsx` و `finance.css` است. commitهای کد از `d099f9ea` تا `3dbbfc51` هستند. این بسته هنوز build/typecheck و API/E2E را نگذرانده و باز است.
 
 **ادامه فوری:** 1) اجرای frontend typecheck/build روی runner؛ 2) تکمیل گردش‌های مالی و هزینه‌ها و اتصال فروش/پرداخت به صندوق؛ 3) تکمیل جریان سفارش POS و آشپزخانه؛ 4) فروشگاه آنلاین عملیاتی (نه preview نمونه)؛ 5) پنل SMS رویدادمحور با consent/opt-out و صف ارسال. README فرانت‌اند به‌روزرسانی شده تا ماژول‌های متصل و prototypeها را درست تفکیک کند. گزارش کامل در ROADMAP و PROJECT_MEMORY ثبت شده است.
+
+
+## FIN-02 — دریافت و پرداخت نقدی دستی
+مسیر backend برای ثبت `manual_in/manual_out` اضافه شد؛ فقط روی شیفت باز، با مبلغ مثبت و علت اجباری، کنترل موجودی کافی برای برداشت، `finance.manage`، CSRF/same-origin، idempotency و audit. به‌روزرسانی موجودی مورد انتظار و درج گردش در یک transaction قرار دارند. فرم این عملیات نیز به FinanceWorkspace متصل شد. commitها و فایل‌ها در بخش FIN-02 در PROJECT_MEMORY_FA.md و ROADMAP_V3.md ثبت شده‌اند. تست‌های syntax/integration/typecheck/build/E2E هنوز اجرا نشده‌اند.
