@@ -10,6 +10,21 @@ final readonly class SmsOutboxRepository
 {
     public function __construct(private PDO $connection) {}
 
+    /** @return array{id:int,phone_normalized:string}|null */
+    public function findActiveCustomer(int $businessId, string $customerPublicId): ?array
+    {
+        $statement = $this->connection->prepare(
+            'SELECT id, phone_normalized FROM pos_customers
+             WHERE business_id = :business_id AND public_id = :public_id AND is_active = 1
+             LIMIT 1'
+        );
+        $statement->execute(['business_id' => $businessId, 'public_id' => $customerPublicId]);
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
+        return is_array($row) && is_string($row['phone_normalized'])
+            ? ['id' => (int) $row['id'], 'phone_normalized' => $row['phone_normalized']]
+            : null;
+    }
+
     public function findCustomerId(int $businessId, string $customerPublicId): ?int
     {
         $statement = $this->connection->prepare(
