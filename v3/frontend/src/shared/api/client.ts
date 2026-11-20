@@ -574,6 +574,14 @@ export async function createPosOrder(payload: CreatePosOrderPayload, idempotency
   return data.order;
 }
 
+export type PosCustomerOption = { id: string; name: string; phone: string };
+
+export async function searchPosCustomers(query: string): Promise<PosCustomerOption[]> {
+  const suffix = query.trim() ? `?q=${encodeURIComponent(query.trim())}` : "";
+  const data = await request<{ customers: PosCustomerOption[] }>(`/pos/customers${suffix}`);
+  return data.customers;
+}
+
 export type CustomerSummary = {
   id: string;
   name: string;
