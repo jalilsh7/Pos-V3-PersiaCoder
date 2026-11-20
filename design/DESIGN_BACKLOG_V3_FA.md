@@ -18,7 +18,7 @@
 | D-10 | مشتری، وفاداری و پیامک | آماده بازبینی مفهومی | پرونده مشتری، سفارش‌های واقعی، ledger امتیاز/اعتبار، consent/opt-out و صف/گزارش پیامک در CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md؛ Customer API و SMS runtime هنوز لازم است |
 | D-11 | مالی، صندوق‌ها و تطبیق | آماده بازبینی | صندوق/شیفت و گردش دستی موجود؛ UX پرداخت، refund، هزینه و settlement در FINANCE_CASH_AND_RECONCILIATION_UX_V3_FA.md؛ APIهای مالی عملیاتی باز هستند |
 | D-11 | مالی، صندوق و پرداخت | آماده بازبینی مفهومی | صندوق/شیفت واقعی، payment lifecycle، refund، expense، settlement و گزارش در FINANCE_CASH_AND_PAYMENTS_UX_V3_FA.md؛ پرداخت سفارش و سرویس‌های مالی تکمیلی نیازمند Backend است |
-| D-12 | تنظیمات، کاربران و قابلیت‌ها | ثبت‌شده | RBAC و entitlement بدون فرض بسته فروش |
+| D-12 | تنظیمات، کاربران، نقش‌ها و entitlement | آماده نمونه‌سازی مرحله‌ای | طراحی business/branch settings، مدیریت کاربر و رمز موقت یک‌بارنمایش، custom roles و permission scope، جداسازی RBAC از Central entitlement و موارد باز LIC-MODULE-CONTROL-2026-001 در ACCESS_CONTROL_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md |
 | D-13 | فروشگاه آنلاین و checkout | ثبت‌شده | قالب صنفی و اتصال به موتور سفارش مشترک |
 | D-14 | آشپزخانه/KDS و تحویل | ثبت‌شده | ایستگاه، اولویت و تحویل |
 | D-15 | یکپارچگی و سخت‌افزار | ثبت‌شده | کارتخوان، چاپگر و وضعیت اتصال |
