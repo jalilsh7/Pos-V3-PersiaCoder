@@ -3,10 +3,10 @@ name: V3 database engine validation
 on:
   push:
     branches:
-      - feature/3food-pos-next-release-v2
+      - main
   pull_request:
     branches:
-      - feature/3food-pos-next-release-v2
+      - main
   workflow_dispatch:
 
 permissions:
