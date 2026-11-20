@@ -828,3 +828,14 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - API: GET/PUT /api/v1/communications/sms/service-templates.
 - Remaining: actual order lifecycle integration and immutable variable snapshots into Shared Number worker. Initial trigger/source catalog is guidance only, not active automatic sending.
 - Tests/build/migration execution not run in this batch.
+
+## نقطه ادامه پس از SMS-TEMPLATE-03 — order lifecycle و Shared Number outbox (2026-11-21)
+
+- HEAD: `3144e0691f4feef45bd7541e2adbd16593a23a0b`.
+- پیاده‌سازی branch-scoped template config از migration 016 به رویدادهای واقعی سفارش متصل شد؛ migration 017 صف مستقل Shared Number را می‌سازد.
+- `OrderService` اکنون `order.created`، `order.status_changed`، `order.ready` و `order.completed` را مطابق lifecycle موجود enqueue می‌کند. رویدادهای ready/completed از trigger عمومی مستثنا شده‌اند تا ارسال تکراری از دو trigger جلوگیری شود.
+- متغیرهای مجاز از اطلاعات واقعی سفارش/مشتری استخراج، مرتب و رمزنگاری می‌شوند؛ recipient نیز رمزنگاری می‌شود. snapshot شامل bodyId و values است؛ متن اصلی پیامک هرگز وارد POS نمی‌شود.
+- Worker: `scripts/run-v3-sms-service-template-worker.php`. تنظیمات provider از env موجود Shared Number خوانده می‌شود؛ هیچ credential در UI/API قرار نمی‌گیرد. وضعیت unknown بدون retry کور باقی می‌ماند.
+- گزارش صف قالب خدماتی از `GET /api/v1/communications/sms/service-outbox` و صفحه «صف و گزارش پیامک» قابل مشاهده است.
+- **کارهای بعدی:** (1) بازبینی و اجرای lint/typecheck/build و تست‌های PHP در gate؛ (2) اجرای migrationهای 016 و 017 روی دیتابیس آزمایشی؛ (3) تست tenant/branch isolation، idempotency و atomicity با order transaction؛ (4) بررسی قرارداد رسمی delivery status برای Shared Number پیش از پیاده‌سازی poller؛ (5) اجرای تست provider فقط با bodyId تأییدشده و حساب/credential واقعی در محیط کنترل‌شده.
+- تست‌ها، build و migration هنوز اجرا نشده‌اند؛ ارسال واقعی پیامک انجام نشده است. هیچ‌یک از فازهای کلی محصول با این بسته بسته نمی‌شود.

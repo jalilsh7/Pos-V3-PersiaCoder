@@ -49,24 +49,12 @@ final readonly class SmsServiceTemplateOutbox
         $recipient = LegacySmsParser::normalizeIranMobile($recipientSource);
         if ($recipient === null) return false;
 
-        $statusLabels = [
-            'draft' => 'پیش‌نویس',
-            'awaiting_payment' => 'در انتظار پرداخت',
-            'accepted' => 'تأیید شده',
-            'preparing' => 'در حال آماده‌سازی',
-            'ready' => 'آماده تحویل',
-            'completed' => 'تکمیل شده',
-            'cancelled' => 'لغو شده',
-            'rejected' => 'رد شده',
-        ];
-        $amount = number_format((int) ($context['total_amount'] ?? 0), 0, '.', ',');
-        $amount = strtr($amount, ['0'=>'۰','1'=>'۱','2'=>'۲','3'=>'۳','4'=>'۴','5'=>'۵','6'=>'۶','7'=>'۷','8'=>'۸','9'=>'۹',','=>'٬']);
         $available = [
             'order_number' => (string) (int) ($context['order_number'] ?? 0),
             'customer_name' => trim((string) ($customer['name'] ?? 'مشتری عزیز')) ?: 'مشتری عزیز',
-            'total_amount' => $amount,
+            'total_amount' => (string) (int) ($context['total_amount'] ?? 0),
             'created_at' => (string) ($context['created_at'] ?? ''),
-            'order_status' => $statusLabels[(string) ($context['order_status'] ?? '')] ?? (string) ($context['order_status'] ?? ''),
+            'order_status' => (string) ($context['order_status'] ?? ''),
         ];
         $keys = json_decode((string) $template['variable_keys_json'], true);
         if (!is_array($keys) || !array_is_list($keys) || $keys === [] || count($keys) > 20) return false;
