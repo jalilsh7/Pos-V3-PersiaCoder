@@ -1285,3 +1285,12 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - نمونه REST ارسالی برای BaseServiceNumber از application/x-www-form-urlencoded استفاده می‌کند؛ adapter قبلی JSON می‌فرستاد. transport فرم‌کدگذاری‌شده HTTPS اضافه و adapter SharedNumber به آن متصل شد.
 - نمونه‌های RAR، SOAP قدیمی با WSDL روی HTTP و متدهایی مانند SendSimpleSMS2 و SendByBaseNumber2 هستند؛ به‌عنوان مرجع legacy حفظ شدند و عیناً به V3 منتقل نشدند.
 - تست‌های provider در این بسته به fake form transport به‌روزرسانی شدند؛ اجرای تست در این بسته انجام نشد و برای phase gate باقی است. ارسال واقعی انجام نشده است.
+
+
+### SMS-TEMPLATE-01 — allow-list قالب‌های Shared Number (2026-11-21)
+- وضعیت: **در حال انجام؛ registry امن قالب‌ها اضافه شد، اتصال به outbox هنوز انجام نشده است.**
+- فایل‌ها: `SharedNumberTemplateRegistry.php` و تست مستقل آن.
+- شناسه `bodyId` در کد hard-code نشده؛ از متغیر محیطی `POS_V3_SMS_SHARED_TEMPLATES` به‌صورت JSON و فقط پس از تأیید قالب در پنل ارائه‌دهنده وارد می‌شود. هر کلید قالب باید یکتا و محدود به حروف کوچک/عدد/نقطه/خط تیره/underscore باشد؛ body_id مثبت و تعداد متغیرها ۰ تا ۲۰ است.
+- ارسال با کلید ناشناخته یا تعداد متغیر نادرست رد می‌شود. این registry فقط allow-list و اعتبارسنجی است و به‌تنهایی پیامک ارسال نمی‌کند.
+- اتصال صف، رمزنگاری متغیرهای قالب، provider-specific worker و گزارش delivery برای Shared Number همچنان باز است؛ تا آن زمان Shared Number در مسیر outbox عملیاتی نیست.
+- تست مستقل اضافه شده اما اجرا نشده؛ طبق سیاست مالک در gate تجمیعی فاز پیامک اجرا خواهد شد.

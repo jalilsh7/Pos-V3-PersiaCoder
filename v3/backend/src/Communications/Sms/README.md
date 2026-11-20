@@ -103,3 +103,14 @@ php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
 - Shared-number `BaseServiceNumber` therefore uses a dedicated HTTPS form-encoded transport, matching the supplied REST sample rather than sending JSON. TLS verification, no redirects and bounded timeouts remain enabled.
 - The supplied `SamplePHP.rar` contains legacy SOAP examples (`SendSimpleSMS2`, `SendSms`, `SendByBaseNumber2`, schedules, inbox and contacts). These examples use HTTP WSDL URLs and placeholder/demo credentials. They are treated as compatibility references only; V3 does not copy insecure HTTP endpoints, SOAP credentials or legacy PECL/SoapClient runtime dependencies.
 - No provider call or real SMS was made during this change.
+
+
+## Shared Number approved-template registry
+
+- `SharedNumberTemplateRegistry` is an installation-level allow-list for templates already approved in the provider account.
+- Configure `POS_V3_SMS_SHARED_TEMPLATES` as JSON, for example:
+  `{"order_ready":{"body_id":123456,"variable_count":2}}`
+- Replace the example ID with the actual account-specific approved body ID. The example is illustrative only and is not a valid project template ID.
+- Template keys are internal stable identifiers. Each definition enforces a positive provider body ID and an exact variable count (0–20). Unknown keys and mismatched variable counts fail closed.
+- This registry does not send SMS and is not yet connected to the outbox worker. Do not expose arbitrary body IDs or template variables through a public endpoint.
+- Test: `php v3/backend/tests/Communications/Sms/SharedNumberTemplateRegistryTest.php` (not run in this batch).

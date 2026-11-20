@@ -805,3 +805,12 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - RAR حاوی SOAP/WSDL legacy با HTTP و متدهای SendSimpleSMS2، SendSms، SendByBaseNumber2، AddSchedule و APIهای inbox/contact است. این‌ها به‌عنوان reference ثبت شدند، نه کپی مستقیم به V3.
 - تست‌های fake مربوط به SharedNumber به transport جدید تطبیق داده شدند؛ تست/build اجرا نشده و ارسال واقعی انجام نشده است.
 - گام بعد: اتصال امن SharedNumber template به outbox با registry قالب‌های تأییدشده و persistence شناسه‌های گزارش؛ قبل از آن باید schema و policy چند-provider کامل شود. ارسال marketing همچنان مسدود تا consent/evidence/opt-out سمت سرور.
+
+
+## ادامه توسعه پیامک — SMS-TEMPLATE-01 (2026-11-21)
+- HEAD پیش از این بسته: `a7ccf47748e6530fe8e7cdfe69996f771ee71985`.
+- Registry قالب‌های تأییدشده Shared Number به کد اضافه شد: `v3/backend/src/Communications/Sms/SharedNumberTemplateRegistry.php`.
+- تنظیم از env با نام `POS_V3_SMS_SHARED_TEMPLATES`؛ bodyId واقعی account-specific است و در سورس یا مثال اجرایی فرضی تثبیت نمی‌شود. تعداد متغیرها دقیقاً کنترل می‌شود.
+- تست مستقل: `v3/backend/tests/Communications/Sms/SharedNumberTemplateRegistryTest.php` (ایجاد شد، اجرا نشده).
+- هنوز هیچ‌گونه اتصال به outbox/worker/poller وجود ندارد؛ worker فعلی فقط SmartSMS را claim و پردازش می‌کند. Shared Number نباید به‌عنوان مسیر ارسال عملیاتی معرفی شود تا قرارداد ذخیره‌سازی payload و reconciliation آن تکمیل شود.
+- گام بعد: طراحی و پیاده‌سازی payload رمزنگاری‌شده type-safe برای template، انتخاب provider در worker بر اساس provider_code و تعیین روش معتبر delivery lookup برای Shared Number، بدون retry کور در outcome نامشخص.
