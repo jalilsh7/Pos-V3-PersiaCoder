@@ -212,12 +212,12 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 
 ## بسته طراحی D-08 — کاتالوگ، افزودنی و رسپی (2026-11-20)
 
-- سند UX ایجاد شد: [CATALOG_ADDONS_AND_RECIPES_UX_V3_FA.md](design/CATALOG_ADDONS_AND_RECIPES_UX_V3_FA.md)، شناسه `DESIGN-CATALOG-RECIPE-2026-001`، نسخه 0.1.
+- سند UX ایجاد شد: [CATALOG_OPTIONS_AND_RECIPES_UX_V3_FA.md](design/CATALOG_OPTIONS_AND_RECIPES_UX_V3_FA.md)، شناسه `DESIGN-CATALOG-RECIPE-2026-001`، نسخه 0.1.
 - کد بررسی‌شده: `CatalogService` و `CatalogRepository` برای دسته، محصول، soft archive، تنوع، گروه افزودنی، گزینه و attach گروه به محصول؛ `InventoryService` و `InventoryRepository` برای واحد، ماده اولیه، مکان، موجودی و ledger.
 - مدل واقعی محصول: prepared/packaged/ingredient/service، قیمت صحیح تومان، نرخ مالیات basis points، SKU و دسته؛ تنوع‌ها اختلاف قیمت نسبت به پایه دارند.
 - گروه افزودنی دارای single/multiple، min/max، required و گزینه‌های دارای price delta است. محصول جزئیات گروه‌های متصل و گزینه‌ها را برمی‌گرداند.
 - تفکیک محصول فروش از Stock Item رعایت شد. واحد پایه ماده پس از ایجاد immutable است و سیاست موجودی منفی فعلی فقط block را پشتیبانی می‌کند.
-- schema شامل pos_recipes، pos_recipe_versions، pos_recipe_lines، pos_order_items.recipe_version_id و snapshot خطوط مواد سفارش است؛ اما در سرویس‌های بررسی‌شده RecipeService/CRUD عملیاتی نسخه رسپی پیدا نشد. بنابراین رسپی در طراحی «نیازمند تکمیل Backend» باقی ماند.
+- اصلاح ممیزی: در بررسی تکمیلی، RecipeService/RecipeRepository/RecipeController و routeهای GET recipe، POST draft recipe-version و POST activate version در HEAD وجود دارند؛ بنابراین CRUD پایه نسخه رسپی در Backend حاضر است. پوشش UI و API client فرانت‌اند برای این قابلیت‌ها در بررسی‌شده پیدا نشد. اتصال عملیاتی ثبت سفارش به snapshot نسخه رسپی/مصرف انبار هنوز اثبات نشده است.
 - سیاست‌های فعال‌سازی نسخه، چند رسپی فعال، زمان رزرو/مصرف، محل برداشت، ضایعات/تبدیل و برگشت مواد هنوز باز هستند؛ هیچ‌کدام حدس یا قطعی نشده‌اند.
 - سند در README طراحی نمایه شد و D-08 در backlog به «آماده نمونه‌سازی مشروط» تغییر یافت.
 - این بسته فقط مستندات طراحی است؛ UI کاتالوگ، API رسپی، upload رسانه و اتصال انتهابه‌انتهای سفارش به مصرف موجودی در این commitها تکمیل نشده و تست runtime اجرا نشده است.
@@ -227,3 +227,14 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - بسته بعدی: **D-09 — انبار، مکان‌ها، موجودی، اسناد و گردش کالا**.
 - ابتدا آخرین HEAD و تصمیمات محصول را تازه fetch کن؛ سپس InventoryService/Repository، schema، routes/controllers و frontend را تطبیق بده.
 - طراحی باید جریان مواد اولیه، مکان/انبار شعبه، موجودی و ledger، اسناد و posting را از قابلیت‌های واقعی استخراج کند؛ رزرو/مصرف سفارش و رسپی را فقط در حد قرارداد موجود نمایش دهد و سیاست‌های باز را باز نگه دارد.
+
+
+## اصلاح ممیزی D-08 و ثبت دقیق وضعیت — 2026-11-20
+
+- نام صحیح سند D-08: [CATALOG_OPTIONS_AND_RECIPES_UX_V3_FA.md](design/CATALOG_OPTIONS_AND_RECIPES_UX_V3_FA.md). هر ارجاع قدیمی به `CATALOG_ADDONS_AND_RECIPES_UX_V3_FA.md` اشتباه تایپی/نام‌گذاری بود و نباید استفاده شود.
+- ممیزی کامل‌تر نشان داد Backend رسپی فقط schema نیست: `RecipeService`، `RecipeRepository` و `RecipeController` وجود دارند؛ routeهای خواندن رسپی، ساخت نسخه draft و فعال‌سازی نسخه در `v3/backend/public/index.php` ثبت شده‌اند. متن قبلی handoff که «RecipeService/CRUD عملیاتی پیدا نشد» نادرست بود و اصلاح شد.
+- APIهای catalog برای ایجاد محصول/دسته/تنوع/گروه گزینه/اتصال گروه به محصول و خواندن جزئیات محصول موجودند؛ routeهای update/archive و update variant نیز باید با بررسی کامل route و تست قرارداد ارزیابی شوند.
+- UI فعلی کاتالوگ، محصول/دسته را مدیریت و تنوع/گروه‌های گزینه را در جزئیات نمایش می‌دهد؛ UI کامل مدیریت تنوع/گروه/گزینه و UI رسپی در featureهای بررسی‌شده مشاهده نشد. API client فرانت‌اند برای Recipe نیز در بخش‌های بررسی‌شده مشاهده نشد.
+- نکته بسیار مهم برای مرحله توسعه: schema دارای `pos_order_items.recipe_version_id` و snapshot خطوط مواد سفارش است؛ وجود ستون به‌تنهایی اتصال در OrderService یا مصرف واقعی انبار را اثبات نمی‌کند. قبل از ادعای اتصال، OrderService و inventory posting را خط‌به‌خط بررسی و integration test طراحی کن.
+- D-08 سند UX نسخه 0.1 است و در backlog «آماده نمونه‌سازی مشروط» ثبت شد؛ تکمیل UI/API client و تست runtime باقی است.
+- بسته بعدی طراحی: **D-09 — انبار، مکان‌ها، موجودی، اسناد و گردش کالا**؛ سیاست رزرو/مصرف سفارش باید مطابق تصمیمات باز باقی بماند.
