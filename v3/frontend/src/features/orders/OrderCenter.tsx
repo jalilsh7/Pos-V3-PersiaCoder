@@ -400,7 +400,7 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
   const totalOrders = orders.length;
   const preparingOrders = orders.filter((order) => order.order_status === "preparing").length;
   const readyOrders = orders.filter((order) => order.order_status === "ready").length;
-  const awaitingPayment = orders.filter((order) => ["unpaid", "partially_paid", "pending"].includes(order.payment_status)).length;
+  const awaitingPayment = orders.filter((order) => ["unpaid", "partially_paid", "partially_refunded", "pending"].includes(order.payment_status)).length;
 
   return (
     <div className="page-stack orders-workspace">
