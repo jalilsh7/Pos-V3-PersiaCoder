@@ -79,6 +79,15 @@ export function AccessManagementWorkspace() {
   useEffect(() => { void refreshRoles(); }, []);
 
   useEffect(() => {
+    if (assignableRoles.length === 0) return;
+    setRoleChoices((current) => {
+      const next = { ...current };
+      for (const user of users) if (!next[user.id]) next[user.id] = assignableRoles[0].value;
+      return next;
+    });
+  }, [users, assignableRoles]);
+
+  useEffect(() => {
     if (!selectedRole) return;
     setRoleCode(selectedRole.is_system ? "" : selectedRole.code);
     setRoleName(selectedRole.name);
@@ -88,6 +97,7 @@ export function AccessManagementWorkspace() {
   async function submitUser(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setActionError(null);
+    setCredentials(null);
     setPasswordCopied(false);
     const normalizedUsername = username.trim().toLowerCase();
     const signature = JSON.stringify([scope, normalizedUsername, displayName.trim(), newUserRole]);
