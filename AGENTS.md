@@ -39,3 +39,13 @@
 - Keep legacy files archived unless they are explicitly adapted into V3.
 - Do not modify a live customer installation or production database during repository preparation.
 - Keep Persian UI copy and RTL behavior intact; preserve the five primary right-to-left navigation entries and place secondary entries behind “نمایش بیشتر”.
+
+
+## Persistent project memory (mandatory)
+- Before any work, read `PROJECT_MEMORY_FA.md`, then `README.md`, `ROADMAP_V3.md` and `AI_HANDOFF_FA.md` as relevant.
+- `PROJECT_MEMORY_FA.md` is the canonical durable record for owner-approved decisions, rules, requirements and ideas. Do not rely on chat history as the only record.
+- Record every new owner decision/request/idea with a stable ID, date, status and acceptance notes. Update the relevant roadmap/handoff/specification in the same work batch.
+- Keep README as the entry point linking to the canonical memory; do not put the entire decision log only in README.
+- Never silently override an approved decision. Propose changes with rationale and impact; wait for owner approval where required.
+- Never claim implementation, test, CI, deployment or phase completion without inspecting actual code and evidence. Distinguish documented, implemented, tested and owner-accepted states.
+- The online storefront is a mandatory core V3 capability in Phase 7, not an optional future feature. It must share the POS catalog/order core; see `PROJECT_MEMORY_FA.md` DEC-2026-008.
