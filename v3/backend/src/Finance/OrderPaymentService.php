@@ -60,6 +60,32 @@ final readonly class OrderPaymentService
             'created_at' => (string) $row['created_at'],
         ], $payments->fetchAll(PDO::FETCH_ASSOC));
 
+        $refundsQuery = $this->connection->prepare(
+            "SELECT r.public_id, p.public_id AS payment_public_id, r.amount, r.method,
+                    r.status, r.reason, r.provider_reference, r.created_at, r.completed_at
+             FROM pos_refunds r
+             INNER JOIN pos_payments p ON p.id = r.payment_id
+               AND p.business_id = r.business_id AND p.branch_id = r.branch_id
+             WHERE r.business_id = :business_id AND r.branch_id = :branch_id AND r.order_id = :order_id
+             ORDER BY r.id ASC"
+        );
+        $refundsQuery->execute([
+            'business_id' => $scope->businessId,
+            'branch_id' => $scope->branchId,
+            'order_id' => (int) $order['id'],
+        ]);
+        $refundRows = array_map(static fn (array $row): array => [
+            'id' => (string) $row['public_id'],
+            'payment_id' => (string) $row['payment_public_id'],
+            'amount' => (int) $row['amount'],
+            'method' => (string) $row['method'],
+            'status' => (string) $row['status'],
+            'reason' => (string) $row['reason'],
+            'provider_reference' => $row['provider_reference'] === null ? null : (string) $row['provider_reference'],
+            'created_at' => (string) $row['created_at'],
+            'completed_at' => $row['completed_at'] === null ? null : (string) $row['completed_at'],
+        ], $refundsQuery->fetchAll(PDO::FETCH_ASSOC));
+
         $totals = $this->paymentTotals($scope, (int) $order['id']);
         return [
             'order_id' => $orderPublicId,
@@ -70,6 +96,7 @@ final readonly class OrderPaymentService
             'refunded_amount' => $totals['refunded'],
             'due_amount' => max(0, (int) $order['total_amount'] - $totals['captured'] + $totals['refunded']),
             'payments' => $rows,
+            'refunds' => $refundRows,
         ];
     }
 
@@ -283,6 +310,257 @@ final readonly class OrderPaymentService
                             'payment_status' => $paymentStatus,
                             'captured_amount' => $capturedAfter,
                             'due_amount' => max(0, (int) $order['total_amount'] - $capturedAfter + $totals['refunded']),
+                        ],
+                    ], 'meta' => (object) []],
+                ];
+            },
+        );
+    }
+
+    public function refundCash(
+        AuthenticatedPrincipal $actor,
+        BusinessScope $scope,
+        string $orderPublicId,
+        string $paymentPublicId,
+        array $payload,
+        string $idempotencyKey,
+        string $requestId,
+        string $ipAddress,
+    ): array {
+        if ($scope->branchId === null || $scope->branchId < 1) {
+            throw new HttpException(400, 'branch_context_required', 'A branch context is required to refund payment.');
+        }
+        if (!self::isUuid($orderPublicId) || !self::isUuid($paymentPublicId)) {
+            throw new HttpException(400, 'payment_id_invalid', 'The order or payment identifier is invalid.');
+        }
+        if (!$this->permissions->allows($actor, 'finance.manage', $scope)) {
+            throw new HttpException(403, 'permission_denied', 'Finance management permission is required to refund cash.');
+        }
+
+        $amount = self::parseAmount($payload['amount'] ?? null);
+        $reason = $payload['reason'] ?? null;
+        $sessionPublicId = $payload['cash_session_id'] ?? null;
+        if (!is_string($reason) || trim($reason) === '' || self::unicodeLength($reason) > 500) {
+            throw new HttpException(422, 'refund_reason_required', 'A refund reason of up to 500 characters is required.');
+        }
+        $reason = trim($reason);
+        if (($payload['confirm'] ?? false) !== true) {
+            throw new HttpException(422, 'refund_confirmation_required', 'Explicit confirmation is required to return cash.');
+        }
+        if (!is_string($sessionPublicId) || !self::isUuid($sessionPublicId)) {
+            throw new HttpException(422, 'cash_session_required', 'Select an open cash session for this cash refund.');
+        }
+
+        $fingerprint = hash('sha256', json_encode([
+            'order_id' => $orderPublicId,
+            'payment_id' => $paymentPublicId,
+            'amount' => $amount,
+            'reason' => $reason,
+            'cash_session_id' => $sessionPublicId,
+            'confirm' => true,
+        ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+
+        return $this->idempotency->execute(
+            $actor->userId,
+            $scope,
+            'orders.payments.refund.cash',
+            $idempotencyKey,
+            $fingerprint,
+            function (PDO $connection) use (
+                $actor, $scope, $orderPublicId, $paymentPublicId, $amount, $reason,
+                $sessionPublicId, $idempotencyKey, $requestId, $ipAddress,
+            ): array {
+                $order = $this->findOrder($scope, $orderPublicId, true);
+                if ($order === null) {
+                    throw new HttpException(404, 'order_not_found', 'The order was not found in this branch.');
+                }
+                if ((string) $order['source_channel'] !== 'pos') {
+                    throw new HttpException(409, 'cash_refund_channel_invalid', 'Cashier refunds can only be recorded for POS orders.');
+                }
+
+                $paymentQuery = $connection->prepare(
+                    "SELECT id, public_id, amount, method, status
+                     FROM pos_payments
+                     WHERE business_id = :business_id AND branch_id = :branch_id
+                       AND order_id = :order_id AND public_id = :public_id
+                     LIMIT 1 FOR UPDATE"
+                );
+                $paymentQuery->execute([
+                    'business_id' => $scope->businessId,
+                    'branch_id' => $scope->branchId,
+                    'order_id' => (int) $order['id'],
+                    'public_id' => $paymentPublicId,
+                ]);
+                $payment = $paymentQuery->fetch(PDO::FETCH_ASSOC);
+                if (!is_array($payment)) {
+                    throw new HttpException(404, 'payment_not_found', 'The payment was not found for this order.');
+                }
+                if ((string) $payment['method'] !== 'cash'
+                    || !in_array((string) $payment['status'], ['captured', 'partially_refunded'], true)) {
+                    throw new HttpException(409, 'cash_refund_not_supported', 'Only captured cash payments can be refunded through this workflow.');
+                }
+
+                $refundQuery = $connection->prepare(
+                    "SELECT COALESCE(SUM(amount), 0) FROM pos_refunds
+                     WHERE business_id = :business_id AND branch_id = :branch_id
+                       AND payment_id = :payment_id AND status = 'succeeded'"
+                );
+                $refundQuery->execute([
+                    'business_id' => $scope->businessId,
+                    'branch_id' => $scope->branchId,
+                    'payment_id' => (int) $payment['id'],
+                ]);
+                $refundedBefore = (int) $refundQuery->fetchColumn();
+                $refundable = (int) $payment['amount'] - $refundedBefore;
+                if ($amount > $refundable || $refundable < 1) {
+                    throw new HttpException(422, 'refund_exceeds_refundable_amount', 'The refund amount exceeds the remaining refundable cash payment.', [
+                        'refundable_amount' => max(0, $refundable),
+                    ]);
+                }
+
+                $session = $this->cash->findOpenSessionForUpdate(
+                    $scope->businessId, (int) $scope->branchId, $sessionPublicId,
+                );
+                if ($session === null) {
+                    throw new HttpException(409, 'cash_session_not_open', 'Cash refund requires an open cash session in this branch.');
+                }
+                if ((int) $session['expected_cash_amount'] < $amount) {
+                    throw new HttpException(409, 'cash_balance_insufficient', 'The open cash session does not have enough expected cash for this refund.');
+                }
+
+                $refundPublicId = self::uuidV4();
+                $refundKey = hash('sha256', $idempotencyKey);
+                $insert = $connection->prepare(
+                    "INSERT INTO pos_refunds
+                        (business_id, branch_id, public_id, payment_id, order_id, amount, method,
+                         status, reason, idempotency_key, requested_by, approved_by, completed_at)
+                     VALUES
+                        (:business_id, :branch_id, :public_id, :payment_id, :order_id, :amount, 'cash',
+                         'succeeded', :reason, :idempotency_key, :requested_by, :approved_by, UTC_TIMESTAMP(3))"
+                );
+                $insert->execute([
+                    'business_id' => $scope->businessId,
+                    'branch_id' => $scope->branchId,
+                    'public_id' => $refundPublicId,
+                    'payment_id' => (int) $payment['id'],
+                    'order_id' => (int) $order['id'],
+                    'amount' => $amount,
+                    'reason' => $reason,
+                    'idempotency_key' => $refundKey,
+                    'requested_by' => $actor->userId,
+                    'approved_by' => $actor->userId,
+                ]);
+                $refundId = (int) $connection->lastInsertId();
+
+                $remainingRefundable = $refundable - $amount;
+                $paymentStatus = $remainingRefundable === 0 ? 'refunded' : 'partially_refunded';
+                $updatePayment = $connection->prepare(
+                    'UPDATE pos_payments SET status = :status
+                     WHERE id = :payment_id AND business_id = :business_id AND branch_id = :branch_id'
+                );
+                $updatePayment->execute([
+                    'status' => $paymentStatus,
+                    'payment_id' => (int) $payment['id'],
+                    'business_id' => $scope->businessId,
+                    'branch_id' => $scope->branchId,
+                ]);
+
+                $event = $connection->prepare(
+                    "INSERT INTO pos_payment_events
+                        (business_id, branch_id, payment_id, event_type, from_status, to_status,
+                         amount, actor_user_id, idempotency_key, safe_payload)
+                     VALUES
+                        (:business_id, :branch_id, :payment_id, 'cash_refunded', :from_status, :to_status,
+                         :amount, :actor_user_id, :idempotency_key, :safe_payload)"
+                );
+                $event->execute([
+                    'business_id' => $scope->businessId,
+                    'branch_id' => $scope->branchId,
+                    'payment_id' => (int) $payment['id'],
+                    'from_status' => (string) $payment['status'],
+                    'to_status' => $paymentStatus,
+                    'amount' => $amount,
+                    'actor_user_id' => $actor->userId,
+                    'idempotency_key' => hash('sha256', 'cash-refunded:' . $idempotencyKey),
+                    'safe_payload' => json_encode([
+                        'refund_id' => $refundPublicId,
+                        'cash_session_id' => $sessionPublicId,
+                    ], JSON_THROW_ON_ERROR),
+                ]);
+
+                $this->cash->decreaseExpectedCash(
+                    $scope->businessId, (int) $scope->branchId, (int) $session['id'], $amount,
+                );
+                $this->cash->createMovement(
+                    $scope->businessId,
+                    (int) $scope->branchId,
+                    (int) $session['id'],
+                    self::uuidV4(),
+                    'refund_out',
+                    $amount,
+                    null,
+                    $refundId,
+                    null,
+                    $reason,
+                    $actor->userId,
+                    hash('sha256', 'cash-refund:' . $idempotencyKey),
+                );
+
+                $totals = $this->paymentTotals($scope, (int) $order['id']);
+                $netPaid = $totals['captured'] - $totals['refunded'];
+                $orderPaymentStatus = $netPaid >= (int) $order['total_amount']
+                    ? 'paid'
+                    : ($netPaid > 0
+                        ? ($totals['refunded'] > 0 ? 'partially_refunded' : 'partially_paid')
+                        : ($totals['refunded'] > 0 ? 'refunded' : 'unpaid'));
+                $updateOrder = $connection->prepare(
+                    'UPDATE pos_orders SET payment_status = :payment_status
+                     WHERE id = :order_id AND business_id = :business_id AND branch_id = :branch_id'
+                );
+                $updateOrder->execute([
+                    'payment_status' => $orderPaymentStatus,
+                    'order_id' => (int) $order['id'],
+                    'business_id' => $scope->businessId,
+                    'branch_id' => $scope->branchId,
+                ]);
+
+                $this->audit->record(
+                    $actor->userId,
+                    'order.cash_refund_succeeded',
+                    'refund',
+                    $refundPublicId,
+                    ['payment_status' => (string) $order['payment_status'], 'refundable_amount' => $refundable],
+                    [
+                        'payment_status' => $orderPaymentStatus,
+                        'amount' => $amount,
+                        'order_number' => (int) $order['order_number'],
+                        'cash_session_id' => $sessionPublicId,
+                    ],
+                    $reason,
+                    $requestId,
+                    $ipAddress,
+                    $scope->businessId,
+                    $scope->branchId,
+                );
+
+                return [
+                    'status' => 201,
+                    'body' => ['data' => [
+                        'refund' => [
+                            'id' => $refundPublicId,
+                            'payment_id' => $paymentPublicId,
+                            'amount' => $amount,
+                            'method' => 'cash',
+                            'status' => 'succeeded',
+                            'reason' => $reason,
+                        ],
+                        'order' => [
+                            'id' => $orderPublicId,
+                            'order_number' => (int) $order['order_number'],
+                            'payment_status' => $orderPaymentStatus,
+                            'captured_amount' => $totals['captured'],
+                            'refunded_amount' => $totals['refunded'],
+                            'due_amount' => max(0, (int) $order['total_amount'] - $netPaid),
                         ],
                     ], 'meta' => (object) []],
                 ];
