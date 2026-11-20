@@ -711,3 +711,25 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
   5. secrets settings UI و integration test با credential واقعی فقط با اجازه صریح.
 - Scheduled SharedNumber را تا تعیین timezone کسب‌وکار و سیاست زمان‌بندی اجرا نکن؛ پنجره مستندشده 07:00–22:00 است.
 
+
+## نقطه ادامه — SMS outbox و worker (2026-11-20)
+
+- Migration 013 ایجاد شد: pos_sms_outbox و pos_sms_delivery_attempts.
+- متن پیام و شماره مقصد AES-256-GCM encrypted هستند؛ HMAC integrity قبل از ارسال بررسی می‌شود.
+- SmsOutboxService فقط transactional را idempotent enqueue می‌کند؛ permission pos.sell؛ customer link اختیاری اما در صورت وجود باید شماره را با شماره فعال مشتری match کند.
+- SmartSMS messages باید به لغو11 ختم شوند؛ بدون تغییر خودکار متن.
+- SmsOutboxWorker با SKIP LOCKED تا 100 پیام را claim و با SendMultiple ارسال می‌کند؛ provider ID و attemptها persist می‌شوند.
+- Duplicate recipient در یک batch defer می‌شود تا batch provider ambiguity نداشته باشد.
+- HTTP 429 retry محدود با backoff و حداکثر 3 تلاش؛ timeout/transport/5xx unknown و بدون retry؛ stale processing پس از 10 دقیقه unknown می‌شود.
+- SmsOutboxDeliveryPoller از GetDeliveries استفاده می‌کند.
+- CLIها: scripts/run-v3-sms-outbox-worker.php و scripts/poll-v3-sms-deliveries.php.
+- DB integration MySQL 8.4/MariaDB 10.6 PASS: run 44811930818.
+- Backend validation PHP 8.2/8.3/8.4 PASS: run 44812010216.
+- ارسال واقعی SMS اجرا نشده است. Queue هنوز از OrderService/eventها trigger نمی‌شود؛ UI مدیریت، provider settings، marketing consent/opt-out، زمان‌بندی و SharedNumber delivery polling باقی‌اند.
+- گام بعدی:
+  1. اتصال فقط پیام transactional تأییدشده به order lifecycle، پس از تعریف دقیق template/متن و قواعد ارسال.
+  2. طراحی/پیاده‌سازی consent و opt-out پیش از هرگونه marketing.
+  3. پنل مدیریت صف/گزارش تحویل و تنظیمات امن provider.
+  4. تصمیم‌گیری timezone و scheduled send؛ BaseServiceNumberSchedule پنجره 07:00–22:00 دارد.
+  5. ادامه Storefront و inventory-order integration پس از تعیین رزرو/مصرف.
+
