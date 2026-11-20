@@ -190,7 +190,7 @@ final readonly class CustomerService
         $name = array_key_exists('name', $payload) ? $payload['name'] : ($existing['name'] ?? null);
         $phone = array_key_exists('phone', $payload) ? $payload['phone'] : ($existing['phone_display'] ?? '');
         $notes = array_key_exists('notes', $payload) ? $payload['notes'] : ($existing['notes'] ?? '');
-        $isActive = array_key_exists('is_active', $payload) ? $payload['is_active'] : ($existing['is_active'] ?? true);
+        $isActive = array_key_exists('is_active', $payload) ? $payload['is_active'] : (bool) ($existing['is_active'] ?? true);
 
         if (!is_string($name) || trim($name) === '' || self::unicodeLength(trim($name)) > 160) {
             throw new HttpException(422, 'customer_name_invalid', 'Customer name is required and must not exceed 160 characters.');
