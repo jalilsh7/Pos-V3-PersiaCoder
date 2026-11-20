@@ -60,7 +60,7 @@ $checks = [
         str_contains(file_get_contents($root . '/v3/frontend/src/features/orders/OrderCenter.tsx'), 'setPaymentSummary(null);') &&
         str_contains(file_get_contents($root . '/v3/frontend/src/features/orders/OrderCenter.tsx'), 'setRefundPaymentId(null);'),
     'cash refund explains the missing open-session prerequisite' =>
-        str_contains(file_get_contents($root . '/v3/frontend/src/features/orders/OrderCenter.tsx'), 'برای ثبت بازپرداخت نقدی، ابتدا یک شیفت صندوق باز کنید.'),
+        str_contains(file_get_contents($root . '/v3/frontend/src/features/orders/OrderCenter.tsx'), 'بازپرداخت نقدی به مجوز مدیریت مالی و یک شیفت صندوق باز نیاز دارد؛ دسترسی و وضعیت صندوق را بررسی کنید.'),
 ];
 
 $failed = [];
