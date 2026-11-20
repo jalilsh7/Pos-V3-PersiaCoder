@@ -106,4 +106,31 @@ $largeIdResult = (new NationalPayamakSharedNumberProvider($config, $largeIdHttp)
 $assert($largeIdResult['provider_id'] === '9999999999999999999',
     'A valid 19-digit provider receipt ID must remain an opaque string.');
 
+
+$deliveryHttp = new FakeSharedNumberHttpClient(new SmsHttpResponse(
+    200, json_encode(['Value' => '1', 'RetStatus' => 1, 'StrRetStatus' => 'Ok'], JSON_THROW_ON_ERROR),
+));
+$deliveryProvider = new NationalPayamakSharedNumberProvider($config, $deliveryHttp);
+$delivery = $deliveryProvider->getDeliveryStatus('123456789012345678');
+$assert($delivery['provider_id'] === '123456789012345678'
+    && $delivery['raw_status'] === 1 && $delivery['status'] === 'delivered'
+    && $delivery['terminal'] === true, 'SharedNumber delivery status mapping failed.');
+$deliveryCall = $deliveryHttp->calls[0];
+$assert($deliveryCall['url'] === 'https://rest.payamak-panel.com/api/SendSMS/GetDeliveries2'
+    && $deliveryCall['payload']['recID'] === '123456789012345678',
+    'SharedNumber GetDeliveries2 request does not match the REST sample.');
+
+$pendingHttp = new FakeSharedNumberHttpClient(new SmsHttpResponse(
+    200, json_encode(['Value' => '8', 'RetStatus' => 1, 'StrRetStatus' => 'Ok'], JSON_THROW_ON_ERROR),
+));
+$pending = (new NationalPayamakSharedNumberProvider($config, $pendingHttp))->getDeliveryStatus('123456789012345678');
+$assert($pending['status'] === 'accepted' && !$pending['terminal'],
+    'A carrier-in-progress status must remain pending.');
+
+$invalidDeliveryId = false;
+try { $deliveryProvider->getDeliveryStatus('1234'); }
+catch (SmsProviderException $exception) { $invalidDeliveryId = $exception->getMessage() === 'sms_shared_delivery_id_invalid'; }
+$assert($invalidDeliveryId && count($deliveryHttp->calls) === 1,
+    'Invalid delivery IDs must not reach the provider.');
+
 echo 'National Payamak SharedNumber template adapter tests passed.' . PHP_EOL;
