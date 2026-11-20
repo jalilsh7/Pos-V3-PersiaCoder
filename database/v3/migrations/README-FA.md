@@ -99,3 +99,10 @@ MySQL/MariaDB برای بسیاری از دستورات DDL implicit commit ان
 - ترتیب پایدار فهرست بر اساس updated_at DESC و id DESC است.
 - این migration صرفاً بهینه‌سازی خواندن است و داده مشتری را تغییر نمی‌دهد.
 
+
+## Migration 015 — مجوز مشاهده صف پیامک
+
+- فایل `015_sms-outbox-read-permission.sql` مجوز granular با کد `communications.read` را ایجاد و به نقش سیستمی manager متصل می‌کند.
+- این مجوز فقط دسترسی خواندن صف پیامک و تاریخچه تحویل را می‌دهد؛ عملیات ارسال، retry یا مدیریت تنظیمات provider را اعطا نمی‌کند.
+- دسترسی installation owner از wildcard موجود RBAC پیروی می‌کند.
+- migration فقط در مخزن ثبت شده و هنوز اجرای DB validation برای آن انجام نشده است.
