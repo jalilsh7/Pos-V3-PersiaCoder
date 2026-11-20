@@ -674,3 +674,20 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - Backend CI روی `327164804de9929f40703cc33da26cc93c98b9b1` به خاطر parse error در فایل جدید `scripts/check-v3-order-payment-integration.php` شکست خورد؛ علت prefix ناقص autoloader بود.
 - اصلاح در commit `491faecd8e585ef894d5643f3d8d6026bff1629f` انجام شد: namespace prefix به double-quoted escaped string تغییر یافت.
 - DB workflow از قبل هم lint و هم اجرای واقعی این integration script را در مسیر MySQL/MariaDB دارد و با تغییر script باید اجرا شود؛ نتیجه جدید را بررسی کن.
+
+## نقطه ادامه — پرداخت نقدی و CRM مشتری (2026-11-20)
+
+- HEAD هنگام handoff: 9b6ee79c8a7f9bd76a9b11f05d1f4a254ad8094b.
+- پرداخت نقدی POS و بازپرداخت نقدی مدیرمحور پیاده‌سازی شده‌اند. DB integration روی MySQL 8.4 و MariaDB 10.6 PASS است؛ run 44808955417، commit c68c425d9b9bb5d1d60f676be3915d21a3213f56.
+- Backend validation روی PHP 8.2/8.3/8.4 PASS است؛ run 44808797656، commit 20776753b09669e92c0bd2ec83bcb0de82800129.
+- رسید نقدی قابل چاپ، تاریخچه پرداخت/بازپرداخت و فرم refund با finance.manage + reason + explicit confirmation + open cash session در UI اضافه شده‌اند.
+- CRM مشتری به API واقعی متصل شد: CRUD، business scope، idempotency، audit، normalize Iranian mobile، duplicate prevention، order history و net spend. POS quick-search با pos.sell و customer_id در order payload نیز اضافه شد.
+- Customer integration در DB run 44808955417 با MySQL و MariaDB موفق است؛ collation mismatch و خطای fixture در تست اولیه اصلاح شدند.
+- Frontend run 44809101478 روی commit 9b6ee79c8a7f9bd76a9b11f05d1f4a254ad8094b در زمان ثبت handoff در حال اجرا بود؛ نتیجه را تازه fetch کن و در صورت خطا اصلاح کن.
+- محدودیت‌ها: loyalty points، marketing consent، birthday automation، segmentation، pagination و customer creation inline در POS هنوز پیاده‌سازی نشده‌اند. آن‌ها را حدس نزن.
+- گام بعدی پس از تأیید Frontend CI:
+  1. تست UI/UX و رفع regressionهای customer picker.
+  2. SMS provider adapter/queue/delivery reports بر مبنای مستندات واقعی National Payamak/SmartSMS؛ secrets فقط سمت سرور.
+  3. inventory-to-order posting را فقط پس از تعیین trigger رزرو/مصرف که هنوز open است اجرا کن؛ تصمیم زمان رزرو/مصرف را حدس نزن.
+  4. ادامه فاز عرضه اولیه و به‌روزرسانی roadmap/handoff.
+
