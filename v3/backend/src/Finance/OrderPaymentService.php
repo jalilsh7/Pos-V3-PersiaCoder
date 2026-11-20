@@ -625,6 +625,15 @@ final readonly class OrderPaymentService
         ];
     }
 
+    private static function unicodeLength(string $value): int
+    {
+        if (function_exists('mb_strlen')) {
+            return mb_strlen($value, 'UTF-8');
+        }
+        $length = preg_match_all('/./us', $value);
+        return $length === false ? strlen($value) : $length;
+    }
+
     private static function parseAmount(mixed $value): int
     {
         if (!is_int($value) && !(is_string($value) && preg_match('/^[1-9][0-9]{0,15}$/', $value))) {
