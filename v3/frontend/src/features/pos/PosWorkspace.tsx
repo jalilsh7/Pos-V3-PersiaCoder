@@ -418,8 +418,8 @@ export function PosWorkspace() {
       </div>
 
       <Notice variant="warning">
-        ثبت سفارش و محاسبه قیمت در سرور انجام می‌شود. پرداخت، تخفیف و ثبت مشتری در این مرحله فعال نیستند؛
-        سفارش تازه با وضعیت «پیش‌نویس» و پرداخت‌نشده ساخته می‌شود.
+        ثبت سفارش و محاسبه قیمت در سرور انجام می‌شود. سفارش ابتدا به‌صورت «پیش‌نویس» و پرداخت‌نشده ثبت می‌شود؛
+        پس از ثبت، دریافت نقدی از طریق شیفت باز صندوق امکان‌پذیر است. تخفیف و ثبت مشتری هنوز در این صفحه فعال نیست.
       </Notice>
       {catalogError ? <div className="auth-error" role="alert">{catalogError}</div> : null}
       {actionError ? <div className="auth-error" role="alert">{actionError}</div> : null}
