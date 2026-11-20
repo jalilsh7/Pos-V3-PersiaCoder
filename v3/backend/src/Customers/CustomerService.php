@@ -91,6 +91,10 @@ final readonly class CustomerService
                     $input['phone_display'],
                     $input['notes'],
                 );
+                $createdDetail = $this->customers->detail($scope->businessId, $publicId);
+                if ($createdDetail === null) {
+                    throw new \RuntimeException('The created customer could not be reloaded.');
+                }
                 $this->audit->record(
                     $actor->userId,
                     'customer.created',
@@ -104,16 +108,10 @@ final readonly class CustomerService
                     $scope->businessId,
                     $scope->branchId,
                 );
-                return ['status' => 201, 'body' => ['data' => ['customer' => [
-                    'id' => $publicId,
-                    'name' => (string) $customer['name'],
-                    'phone' => $customer['phone_display'] === null ? '' : (string) $customer['phone_display'],
-                    'notes' => $customer['notes'] === null ? '' : (string) $customer['notes'],
-                    'is_active' => (bool) $customer['is_active'],
-                    'order_count' => 0,
-                    'total_spent' => 0,
-                    'last_order_at' => null,
-                ]], 'meta' => (object) []]];
+                return ['status' => 201, 'body' => ['data' => [
+                    'customer' => $createdDetail['customer'],
+                ], 'meta' => (object) []]];
+
             },
         );
     }
