@@ -412,3 +412,24 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - بسته بعدی: **D-13 — فروشگاه آنلاین و checkout مشتری**.
 - پیش از طراحی، آخرین HEAD و تصمیمات محصول را تازه بخوان؛ storefront فعلی، APIهای catalog/order/payment، ساعات کاری، کانال‌ها و frontend preview/cart را بررسی کن.
 - اصل ثابت: Storefront لایه ارائه است و سفارش را از همان موتور مشترک POS/Orders ثبت می‌کند؛ سیستم سفارش موازی نساز.
+
+
+## بسته طراحی D-12 — تنظیمات، کاربران، نقش‌ها و entitlement (2026-11-20)
+
+- سند UX ایجاد شد: [SETTINGS_USERS_ROLES_AND_ENTITLEMENTS_UX_V3_FA.md](design/SETTINGS_USERS_ROLES_AND_ENTITLEMENTS_UX_V3_FA.md)، شناسه `DESIGN-ACCESS-SETTINGS-2026-001`، نسخه 0.1، وضعیت «آماده بازبینی مفهومی».
+- کد بررسی‌شده: AuthController/AuthenticationService، PermissionService/Repository، UserManagementService/Controller، RoleManagementService/Controller، BranchManagementService و route middleware در `v3/backend/public/index.php`.
+- احراز هویت username/password، نشست سمت سرور، CSRF، Same-Origin، تغییر رمز، مدیریت کاربران در سطح کسب‌وکار/شعبه، نقش سفارشی، تخصیص/حذف نقش و جلوگیری از role escalation در Backend وجود دارند.
+- رمز موقت کاربر تصادفی است و فقط یک‌بار در پاسخ ایجاد کاربر برگردانده می‌شود؛ UI باید آن را امن و یک‌باره نمایش دهد.
+- نقش‌های system/owner محافظت می‌شوند؛ مدیر فقط می‌تواند مجوزهایی را به نقش بدهد که خودش در همان scope داراست.
+- `BusinessSettingsWorkspace.tsx` فعلی صرفاً preview محلی است؛ ذخیره تنظیمات در سرور انجام نمی‌دهد.
+- schema دارای business settings/history و feature flags/usage limits است؛ این موارد entitlement Central نیستند.
+- تصمیم LIC-MODULE-CONTROL-2026-001 اعمال شد: RBAC و entitlement دو لایه مستقل‌اند؛ Central مرجع entitlement و Backend نصب مشتری محل enforcement است. بسته‌های فروش/ترکیب امکانات همچنان نامشخص‌اند.
+- سند در design README نمایه و D-12 در backlog به «آماده بازبینی مفهومی» ارتقا یافت.
+- این بسته فقط طراحی است؛ UI مدیریت کاربران/نقش‌ها، API کامل تنظیمات و اتصال/اعتبارسنجی entitlement Central در این commitها تکمیل نشده‌اند. تست runtime جدید اجرا نشده است.
+
+### نقطه ادامه
+
+- بسته بعدی طراحی: **D-13 — فروشگاه آنلاین و checkout مشتری**.
+- ابتدا آخرین HEAD و تصمیمات محصول را تازه fetch کن؛ سپس Storefront UI، cart، checkout، order API، ساعات کاری/کانال‌ها، fulfillment، payment و routeهای عمومی را بررسی کن.
+- اصل غیرقابل نقض: Storefront یک presentation channel برای همان موتور سفارش مشترک است؛ سفارش storefront باید در POS/مرکز سفارش و گردش fulfillment ظاهر شود. قیمت/موجودی/مجوز/پرداخت در Backend معتبرند.
+- قالب عمومی منودار باید با پروفایل صنفی قابل پیکربندی باشد؛ برای هر صنف runtime جداگانه نساز.
