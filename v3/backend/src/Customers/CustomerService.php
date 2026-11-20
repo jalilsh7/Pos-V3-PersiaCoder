@@ -29,8 +29,13 @@ final readonly class CustomerService
         $this->audit = new AuditLogService(new AuditLogRepository($connection));
     }
 
-    public function list(BusinessScope $scope, string $search, string $status, int $limit): array
-    {
+    public function list(
+        BusinessScope $scope,
+        string $search,
+        string $status,
+        int $limit,
+        ?string $cursor = null,
+    ): array {
         if (!in_array($status, ['all', 'active', 'inactive'], true)) {
             throw new HttpException(422, 'customer_status_invalid', 'Customer status filter must be all, active or inactive.');
         }
@@ -41,8 +46,19 @@ final readonly class CustomerService
         if (self::unicodeLength($search) > 100) {
             throw new HttpException(422, 'customer_search_too_long', 'Customer search is too long.');
         }
-        return ['customers' => $this->customers->list($scope->businessId, $search, $status, $limit)];
+        $result = $this->customers->list(
+            $scope->businessId,
+            $search,
+            $status,
+            $limit,
+            self::decodeCursor($cursor),
+        );
+        return [
+            'customers' => $result['customers'],
+            'next_cursor' => self::encodeCursor($result['next_cursor_data']),
+        ];
     }
+
 
     public function get(BusinessScope $scope, string $publicId): array
     {
@@ -249,6 +265,39 @@ final readonly class CustomerService
         if (function_exists('mb_strlen')) return mb_strlen($value, 'UTF-8');
         $length = preg_match_all('/./us', $value);
         return $length === false ? strlen($value) : $length;
+    }
+
+    /** @return array{updated_at:string,id:int}|null */
+    private static function decodeCursor(?string $cursor): ?array
+    {
+        if ($cursor === null || $cursor === '') return null;
+        if (strlen($cursor) > 256 || preg_match('/^[A-Za-z0-9_-]+$/D', $cursor) !== 1) {
+            throw new HttpException(400, 'customer_cursor_invalid', 'The customer pagination cursor is invalid.');
+        }
+        $padding = (4 - (strlen($cursor) % 4)) % 4;
+        $decoded = base64_decode(strtr($cursor, '-_', '+/') . str_repeat('=', $padding), true);
+        if (!is_string($decoded)) {
+            throw new HttpException(400, 'customer_cursor_invalid', 'The customer pagination cursor is invalid.');
+        }
+        try {
+            $data = json_decode($decoded, true, 8, JSON_THROW_ON_ERROR);
+        } catch (\\JsonException) {
+            throw new HttpException(400, 'customer_cursor_invalid', 'The customer pagination cursor is invalid.');
+        }
+        if (!is_array($data) || !isset($data['updated_at'], $data['id'])
+            || !is_string($data['updated_at']) || !is_int($data['id']) || $data['id'] < 1
+            || preg_match('/^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$/D', $data['updated_at']) !== 1) {
+            throw new HttpException(400, 'customer_cursor_invalid', 'The customer pagination cursor is invalid.');
+        }
+        return ['updated_at' => $data['updated_at'], 'id' => $data['id']];
+    }
+
+    /** @param array{updated_at:string,id:int}|null $cursor */
+    private static function encodeCursor(?array $cursor): ?string
+    {
+        if ($cursor === null) return null;
+        $json = json_encode($cursor, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+        return rtrim(strtr(base64_encode($json), '+/', '-_'), '=');
     }
 
     private static function isUuid(string $value): bool
