@@ -5,7 +5,7 @@ namespace PersiaCoder\PosV3\Communications\Sms;
 
 use JsonException;
 
-final readonly class NationalPayamakSmartSmsProvider
+final readonly class NationalPayamakSmartSmsProvider implements SmsProvider
 {
     private const SEND_URL = 'https://rest.payamak-panel.com/api/SmartSMS/Send';
     private const SEND_MULTIPLE_URL = 'https://rest.payamak-panel.com/api/SmartSMS/SendMultiple';
@@ -127,7 +127,7 @@ final readonly class NationalPayamakSmartSmsProvider
         $ids = [];
         foreach ($providerIds as $id) {
             $value = trim((string) $id);
-            if (!preg_match('/^[0-9]{1,24}$/D', $value)) {
+            if (!preg_match('/^[0-9]{1,19}$/D', $value) || filter_var($value, FILTER_VALIDATE_INT) === false) {
                 throw new SmsProviderException('sms_provider_id_invalid');
             }
             $ids[] = (int) $value;
@@ -232,7 +232,7 @@ final readonly class NationalPayamakSmartSmsProvider
         $ids = [];
         foreach ($parts as $part) {
             $id = trim((string) $part);
-            if (!preg_match('/^[0-9]{1,24}$/D', $id)) return [];
+            if (!preg_match('/^[0-9]{1,19}$/D', $id) || filter_var($id, FILTER_VALIDATE_INT) === false) return [];
             $ids[] = $id;
         }
         return $ids;
@@ -254,7 +254,7 @@ final readonly class NationalPayamakSmartSmsProvider
 
     private static function providerError(array $decoded, int $httpStatus): SmsProviderException
     {
-        $raw = $decoded['ReqStatus'] ?? $decoded['RetStatus'] ?? $decoded['Value'] ?? null;
+        $raw = $decoded['ReqStatus'] ?? $decoded['Value'] ?? $decoded['RetStatus'] ?? null;
         $code = is_numeric($raw) ? (int) $raw : null;
         $message = match ($code) {
             0 => 'sms_provider_credentials_invalid',
@@ -267,8 +267,9 @@ final readonly class NationalPayamakSmartSmsProvider
             15 => 'sms_provider_unsubscribe_marker_required',
             default => 'sms_provider_request_rejected',
         };
+        $retryable = $httpStatus === 429;
         $uncertain = $httpStatus >= 500 || $httpStatus === 0;
-        return new SmsProviderException($message, $code, false, $uncertain);
+        return new SmsProviderException($message, $code, $retryable, $uncertain);
     }
 
     /** @return array{0:string,1:bool} */
