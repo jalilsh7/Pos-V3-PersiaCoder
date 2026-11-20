@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "v3/backend/**"
-      - "scripts/**"
-      - ".github/workflows/v3-backend-validation.yml"
   pull_request:
   workflow_dispatch:
 
