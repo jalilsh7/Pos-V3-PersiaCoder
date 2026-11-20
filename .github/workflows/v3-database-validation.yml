@@ -6,6 +6,9 @@ on:
     paths:
       - 'database/v3/**'
       - 'v3/backend/src/Finance/**'
+      - 'v3/backend/src/Customers/**'
+      - 'v3/backend/src/Infrastructure/Database/CustomerRepository.php'
+      - 'v3/backend/public/index.php'
       - 'v3/backend/src/Orders/OrderService.php'
       - 'scripts/check-v3-*.php'
       - '.github/workflows/v3-database-validation.yml'
