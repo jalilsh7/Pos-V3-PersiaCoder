@@ -137,6 +137,9 @@ export function PosWorkspace() {
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [lastReceipt, setLastReceipt] = useState<{
+    paymentId: string; amount: number; capturedAt: string; orderNumber: number; dueAmount: number;
+  } | null>(null);
   const idempotencyAttempt = useRef<{ signature: string; key: string } | null>(null);
   const cashPaymentAttempt = useRef<{ signature: string; key: string } | null>(null);
 
@@ -333,6 +336,7 @@ export function PosWorkspace() {
       });
       setPaymentAmount(String(order.total_amount));
       setPaymentError(null);
+      setLastReceipt(null);
       cashPaymentAttempt.current = null;
       setCart([]);
       setEditingProduct(null);
@@ -381,6 +385,13 @@ export function PosWorkspace() {
         capturedAmount: result.order.captured_amount,
         dueAmount: result.order.due_amount,
       } : current);
+      setLastReceipt({
+        paymentId: result.payment.id,
+        amount: result.payment.amount,
+        capturedAt: result.payment.captured_at,
+        orderNumber: result.order.order_number,
+        dueAmount: result.order.due_amount,
+      });
       setPaymentAmount(String(result.order.due_amount));
       cashPaymentAttempt.current = null;
     } catch (cause) {
@@ -462,6 +473,21 @@ export function PosWorkspace() {
             </Notice>
           )}
         </Surface>
+      ) : null}
+
+      {lastReceipt ? (
+        <section className="pos-receipt" aria-label="رسید دریافت وجه">
+          <div className="pos-receipt-brand">PersiaCoder.ir</div>
+          <h2>رسید دریافت وجه</h2>
+          <div className="pos-receipt-row"><span>شماره سفارش</span><strong>{money(lastReceipt.orderNumber)}</strong></div>
+          <div className="pos-receipt-row"><span>روش پرداخت</span><strong>نقدی</strong></div>
+          <div className="pos-receipt-row"><span>مبلغ این دریافت</span><strong>{money(lastReceipt.amount)} تومان</strong></div>
+          <div className="pos-receipt-row"><span>مانده سفارش</span><strong>{money(lastReceipt.dueAmount)} تومان</strong></div>
+          <div className="pos-receipt-meta">شناسه پرداخت: {lastReceipt.paymentId}</div>
+          <div className="pos-receipt-meta">زمان ثبت: {lastReceipt.capturedAt}</div>
+          <div className="pos-receipt-footer">Powered by PersiaCoder.ir</div>
+          <Button className="pos-receipt-print" onClick={() => window.print()}>چاپ رسید</Button>
+        </section>
       ) : null}
 
       <div className="pos-layout">
