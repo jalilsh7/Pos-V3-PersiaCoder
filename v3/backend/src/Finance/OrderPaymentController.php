@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace PersiaCoder\\PosV3\\Finance;
+namespace PersiaCoder\PosV3\Finance;
 
-use PersiaCoder\\PosV3\\Auth\\AuthenticatedPrincipal;
-use PersiaCoder\\PosV3\\Auth\\BusinessScope;
-use PersiaCoder\\PosV3\\Http\\HttpException;
-use PersiaCoder\\PosV3\\Http\\Request;
-use PersiaCoder\\PosV3\\Http\\Response;
+use PersiaCoder\PosV3\Auth\AuthenticatedPrincipal;
+use PersiaCoder\PosV3\Auth\BusinessScope;
+use PersiaCoder\PosV3\Http\HttpException;
+use PersiaCoder\PosV3\Http\Request;
+use PersiaCoder\PosV3\Http\Response;
 
 final readonly class OrderPaymentController
 {
