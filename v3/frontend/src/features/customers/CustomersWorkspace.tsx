@@ -55,11 +55,17 @@ export function CustomersWorkspace() {
   const [editActive, setEditActive] = useState(true);
   const createAttempt = useRef<{ signature: string; key: string } | null>(null);
   const updateAttempt = useRef<{ signature: string; key: string } | null>(null);
+  const listRequestVersion = useRef(0);
 
   async function refreshCustomers() {
+    const version = ++listRequestVersion.current;
+    setLoading(true);
+    setLoadingMore(false);
+    setNextCursor(null);
     setError(null);
     try {
       const result = await getCustomers({ query, status, limit: 50 });
+      if (version !== listRequestVersion.current) return;
       setCustomers(result.customers);
       setNextCursor(result.next_cursor);
       if (selectedId && !result.customers.some((customer) => customer.id === selectedId)) {
@@ -67,20 +73,23 @@ export function CustomersWorkspace() {
         setDetail(null);
       }
     } catch (cause) {
+      if (version !== listRequestVersion.current) return;
       setError(cause instanceof ApiError ? cause.message : "دریافت فهرست مشتریان انجام نشد.");
       setCustomers([]);
     } finally {
-      setLoading(false);
+      if (version === listRequestVersion.current) setLoading(false);
     }
   }
 
   useEffect(() => {
     let active = true;
+    const version = ++listRequestVersion.current;
     setLoading(true);
+    setLoadingMore(false);
     setNextCursor(null);
     getCustomers({ query, status, limit: 50 })
       .then((result) => {
-        if (!active) return;
+        if (!active || version !== listRequestVersion.current) return;
         setCustomers(result.customers);
         setNextCursor(result.next_cursor);
         if (selectedId && !result.customers.some((customer) => customer.id === selectedId)) {
@@ -90,19 +99,21 @@ export function CustomersWorkspace() {
         setError(null);
       })
       .catch((cause: unknown) => {
-        if (!active) return;
+        if (!active || version !== listRequestVersion.current) return;
         setError(cause instanceof ApiError ? cause.message : "دریافت فهرست مشتریان انجام نشد.");
         setCustomers([]);
       })
-      .finally(() => { if (active) setLoading(false); });
+      .finally(() => { if (active && version === listRequestVersion.current) setLoading(false); });
     return () => { active = false; };
   }, [query, status]);
 
   async function loadMoreCustomers() {
     if (!nextCursor || loadingMore) return;
+    const version = listRequestVersion.current;
     setLoadingMore(true);
     try {
       const result = await getCustomers({ query, status, limit: 50, cursor: nextCursor });
+      if (version !== listRequestVersion.current) return;
       setCustomers((current) => {
         const existing = new Set(current.map((customer) => customer.id));
         return [...current, ...result.customers.filter((customer) => !existing.has(customer.id))];
@@ -110,9 +121,10 @@ export function CustomersWorkspace() {
       setNextCursor(result.next_cursor);
       setError(null);
     } catch (cause) {
+      if (version !== listRequestVersion.current) return;
       setError(cause instanceof ApiError ? cause.message : "بارگذاری ادامه فهرست مشتریان انجام نشد.");
     } finally {
-      setLoadingMore(false);
+      if (version === listRequestVersion.current) setLoadingMore(false);
     }
   }
 
