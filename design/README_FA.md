@@ -18,7 +18,9 @@
 |---|---|---|
 | [DESIGN_SYSTEM_V3_FA.md](DESIGN_SYSTEM_V3_FA.md) | اصول بصری، رنگ، تایپوگرافی، فاصله‌گذاری، اجزا و تعامل | پایه اولیه؛ نیازمند نمونه‌سازی و اعتبارسنجی |
 | [UX_BLUEPRINT_V3_FA.md](UX_BLUEPRINT_V3_FA.md) | نقشه تجربه، نقش‌ها، ناوبری، صفحات و جریان‌های اصلی | در حال طراحی |
-| [DESIGN_BACKLOG_V3_FA.md](DESIGN_BACKLOG_V3_FA.md) | فهرست بسته‌های طراحی، وضعیت و معیار پذیرش | فعال |\n| [UI_SHELL_DASHBOARD_V3_FA.md](UI_SHELL_DASHBOARD_V3_FA.md) | مشخصات پوسته اصلی، داشبورد مدیر و صفحات آغازین نقش‌ها | آماده نمونه‌سازی |
+| [DESIGN_BACKLOG_V3_FA.md](DESIGN_BACKLOG_V3_FA.md) | فهرست بسته‌های طراحی، وضعیت و معیار پذیرش | فعال |
+| [UI_SHELL_DASHBOARD_V3_FA.md](UI_SHELL_DASHBOARD_V3_FA.md) | مشخصات پوسته اصلی، داشبورد مدیر و صفحات آغازین نقش‌ها | آماده نمونه‌سازی |
+| [POS_SALES_WORKSPACE_V3_FA.md](POS_SALES_WORKSPACE_V3_FA.md) | مشخصات UX فروش POS دسکتاپ، تبلت و نمایشگر کوچک با سبک مینیمال و شیک | آماده نمونه‌سازی |
 
 ## سندهای مرتبط بیرون از پوشه
 
