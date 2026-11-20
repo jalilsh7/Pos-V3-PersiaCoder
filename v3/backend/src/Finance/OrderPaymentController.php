@@ -21,6 +21,11 @@ final readonly class OrderPaymentController
         ));
     }
 
+    public function listOpenCashSessions(Request $request): Response
+    {
+        return Response::success($this->payments->listOpenCashSessions($this->scope($request)));
+    }
+
     public function captureCash(Request $request, array $parameters): Response
     {
         $contentType = strtolower(trim($request->header('content-type') ?? ''));
