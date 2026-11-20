@@ -295,3 +295,23 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - بسته بعدی: **D-10 — مشتری، وفاداری و ارتباطات پیامکی**.
 - پیش از طراحی، آخرین HEAD و تصمیمات محصول را تازه بخوان؛ سپس Customer UI/API/Repository، schema و SMS integration فعلی را بررسی کن.
 - وضعیت consent تبلیغاتی، opt-out و جداسازی پیامک تراکنشی/تبلیغاتی باید دقیقاً مطابق تصمیمات مصوب باشد؛ checkbox فعال پیش‌فرض به‌تنهایی رضایت معتبر ایجاد نمی‌کند.
+
+
+## بسته طراحی D-10 — مشتری، وفاداری و پیامک (2026-11-20)
+
+- سند UX ایجاد شد: [CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md](design/CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md)، شناسه `DESIGN-CUSTOMER-LOYALTY-SMS-2026-001`، نسخه 0.1، وضعیت «آماده بازبینی مفهومی».
+- `CustomersWorkspace.tsx` در HEAD بررسی‌شده هنوز seed/local state است و خودش هشدار می‌دهد داده نمونه است و به API/DB/orders/loyalty وصل نیست. CustomerService/CustomerRepository عملیاتی در مسیرهای بررسی‌شده پیدا نشد.
+- schema شامل `pos_customers`، رابطه `pos_orders.customer_id` و `pos_customer_ledger` با event_key یکتا، points_delta، credit_delta و visit_delta است؛ اما CRUD، order history و loyalty API هنوز اثبات نشده‌اند.
+- در schema بررسی‌شده جدول مستقل consent/opt-out بازاریابی مشاهده نشد؛ قبل از هر ارسال marketing باید مدل persistence و enforcement سمت Backend ساخته شود.
+- `LegacySmsParser` صرفاً parser ورودی/تبدیل ارقام/تاریخ تولد شمسی/نرمال‌سازی موبایل است. README و مستند integration تأکید می‌کنند ارسال، provider adapter، queue/retry، delivery persistence، secrets امن، consent و opt-out هنوز تکمیل نشده‌اند.
+- مستند National Payamak: SendMultiple حداکثر 100 گیرنده، نیاز به آرایه‌های هم‌اندازه و ذخیره provider message ID برای delivery؛ این موارد در طراحی adapter ثبت شد.
+- اصول کلیدی: داشتن شماره یا checkbox پیش‌فرض رضایت تبلیغاتی نیست؛ پیام تراکنشی و بازاریابی جدا؛ opt-out باید در تمام مسیرهای marketing سمت سرور enforce شود؛ شکست SMS نباید فروش/پرداخت را مختل کند.
+- سند در design README نمایه و D-10 در backlog به «آماده بازبینی مفهومی» ارتقا یافت.
+- این بسته فقط سند طراحی است؛ Customer API، loyalty engine، consent persistence، SMS sending/queue/delivery و تست provider در این commitها پیاده‌سازی نشده‌اند.
+
+### نقطه ادامه
+
+- بسته بعدی طراحی: **D-11 — مالی، صندوق‌ها، دریافت/پرداخت، refund و تطبیق**.
+- ابتدا آخرین HEAD و تصمیمات محصول را تازه fetch کن؛ سپس Payment/Cash/Finance services، repositories، schema، controllers/routes و frontend را بررسی کن.
+- جریان واقعی payment و cash session را از هم تفکیک کن؛ وجود schema یا UI را به معنی reconciliation یا حسابداری کامل اعلام نکن. وضعیت پرداخت سفارش، گردش صندوق، refund و settlement باید از ledger/contract واقعی استخراج شوند.
+- موارد باز مثل split payment، نسیه، ارز و دامنه حسابداری رسمی را بدون تصمیم مالک قطعی نکن.
