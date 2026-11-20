@@ -136,3 +136,5 @@
   .customers-create-footer { flex-direction: column; align-items: stretch; }
   .customers-profile-stats { grid-template-columns: 1fr; }
 }
+
+.customers-load-more { display: flex; justify-content: center; padding-top: 12px; }
