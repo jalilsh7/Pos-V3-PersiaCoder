@@ -3,8 +3,13 @@ import { Eye, FilterX, PackageCheck, RefreshCw } from "lucide-react";
 import {
   ApiError,
   getOrderDetails,
+  getOpenCashRefundSessions,
+  getOrderPayments,
   getOrders,
+  refundCashPayment,
   transitionOrder,
+  type OpenCashPaymentSession,
+  type OrderPaymentSummary,
   type OrderDetail,
   type OrderSummary,
   type OrderStatus,
@@ -84,6 +89,18 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
   const [actionError, setActionError] = useState<string | null>(null);
   const [showCancelForm, setShowCancelForm] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  const [paymentSummary, setPaymentSummary] = useState<OrderPaymentSummary | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [refundSessions, setRefundSessions] = useState<OpenCashPaymentSession[]>([]);
+  const [refundPaymentId, setRefundPaymentId] = useState<string | null>(null);
+  const [refundAmount, setRefundAmount] = useState("");
+  const [refundReason, setRefundReason] = useState("");
+  const [refundSessionId, setRefundSessionId] = useState("");
+  const [refundConfirmed, setRefundConfirmed] = useState(false);
+  const [refundSubmitting, setRefundSubmitting] = useState(false);
+  const [refundError, setRefundError] = useState<string | null>(null);
+  const [refundSuccess, setRefundSuccess] = useState<string | null>(null);
+  const refundAttempt = useRef<{ signature: string; key: string } | null>(null);
   const listRequestVersion = useRef(0);
 
   async function fetchOrders() {
@@ -191,8 +208,16 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
   }, [status, channel, payment, fulfillment, fromDate, toDate]);
 
   useEffect(() => {
-    if (!selectedId) return;
+    if (!selectedId) {
+      setPaymentSummary(null);
+      setRefundSessions([]);
+      setRefundPaymentId(null);
+      return;
+    }
     let active = true;
+    setPaymentLoading(true);
+    setRefundError(null);
+    setRefundSuccess(null);
     getOrderDetails(selectedId)
       .then((result) => { if (active) setDetail(result); })
       .catch((cause: unknown) => {
@@ -201,6 +226,19 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
         setDetailError(cause instanceof ApiError ? cause.message : "دریافت جزئیات سفارش انجام نشد.");
       })
       .finally(() => { if (active) setDetailLoading(false); });
+    getOrderPayments(selectedId)
+      .then((result) => { if (active) setPaymentSummary(result); })
+      .catch(() => { if (active) setPaymentSummary(null); })
+      .finally(() => { if (active) setPaymentLoading(false); });
+    getOpenCashRefundSessions()
+      .then((sessions) => {
+        if (!active) return;
+        setRefundSessions(sessions);
+        setRefundSessionId((current) => sessions.some((session) => session.id === current)
+          ? current
+          : sessions[0]?.id ?? "");
+      })
+      .catch(() => { if (active) setRefundSessions([]); });
     return () => { active = false; };
   }, [selectedId]);
 
@@ -233,6 +271,72 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
       setTransitioning(false);
     }
   }
+  function refundableAmount(paymentId: string, amount: number): number {
+    const refunded = paymentSummary?.refunds
+      .filter((refund) => refund.payment_id === paymentId && refund.status === "succeeded")
+      .reduce((sum, refund) => sum + refund.amount, 0) ?? 0;
+    return Math.max(0, amount - refunded);
+  }
+
+  function beginCashRefund(paymentId: string, amount: number) {
+    setRefundPaymentId(paymentId);
+    setRefundAmount(String(amount));
+    setRefundReason("");
+    setRefundSessionId((current) => refundSessions.some((session) => session.id === current)
+      ? current
+      : refundSessions[0]?.id ?? "");
+    setRefundConfirmed(false);
+    setRefundError(null);
+    setRefundSuccess(null);
+    refundAttempt.current = null;
+  }
+
+  async function submitCashRefund() {
+    if (!selectedOrder || !refundPaymentId || refundSubmitting) return;
+    const amount = Number(refundAmount.replace(/[,٬\\s]/g, ""));
+    if (!Number.isSafeInteger(amount) || amount < 1) {
+      setRefundError("مبلغ بازپرداخت باید عدد صحیح و بیشتر از صفر باشد.");
+      return;
+    }
+    if (!refundReason.trim()) {
+      setRefundError("دلیل بازپرداخت را وارد کنید.");
+      return;
+    }
+    if (!refundSessionId || !refundConfirmed) {
+      setRefundError("شیفت صندوق را انتخاب و بازپرداخت را صریحاً تأیید کنید.");
+      return;
+    }
+    const signature = JSON.stringify([selectedOrder.id, refundPaymentId, refundSessionId, amount, refundReason.trim()]);
+    if (!refundAttempt.current || refundAttempt.current.signature !== signature) {
+      refundAttempt.current = { signature, key: globalThis.crypto.randomUUID() };
+    }
+    setRefundSubmitting(true);
+    setRefundError(null);
+    setRefundSuccess(null);
+    try {
+      const result = await refundCashPayment(
+        selectedOrder.id,
+        refundPaymentId,
+        refundSessionId,
+        amount,
+        refundReason.trim(),
+        refundAttempt.current.key,
+      );
+      setRefundSuccess(`بازپرداخت ${money(result.refund.amount)} تومان با موفقیت ثبت شد.`);
+      setRefundPaymentId(null);
+      setRefundConfirmed(false);
+      refundAttempt.current = null;
+      void getOrderPayments(selectedOrder.id).then(setPaymentSummary).catch(() => undefined);
+      void fetchOrders();
+    } catch (cause) {
+      setRefundError(cause instanceof ApiError
+        ? cause.message
+        : cause instanceof Error ? cause.message : "ثبت بازپرداخت انجام نشد.");
+    } finally {
+      setRefundSubmitting(false);
+    }
+  }
+
   const columns = [
     {
       key: "number",
@@ -433,6 +537,72 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
                   </article>
                 ))}
               </div>
+              <section className="orders-payment-history">
+                <div className="orders-payment-heading">
+                  <strong>گردش پرداخت و بازپرداخت</strong>
+                  {paymentSummary ? <span>مانده: {money(paymentSummary.due_amount)} تومان</span> : null}
+                </div>
+                {paymentLoading ? <Notice variant="info">در حال دریافت گردش پرداخت...</Notice> : null}
+                {paymentSummary ? (
+                  <>
+                    <div className="orders-payment-totals">
+                      <span>دریافت‌شده: <b>{money(paymentSummary.captured_amount)} تومان</b></span>
+                      <span>بازپرداخت‌شده: <b>{money(paymentSummary.refunded_amount)} تومان</b></span>
+                    </div>
+                    {paymentSummary.payments.map((payment) => {
+                      const refundable = refundableAmount(payment.id, payment.amount);
+                      return (
+                        <article className="orders-payment-row" key={payment.id}>
+                          <div>
+                            <strong>{payment.method === "cash" ? "نقدی" : payment.method === "bank_terminal" ? "کارتخوان" : payment.method}</strong>
+                            <small>{payment.status} · {dateTime(payment.created_at, timeZone)}</small>
+                          </div>
+                          <b>{money(payment.amount)} تومان</b>
+                          {payment.method === "cash" && refundable > 0 && refundSessions.length ? (
+                            <Button size="sm" variant="danger" onClick={() => beginCashRefund(payment.id, refundable)}>
+                              بازپرداخت نقدی
+                            </Button>
+                          ) : null}
+                        </article>
+                      );
+                    })}
+                    {paymentSummary.refunds.map((refund) => (
+                      <article className="orders-refund-row" key={refund.id}>
+                        <div><strong>بازپرداخت نقدی · {refund.status}</strong><small>{refund.reason}</small></div>
+                        <b>−{money(refund.amount)} تومان</b>
+                      </article>
+                    ))}
+                  </>
+                ) : null}
+                {refundSuccess ? <div className="auth-success" role="status">{refundSuccess}</div> : null}
+                {refundError ? <div className="auth-error" role="alert">{refundError}</div> : null}
+                {refundPaymentId ? (
+                  <div className="orders-refund-form">
+                    <strong>ثبت بازپرداخت نقدی</strong>
+                    <label>شیفت صندوق
+                      <select value={refundSessionId} onChange={(event) => setRefundSessionId(event.target.value)}>
+                        {refundSessions.map((session) => <option key={session.id} value={session.id}>{session.register_name} · {session.register_code}</option>)}
+                      </select>
+                    </label>
+                    <label>مبلغ بازپرداخت (تومان)
+                      <input type="number" min="1" step="1" value={refundAmount} onChange={(event) => setRefundAmount(event.target.value)} />
+                    </label>
+                    <label>دلیل بازپرداخت
+                      <textarea rows={2} maxLength={500} value={refundReason} onChange={(event) => setRefundReason(event.target.value)} />
+                    </label>
+                    <label className="orders-refund-confirm">
+                      <input type="checkbox" checked={refundConfirmed} onChange={(event) => setRefundConfirmed(event.target.checked)} />
+                      <span>مبلغ را به مشتری تحویل می‌دهم و بازپرداخت را تأیید می‌کنم.</span>
+                    </label>
+                    <div className="orders-detail-actions">
+                      <Button variant="secondary" disabled={refundSubmitting} onClick={() => setRefundPaymentId(null)}>انصراف</Button>
+                      <Button variant="danger" disabled={refundSubmitting || !refundConfirmed || !refundReason.trim() || !refundSessionId} onClick={() => { void submitCashRefund(); }}>
+                        {refundSubmitting ? "در حال ثبت..." : "تأیید و ثبت بازپرداخت"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+              </section>
               <div className="orders-timeline">
                 <strong>تاریخچه سفارش</strong>
                 <ol>{detail.status_history.map((event, index) => (
