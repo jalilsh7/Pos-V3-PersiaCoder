@@ -25,9 +25,12 @@
 | [ORDER_CENTER_AND_DETAILS_UX_V3_FA.md](ORDER_CENTER_AND_DETAILS_UX_V3_FA.md) | مرکز سفارش چندکاناله، فیلترهای API، جزئیات، timeline وضعیت و اقدامات مجاز | آماده نمونه‌سازی؛ نیازمند بازبینی مالک |
 | [CATALOG_ADDONS_AND_RECIPES_UX_V3_FA.md](CATALOG_ADDONS_AND_RECIPES_UX_V3_FA.md) | طراحی کاتالوگ، دسته و محصول، تنوع، گروه افزودنی، رسپی نسخه‌دار و مرز اتصال به انبار | آماده نمونه‌سازی؛ نیازمند تکمیل UI و بازبینی مالک |
 | [INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md](INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md) | داشبورد موجودی، مواد اولیه، مکان‌ها، تأمین‌کنندگان، اسناد چندردیفی، posting، valuation و ledger | آماده بازبینی و نمونه‌سازی |
-| [CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md](CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md) | پرونده مشتری، تاریخچه سفارش، ledger وفاداری، رضایت/opt-out و معماری پیامک تراکنشی/تبلیغاتی | آماده بازبینی مفهومی؛ نیازمند تکمیل Backend |\n| [FINANCE_CASH_AND_PAYMENTS_UX_V3_FA.md](FINANCE_CASH_AND_PAYMENTS_UX_V3_FA.md) | صندوق و شیفت، پرداخت سفارش، refund، هزینه، settlement و گزارش مالی | آماده بازبینی مفهومی؛ پرداخت/هزینه/تسویه نیازمند Backend |\n| [SETTINGS_USERS_ROLES_AND_ENTITLEMENTS_UX_V3_FA.md](SETTINGS_USERS_ROLES_AND_ENTITLEMENTS_UX_V3_FA.md) | تنظیمات کسب‌وکار، مدیریت کاربران، RBAC، مجوزهای شعبه و entitlementهای Central | آماده بازبینی مفهومی؛ UI و entitlement نیازمند تکمیل |
+| [CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md](CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md) | پرونده مشتری، تاریخچه سفارش، ledger وفاداری، رضایت/opt-out و معماری پیامک تراکنشی/تبلیغاتی | آماده بازبینی مفهومی؛ نیازمند تکمیل Backend |
+| [FINANCE_CASH_AND_PAYMENTS_UX_V3_FA.md](FINANCE_CASH_AND_PAYMENTS_UX_V3_FA.md) | صندوق و شیفت، پرداخت سفارش، refund، هزینه، settlement و گزارش مالی | آماده بازبینی مفهومی؛ پرداخت/هزینه/تسویه نیازمند Backend |
+| [SETTINGS_USERS_ROLES_AND_ENTITLEMENTS_UX_V3_FA.md](SETTINGS_USERS_ROLES_AND_ENTITLEMENTS_UX_V3_FA.md) | تنظیمات کسب‌وکار، مدیریت کاربران، RBAC، مجوزهای شعبه و entitlementهای Central | آماده بازبینی مفهومی؛ UI و entitlement نیازمند تکمیل |
 | [FINANCE_CASH_AND_RECONCILIATION_UX_V3_FA.md](FINANCE_CASH_AND_RECONCILIATION_UX_V3_FA.md) | مدیریت صندوق و شیفت، دفتر پرداخت، بازپرداخت، هزینه، تسویه و مغایرت | آماده بازبینی؛ پرداخت و گزارش مالی نیازمند تکمیل Backend |
 | [ACCESS_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md](ACCESS_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md) | کاربران، نقش‌ها، مجوزها، شعبه‌ها، تنظیمات و تفکیک entitlement از RBAC | آماده بازبینی معماری؛ نیازمند تکمیل Backend |
+| [STOREFRONT_AND_PUBLIC_CHECKOUT_UX_V3_FA.md](STOREFRONT_AND_PUBLIC_CHECKOUT_UX_V3_FA.md) | قالب عمومی صنفی، کاتالوگ آنلاین، سبد، checkout، دریافت، ساعات کاری و پرداخت آنلاین | آماده بازبینی مفهومی؛ نیازمند API و اتصال end-to-end |
 
 ## سندهای مرتبط بیرون از پوشه
 
