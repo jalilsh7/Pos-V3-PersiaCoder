@@ -65,3 +65,23 @@
   .catalog-heading-actions { width: 100%; }
   .catalog-heading-actions .ui-button { flex: 1 1 auto; }
 }
+
+
+.catalog-options-editor { display:flex; flex-direction:column; gap:12px; padding-top:12px; border-top:1px solid var(--pc-line); }
+.catalog-editor-section,.catalog-editor-group { display:flex; flex-direction:column; gap:8px; padding:11px; border:1px solid var(--pc-line); border-radius:10px; }
+.catalog-editor-section>strong { color:var(--pc-ink); font-size:11px; }
+.catalog-editor-row { display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:center; gap:8px; padding:7px 0; border-bottom:1px dashed var(--pc-line); }
+.catalog-editor-row>span { min-width:0; display:flex; flex-direction:column; gap:3px; }
+.catalog-editor-row b { color:var(--pc-ink); font-size:10px; }
+.catalog-editor-row small,.catalog-editor-hint { color:var(--pc-muted); font-size:9px; }
+.catalog-editor-option { padding-right:12px; }
+.catalog-editor-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding-top:8px; }
+.catalog-editor-form input:not([type=checkbox]),.catalog-editor-form select { width:100%; min-width:0; min-height:36px; padding:7px 9px; border:1px solid var(--pc-line); border-radius:8px; background:#fff; color:var(--pc-ink); font:inherit; font-size:10px; }
+.catalog-editor-form label { display:flex; align-items:center; gap:6px; color:var(--pc-muted); font-size:9px; }
+.catalog-editor-group-form { border-top:1px dashed var(--pc-line); }
+.catalog-editor-options { grid-column:1/-1; display:flex; flex-direction:column; gap:6px; }
+.catalog-editor-options>div { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,.7fr) auto; gap:6px; }
+.catalog-editor-options>button,.catalog-editor-options>div>button { border:0; background:transparent; color:var(--pc-muted); font:inherit; font-size:9px; }
+.catalog-editor-message { margin:0; color:var(--pc-brand); font-size:10px; }
+.catalog-editor-form>.ui-button { justify-self:start; }
+@media(max-width:700px) { .catalog-editor-row { grid-template-columns:minmax(0,1fr) auto; } .catalog-editor-row .ui-button { grid-column:2; } .catalog-editor-form { grid-template-columns:1fr; } }
