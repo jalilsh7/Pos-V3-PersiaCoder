@@ -553,3 +553,21 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - ابتدا آخرین HEAD، سند تصمیمات، همه اسناد D-01 تا D-15 و کد فعلی را تازه بررسی کن؛ سپس traceability matrix بین تصمیم محصول، UX, API, DB, permission, entitlement و تست بساز.
 - موارد متعارض/تکراری و لینک‌های شکسته اسناد طراحی را اصلاح کن. وضعیت هر سند را از وضعیت کد جدا نگه دار.
 - D-16 باید معیارهای readiness، accessibility, responsive, RTL, security, performance, offline, upgrade/install, observability و release gate را پوشش دهد؛ هیچ قابلیت را فقط به دلیل وجود سند یا schema «آماده تجاری» اعلام نکن.
+
+
+## بسته طراحی D-16 — بازبینی یکپارچگی و تحویل به توسعه (2026-11-20)
+
+- سند traceability و quality gates ایجاد شد: [FINAL_DESIGN_REVIEW_AND_DEVELOPMENT_HANDOFF_V3_FA.md](design/FINAL_DESIGN_REVIEW_AND_DEVELOPMENT_HANDOFF_V3_FA.md)، شناسه `DESIGN-RELEASE-TRACEABILITY-2026-001`، نسخه 0.1.
+- ماتریس تصمیم محصول ← UX ← Backend/DB ← Frontend ← permission/entitlement ← تست تهیه شد.
+- ترتیب پیشنهادی نمونه‌سازی/توسعه با اولویت تجاری مالک هم‌راستا شد: POS/فروش، انبار، مشتری/وفاداری و پیامک؛ وابستگی پرداخت و اتصال انبار در ترتیب فنی لحاظ شده‌اند.
+- quality gates برای UX/accessibility، Backend/data، مالی/موجودی، امنیت، performance/reliability و release readiness ثبت شد.
+- design README و backlog به‌صورت canonical از D-01 تا D-16 بازنویسی شدند؛ لینک‌ها و ردیف‌های تکراری/نام‌های قدیمی از فهرست اصلی حذف شدند.
+- بازبینی تکمیلی کد نشان داد RecipeService/Controller و endpointهای GET recipe، create draft version و activate version وجود دارند؛ ادعای قبلی «نبود RecipeService» در D-08 اصلاح شد. UI رسپی و اتصال خودکار order/reservation/consumption هنوز اثبات نشده‌اند.
+- در مستندات قدیمی D-15، نسخه دیگری با تمرکز بر SmartSMS/SharedNumber/Printing نیز ثبت شده بود؛ مرجع canonical سخت‌افزار در این دفتر اکنون `INTEGRATIONS_AND_HARDWARE_UX_V3_FA.md` است. جزئیات مستندات provider پیامک در سند integration مربوطه باید نگهداری شود و نباید با سخت‌افزار یکی فرض شود.
+- وضعیت D-16: گزارش بازبینی اولیه؛ اجرای نمونه‌سازی، تست‌های فنی و تأیید مالک باقی است. هیچ فازی به دلیل تکمیل اسناد، تکمیل فنی اعلام نمی‌شود.
+
+### نقطه ادامه توسعه
+
+- فاز بعد از طراحی، «نمونه‌سازی و پیاده‌سازی دسته‌ای» بر اساس اولویت عرضه اولیه است؛ پیشنهاد شروع: ممیزی دوباره HEAD، سپس بستن جریان POS end-to-end تا پرداخت و رسید، و در ادامه اتصال فروش به انبار.
+- قبل از هر تغییر، سند تصمیمات محصول و کد/تست HEAD جاری دوباره بررسی شوند؛ اسناد UX جایگزین قرارداد فنی نیستند.
+- تست حیاتی مالی/امنیت/موجودی/داده حذف نشود؛ تست‌های کم‌اهمیت می‌توانند در دسته‌های بعدی اجرا شوند.
