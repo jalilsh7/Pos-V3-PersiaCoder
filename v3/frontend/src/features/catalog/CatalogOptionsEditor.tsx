@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import {
   attachCatalogOptionGroup, createCatalogOptionGroup, createCatalogVariant,
-  updateCatalogOption, updateCatalogVariant,
+  updateCatalogOption, updateCatalogOptionGroup, updateCatalogVariant,
   type PosCatalogProductDetail,
 } from "../../shared/api/client";
 import { Button, StatusBadge } from "../../shared/ui";
@@ -26,6 +26,8 @@ export function CatalogOptionsEditor({ productId, detail, onSaved }: {
   const [required, setRequired] = useState(false);
   const [attachRequired, setAttachRequired] = useState(false);
   const [options, setOptions] = useState([{ name: "", price: "0" }, { name: "", price: "0" }]);
+  const [groupDrafts, setGroupDrafts] = useState<Record<string, { name: string; type: "single" | "multiple"; min: string; max: string; required: boolean }>>({});
+  const [optionDrafts, setOptionDrafts] = useState<Record<string, { name: string; price: string }>>({});
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -72,6 +74,21 @@ export function CatalogOptionsEditor({ productId, detail, onSaved }: {
     finally { setBusy(false); }
   }
 
+  async function saveExistingGroup(group: PosCatalogProductDetail["option_groups"][number]) {
+    const draft = groupDrafts[group.id] ?? { name: group.name, type: group.selection_type, min: String(group.min_select), max: String(group.max_select), required: group.is_required_default };
+    const min = Number(draft.min), max = Number(draft.max);
+    if (!draft.name.trim() || !Number.isInteger(min) || !Number.isInteger(max) || min < 0 || max < 1 || max < min || max > group.options.filter((item) => item.is_active).length || (draft.type === "single" && max > 1) || (draft.required && min < 1)) {
+      setMessage("نام و قواعد انتخاب گروه معتبر نیست."); return;
+    }
+    await toggle(() => updateCatalogOptionGroup(group.id, { name: draft.name.trim(), selection_type: draft.type, min_select: min, max_select: max, is_required_default: draft.required }));
+  }
+  async function saveExistingOption(option: PosCatalogProductDetail["option_groups"][number]["options"][number]) {
+    const draft = optionDrafts[option.id] ?? { name: option.name, price: String(option.price_delta_amount) };
+    const price = parseSignedInteger(draft.price);
+    if (!draft.name.trim() || !Number.isSafeInteger(price)) { setMessage("نام و اختلاف قیمت گزینه معتبر نیست."); return; }
+    await toggle(() => updateCatalogOption(option.id, { name: draft.name.trim(), price_delta_amount: price }));
+  }
+
   return <section className="catalog-options-editor">
     <div className="catalog-groups-heading"><strong>مدیریت تنوع و افزودنی‌ها</strong><span>ذخیره مستقیم در کاتالوگ</span></div>
     {message ? <p className="catalog-editor-message" role="status">{message}</p> : null}
@@ -93,11 +110,19 @@ export function CatalogOptionsEditor({ productId, detail, onSaved }: {
     <div className="catalog-editor-section">
       <strong>گروه‌های گزینه متصل به محصول</strong>
       {detail.option_groups.map((group) => <div className="catalog-editor-group" key={group.id}>
-        <div className="catalog-editor-row"><span><b>{group.name}</b><small>{group.selection_type === "single" ? "تک‌انتخابی" : "چندانتخابی"} · حداقل {group.min_select} / حداکثر {group.max_select} · {group.is_required ? "اجباری برای این محصول" : "اختیاری"}</small></span>
-          <StatusBadge variant="success">متصل</StatusBadge>
+        <div className="catalog-editor-row"><span><b>{group.name}</b><small>{group.selection_type === "single" ? "تک‌انتخابی" : "چندانتخابی"} · حداقل {group.min_select} / حداکثر {group.max_select} · {group.is_required ? "اجباری برای این محصول" : "اختیاری"}</small></span><StatusBadge variant="success">متصل</StatusBadge></div>
+        <div className="catalog-editor-form">
+          <input aria-label="نام گروه" value={(groupDrafts[group.id] ?? { name: group.name }).name} onChange={(event) => setGroupDrafts((current) => ({ ...current, [group.id]: { ...(current[group.id] ?? { name: group.name, type: group.selection_type, min: String(group.min_select), max: String(group.max_select), required: group.is_required_default }), name: event.target.value } }))} />
+          <select aria-label="نوع انتخاب گروه" value={(groupDrafts[group.id] ?? { type: group.selection_type }).type} onChange={(event) => setGroupDrafts((current) => ({ ...current, [group.id]: { ...(current[group.id] ?? { name: group.name, type: group.selection_type, min: String(group.min_select), max: String(group.max_select), required: group.is_required_default }), type: event.target.value as "single" | "multiple", max: event.target.value === "single" ? "1" : (current[group.id]?.max ?? String(group.max_select)) } }))}><option value="single">تک‌انتخابی</option><option value="multiple">چندانتخابی</option></select>
+          <input aria-label="حداقل انتخاب گروه" type="number" min="0" value={(groupDrafts[group.id] ?? { min: String(group.min_select) }).min} onChange={(event) => setGroupDrafts((current) => ({ ...current, [group.id]: { ...(current[group.id] ?? { name: group.name, type: group.selection_type, min: String(group.min_select), max: String(group.max_select), required: group.is_required_default }), min: event.target.value } }))} />
+          <input aria-label="حداکثر انتخاب گروه" type="number" min="1" value={(groupDrafts[group.id] ?? { max: String(group.max_select) }).max} onChange={(event) => setGroupDrafts((current) => ({ ...current, [group.id]: { ...(current[group.id] ?? { name: group.name, type: group.selection_type, min: String(group.min_select), max: String(group.max_select), required: group.is_required_default }), max: event.target.value } }))} />
+          <label><input type="checkbox" checked={(groupDrafts[group.id] ?? { required: group.is_required_default }).required} onChange={(event) => setGroupDrafts((current) => ({ ...current, [group.id]: { ...(current[group.id] ?? { name: group.name, type: group.selection_type, min: String(group.min_select), max: String(group.max_select), required: group.is_required_default }), required: event.target.checked, min: event.target.checked ? "1" : (current[group.id]?.min ?? String(group.min_select)) } }))} /> انتخاب اجباری پیش‌فرض</label>
+          <Button size="sm" variant="secondary" disabled={busy} onClick={() => void saveExistingGroup(group)}>ذخیره قواعد گروه</Button>
         </div>
         {group.options.map((option) => <div className="catalog-editor-row catalog-editor-option" key={option.id}>
-          <span><b>{option.name}</b><small>{option.price_delta_amount > 0 ? "+" : ""}{money(option.price_delta_amount)} تومان</small></span>
+          <input aria-label="نام گزینه" value={(optionDrafts[option.id] ?? { name: option.name }).name} onChange={(event) => setOptionDrafts((current) => ({ ...current, [option.id]: { ...(current[option.id] ?? { name: option.name, price: String(option.price_delta_amount) }), name: event.target.value } }))} />
+          <input aria-label="اختلاف قیمت گزینه" inputMode="numeric" value={(optionDrafts[option.id] ?? { price: String(option.price_delta_amount) }).price} onChange={(event) => setOptionDrafts((current) => ({ ...current, [option.id]: { ...(current[option.id] ?? { name: option.name, price: String(option.price_delta_amount) }), price: event.target.value } }))} />
+          <Button size="sm" variant="secondary" disabled={busy} onClick={() => void saveExistingOption(option)}>ذخیره</Button>
           <StatusBadge variant={option.is_active ? "success" : "neutral"}>{option.is_active ? "فعال" : "غیرفعال"}</StatusBadge>
           <Button size="sm" variant="ghost" disabled={busy} onClick={() => void toggle(() => updateCatalogOption(option.id, { is_active: !option.is_active }))}>{option.is_active ? "غیرفعال" : "فعال‌سازی"}</Button>
         </div>)}
