@@ -814,3 +814,9 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - تست مستقل: `v3/backend/tests/Communications/Sms/SharedNumberTemplateRegistryTest.php` (ایجاد شد، اجرا نشده).
 - هنوز هیچ‌گونه اتصال به outbox/worker/poller وجود ندارد؛ worker فعلی فقط SmartSMS را claim و پردازش می‌کند. Shared Number نباید به‌عنوان مسیر ارسال عملیاتی معرفی شود تا قرارداد ذخیره‌سازی payload و reconciliation آن تکمیل شود.
 - گام بعد: طراحی و پیاده‌سازی payload رمزنگاری‌شده type-safe برای template، انتخاب provider در worker بر اساس provider_code و تعیین روش معتبر delivery lookup برای Shared Number، بدون retry کور در outcome نامشخص.
+
+
+## تصمیم جدید مالک — SMS-TEMPLATE-2026-002 (2026-11-21)
+مدیر هر کسب‌وکار باید متن و کد قالب صادرشده از ملی‌پیامک را برای هر تریگر خدماتی جداگانه در پنل POS تعریف کند. هر تریگر دارای enabled، متن قابل ویرایش، bodyId اختصاصی همان حساب، نگاشت/ترتیب متغیر، preview و تست کنترل‌شده است. منبع حقیقت، ذخیره‌سازی tenant-scoped سمت سرور است؛ env/registry سراسری فقط validator فنی است و مرجع تنظیمات محصول نیست. bodyId نمونه یا مشترک hard-code نشود. ارسال در صف و مستقل از تراکنش سفارش؛ خطای SMS نباید سفارش را fail کند. تبلیغاتی همچنان مسدود تا consent/evidence/opt-out سمت سرور.
+- پیاده‌سازی فعلی: outbox، صفحه مشاهده صف، Shared Number provider و registry اعتبارسنجی پایه وجود دارند؛ اما قالب‌های tenant-managed، API/پنل تنظیمات، اتصال trigger/worker و delivery reconciliation هنوز پیاده نشده‌اند.
+- گام بعد: migration جدول قالب‌ها با business/branch scope، repository/service/API دارای RBAC و audit، سپس UI تنظیمات تریگرها و اتصال type-safe به صف.

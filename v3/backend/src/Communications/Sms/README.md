@@ -114,3 +114,11 @@ php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
 - Template keys are internal stable identifiers. Each definition enforces a positive provider body ID and an exact variable count (0–20). Unknown keys and mismatched variable counts fail closed.
 - This registry does not send SMS and is not yet connected to the outbox worker. Do not expose arbitrary body IDs or template variables through a public endpoint.
 - Test: `php v3/backend/tests/Communications/Sms/SharedNumberTemplateRegistryTest.php` (not run in this batch).
+
+
+## Business-managed service templates (product decision SMS-TEMPLATE-2026-002)
+- Each business configures the service message text and the actual National Payamak-issued template/body ID separately for each event trigger in the POS.
+- Store configuration server-side with business/branch scope. A global environment registry is not the product source of truth; the current registry is validation scaffolding only.
+- Each trigger has enabled state, editable text, provider template ID, ordered event-variable mapping, preview and controlled test-send support.
+- Do not hard-code sample IDs or assume IDs are shared across customer accounts. The business must create/approve the corresponding template in its own National Payamak account.
+- Marketing remains separately gated by verifiable consent and opt-out.
