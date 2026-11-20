@@ -54,3 +54,35 @@
 - تست متمرکز parser در `v3/backend/tests/Communications/Sms/LegacySmsParserTest.php` ایجاد شده است.
 - این انتقال به معنی تکمیل اتصال پیامک نیست. ارسال، صف، گزارش تحویل، provider adapter، ذخیره‌سازی، تنظیمات امن و consent/opt-out هنوز باید پیاده‌سازی شوند.
 - تا زمانی که تست‌های parser و تست یکپارچه provider اجرا نشوند، این قابلیت PASS یا آماده تولید اعلام نمی‌شود.
+
+## وضعیت پیاده‌سازی Adapter در V3 (2026-11-20)
+
+### SmartSMS REST
+
+بر اساس راهنمای SmartSMS ارسالی:
+- Send: POST https://rest.payamak-panel.com/api/SmartSMS/Send، ارسال یک متن به حداکثر 100 گیرنده، فیلدهای username/password/to/text/from و دو شماره پشتیبان اختیاری.
+- SendMultiple: POST https://rest.payamak-panel.com/api/SmartSMS/SendMultiple، آرایه گیرنده و متن متناظر با همان ترتیب، حداکثر 100 مورد.
+- GetDeliveries: POST https://rest.payamak-panel.com/api/SmartSMS/GetDeliveries با آرایه Ids برای استعلام گروهی وضعیت.
+- password در REST به معنی ApiKey دریافتی از پنل است.
+- ID هر پیام باید ذخیره شود؛ صرف دریافت ID به معنی تحویل به گوشی نیست.
+- کدهای تحویل مستندشده شامل 0 ارسال به مخابرات، 1 تحویل به گوشی، 2 عدم تحویل، 3 خطای مخابراتی، 5 نامشخص، 8 تحویل به مخابرات، 16 عدم تحویل به مخابرات، 35 لیست سیاه، 100 نامشخص، 200 ارسال‌شده، 300 فیلترشده، 400 در صف و 500 عدم پذیرش هستند.
+
+### Adapter فعلی
+
+- NationalPayamakSmartSmsProvider، SmsProvider، SmartSmsConfig، CurlSmsHttpClient و fake-transport tests اضافه شدند.
+- ارسال متن یکسان، ارسال متناظر، استعلام گروهی، محدودیت 100 گیرنده، نرمال‌سازی موبایل ایران و نگاشت خطا/وضعیت پوشش داده شده است.
+- کلید API فقط از متغیر محیطی سرور خوانده می‌شود و در payload با نام password ارسال می‌شود؛ در config به‌صورت private نگهداری می‌شود.
+- HTTPS، TLS verification، عدم دنبال‌کردن redirect و timeout محدود اعمال می‌شود.
+- timeout/خطای شبکه/HTTP 5xx می‌تواند outcome نامشخص داشته باشد؛ retry کور ممنوع است. ابتدا باید IDهای provider و delivery report برای reconciliation استفاده شوند.
+- تست‌ها فقط با fake HTTP transport هستند؛ ارسال واقعی با اعتبار حساب کاربر انجام نشده است.
+
+### موارد تکمیل‌نشده
+
+- persistence/outbox و queue worker
+- ذخیره provider ID برای هر گیرنده و delivery attempts
+- polling گزارش تحویل و retry policy کنترل‌شده
+- secrets management UI و تست credential واقعی
+- consent/opt-out enforcement و تفکیک transactional از promotional
+- زمان‌بندی و محدودیت ساعت ارسال
+- adapter خط خدماتی اشتراکی/الگو (BaseServiceNumber)؛ این adapter جداگانه است و با SmartSMS یکی نیست.
+
