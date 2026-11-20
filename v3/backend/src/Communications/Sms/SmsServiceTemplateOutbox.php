@@ -60,7 +60,7 @@ final readonly class SmsServiceTemplateOutbox
             'rejected' => 'رد شده',
         ];
         $amount = number_format((int) ($context['total_amount'] ?? 0), 0, '.', ',');
-        $amount = strtr($amount, '0123456789,', '۰۱۲۳۴۵۶۷۸۹٬');
+        $amount = strtr($amount, ['0'=>'۰','1'=>'۱','2'=>'۲','3'=>'۳','4'=>'۴','5'=>'۵','6'=>'۶','7'=>'۷','8'=>'۸','9'=>'۹',','=>'٬']);
         $available = [
             'order_number' => (string) (int) ($context['order_number'] ?? 0),
             'customer_name' => trim((string) ($customer['name'] ?? 'مشتری عزیز')) ?: 'مشتری عزیز',
