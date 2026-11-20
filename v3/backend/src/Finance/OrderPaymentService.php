@@ -73,6 +73,33 @@ final readonly class OrderPaymentService
         ];
     }
 
+    public function listOpenCashSessions(BusinessScope $scope): array
+    {
+        if ($scope->branchId === null || $scope->branchId < 1) {
+            throw new HttpException(400, 'branch_context_required', 'A branch context is required to list payment sessions.');
+        }
+        $statement = $this->connection->prepare(
+            "SELECT s.public_id, r.name AS register_name, r.code AS register_code
+             FROM pos_cash_sessions s
+             INNER JOIN pos_registers r
+               ON r.id = s.register_id
+              AND r.business_id = s.business_id
+              AND r.branch_id = s.branch_id
+             WHERE s.business_id = :business_id AND s.branch_id = :branch_id
+               AND s.status = 'open' AND r.is_active = 1
+             ORDER BY r.name ASC, s.opened_at ASC"
+        );
+        $statement->execute([
+            'business_id' => $scope->businessId,
+            'branch_id' => $scope->branchId,
+        ]);
+        return ['sessions' => array_map(static fn (array $row): array => [
+            'id' => (string) $row['public_id'],
+            'register_name' => (string) $row['register_name'],
+            'register_code' => (string) $row['register_code'],
+        ], $statement->fetchAll(PDO::FETCH_ASSOC))];
+    }
+
     public function captureCash(
         AuthenticatedPrincipal $actor,
         BusinessScope $scope,
