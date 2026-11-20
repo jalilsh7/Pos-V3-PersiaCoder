@@ -6,6 +6,7 @@ $service = file_get_contents($root . '/v3/backend/src/Finance/OrderPaymentServic
 $controller = file_get_contents($root . '/v3/backend/src/Finance/OrderPaymentController.php');
 $routes = file_get_contents($root . '/v3/backend/public/index.php');
 $schema = file_get_contents($root . '/database/v3/schema.sql');
+$orderService = file_get_contents($root . '/v3/backend/src/Orders/OrderService.php');
 
 $checks = [
     'cash payment is protected by the idempotency transaction boundary' =>
@@ -34,11 +35,24 @@ $checks = [
         str_contains($routes, "'/api/v1/orders/{orderPublicId}/payments/cash'") &&
         str_contains($routes, "\$makePermissionMiddleware('pos.sell', true), \$csrfMiddleware, \$originMiddleware"),
     'cash payment controller requires JSON and forwards idempotency key' =>
-        str_contains($controller, "'application\\/json") &&
+        str_contains($controller, 'Content-Type must be application/json.') &&
         str_contains($controller, "header('idempotency-key')"),
     'schema allows captured cash payment and sale-in cash movement' =>
         str_contains($schema, "'captured'") &&
         str_contains($schema, "'sale_in'"),
+    'cash refund requires finance permission and explicit confirmation' =>
+        str_contains($service, "'finance.manage'") &&
+        str_contains($service, "($payload['confirm'] ?? false) !== true") &&
+        str_contains($service, 'refund_reason_required'),
+    'cash refund is recorded with refund ledger and drawer movement' =>
+        str_contains($service, 'INSERT INTO pos_refunds') &&
+        str_contains($service, "'refund_out'") &&
+        str_contains($service, "'cash_refunded'"),
+    'cash refund endpoint is protected by finance permission, CSRF and same-origin' =>
+        str_contains($routes, '/payments/{paymentPublicId}/refunds/cash') &&
+        str_contains($routes, "\$makePermissionMiddleware('finance.manage', true), \$csrfMiddleware, \$originMiddleware"),
+    'partially refunded orders cannot bypass refund before cancellation' =>
+        str_contains($orderService, "'paid', 'partially_paid', 'partially_refunded'"),
 ];
 
 $failed = [];
