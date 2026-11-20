@@ -518,3 +518,21 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - ابتدا آخرین HEAD و تصمیمات محصول را تازه fetch کن؛ سپس terminal agent/service، payment terminal schema، routes، printer/media/communications و docs/integrations را بررسی کن.
 - پروتکل کارتخوان فقط بر اساس مدل/مستندات واقعی؛ status unknown و reconciliation باید صریح باشند. هیچ پروتکل LAN/Wi-Fi حدس زده نشود.
 - چاپگر، دستگاه و provider با adapterهای مستقل و وضعیت اتصال قابل پایش طراحی شوند؛ failure سخت‌افزار نباید سفارش یا ledger را خراب کند.
+
+
+## بسته طراحی D-15 — یکپارچگی‌ها، پیامک و سخت‌افزار (2026-11-20)
+
+- سند UX/معماری ایجاد شد: [INTEGRATIONS_SMS_TERMINALS_AND_PRINTING_UX_V3_FA.md](design/INTEGRATIONS_SMS_TERMINALS_AND_PRINTING_UX_V3_FA.md)، شناسه `DESIGN-INTEGRATIONS-HARDWARE-2026-001`، نسخه 0.1.
+- منابع آپلودی که محتوایشان بررسی شد: `webservice-Smart.pdf`، `webservice-SharedNumber.pdf` و `Rest-Sample.zip`. `SamplePHP.rar` فهرست شد اما ابزار استخراج در محیط حاضر نبود؛ محتوای PHP آن خوانده یا منتقل نشد.
+- SmartSMS REST مستند: Send، SendMultiple (حداکثر 100 گیرنده و آرایه‌های هم‌اندازه)، GetDeliveries2 و GetDeliveries. ID هر گیرنده باید ذخیره شود؛ queued بودن به معنی delivered نیست.
+- Shared Number REST مستند: BaseServiceNumber و BaseServiceNumberSchedule؛ bodyId و الگوی از قبل تأییدشده لازم است و روش خط خدماتی برای یک گیرنده در هر درخواست تعریف شده. SOAP methodهای SendByBaseNumber/2 و AddScheduleSendByBaseNumber2 نیز در PDF توضیح داده شده‌اند.
+- نمونه‌های قدیمی REST در Rest-Sample.zip از HTTP و PECL HttpRequest استفاده می‌کنند؛ صرفاً مرجع شکل پارامترها هستند و مستقیم وارد V3 نمی‌شوند. ApiKey/credentials باید secure server-side بمانند.
+- کد V3 همچنان فقط parser ورودی/تاریخ تولد را دارد؛ ارسال، queue، delivery persistence، consent/opt-out و provider adapter عملیاتی نیستند.
+- برای کارتخوان LAN/Wi-Fi و چاپگر هیچ protocol/model document در منابع این بسته وجود نداشت؛ طراحی adapter و الزامات امنیتی ثبت شد، اما هیچ port/command فرضی پیشنهاد/پیاده‌سازی نشد.
+- سند در README طراحی نمایه و D-15 در backlog به «آماده بازبینی معماری» ارتقا یافت؛ تست واقعی provider/device اجرا نشده است.
+
+### نقطه ادامه
+
+- بسته بعدی: **D-16 — بازبینی یکپارچگی طراحی و تحویل به توسعه**.
+- پیش از آن، آخرین HEAD و همه اسناد D-01 تا D-15 را تازه fetch کن؛ تعارض‌ها و اسناد تکراری را حذف/ادغام کن؛ شکاف طراحی در برابر کد و تصمیمات محصول را گزارش کن.
+- سپس پیشنهاد اجرای نمونه‌سازی UI را بر اساس اولویت عرضه اولیه مالک (POS، انبار، مشتری/وفاداری و پیامک) مرتب کن و هر مورد را به criteria و API موجود/مانده متصل کن.
