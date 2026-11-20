@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace PersiaCoder\\PosV3\\Communications\\Sms;
+namespace PersiaCoder\PosV3\Communications\Sms;
 
-use PersiaCoder\\PosV3\\Auth\\AuthenticatedPrincipal;
-use PersiaCoder\\PosV3\\Auth\\BusinessScope;
-use PersiaCoder\\PosV3\\Http\\HttpException;
-use PersiaCoder\\PosV3\\Http\\Request;
-use PersiaCoder\\PosV3\\Http\\Response;
+use PersiaCoder\PosV3\Auth\AuthenticatedPrincipal;
+use PersiaCoder\PosV3\Auth\BusinessScope;
+use PersiaCoder\PosV3\Http\HttpException;
+use PersiaCoder\PosV3\Http\Request;
+use PersiaCoder\PosV3\Http\Response;
 
 final readonly class SmsOutboxController
 {
@@ -16,7 +16,7 @@ final readonly class SmsOutboxController
     public function enqueueTransactional(Request $request): Response
     {
         $contentType = strtolower(trim($request->header('content-type') ?? ''));
-        if (!preg_match('/^application\\/json(?:\\s*;|$)/', $contentType)) {
+        if (!preg_match('/^application\/json(?:\s*;|$)/', $contentType)) {
             throw new HttpException(415, 'unsupported_media_type', 'Content-Type must be application/json.');
         }
 
