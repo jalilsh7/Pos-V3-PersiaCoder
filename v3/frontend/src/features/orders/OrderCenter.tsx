@@ -465,7 +465,7 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
             options={[
               { value: "all", label: "همه وضعیت‌ها" },
               { value: "paid", label: "پرداخت‌شده" },
-              { value: "partial", label: "پرداخت بخشی" },
+              { value: "partially_paid", label: "پرداخت بخشی" },
               { value: "pending", label: "در انتظار تأیید" },
               { value: "failed", label: "ناموفق" },
               { value: "partially_refunded", label: "استرداد بخشی" },
