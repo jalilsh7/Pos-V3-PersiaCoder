@@ -42,3 +42,16 @@ php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
 - Unit tests use a fake HTTP transport. No real credentials or provider send have been used.
 - Queue/outbox persistence, consent/opt-out enforcement, scheduled worker, retry policy, delivery polling and settings UI are still pending. Do not wire a user-facing send action until those controls are implemented.
 
+
+## National Payamak Shared Service Number template adapter
+
+- Implemented provider adapter: NationalPayamakSharedNumberProvider.
+- REST endpoint: POST https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber.
+- One recipient per request; bodyId must identify a template already submitted and approved in the Payamak panel.
+- The text field is built from ordered template variables joined with semicolons; the provider replaces the approved template placeholders.
+- Success requires HTTP 200, RetStatus=1, StrRetStatus=OK and a numeric Value with more than 15 digits; persist that provider ID for later delivery reconciliation.
+- API credentials are read from the server environment; password carries the API key as documented.
+- The scheduled BaseServiceNumberSchedule method is not implemented. Its allowed send window (07:00–22:00) and scheduleDate semantics need timezone-aware queue support first.
+- No real provider credentials or sends have been used; tests use a fake HTTP transport.
+- Delivery report polling for shared-service IDs, queue persistence, approved-template registry, template-variable validation against provider metadata and operational consent policy remain pending.
+
