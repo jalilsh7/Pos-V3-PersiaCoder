@@ -321,3 +321,21 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 
 - سند مرجع موجود و اصلی D-09 از قبل در مخزن `design/INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md` بوده است؛ سند موازی `INVENTORY_LOCATIONS_STOCK_AND_DOCUMENTS_UX_V3_FA.md` که در ادامه ساخته شد، تکراری بود و حذف شد.
 - README فقط سند اصلی D-09 را نمایه می‌کند. از این پس همین سند مرجع D-09 است و اصلاحات لازم باید در همان فایل انجام شود.
+
+
+## بسته طراحی D-11 — مالی، صندوق و پرداخت (2026-11-20)
+
+- سند UX ایجاد شد: [FINANCE_CASH_AND_PAYMENTS_UX_V3_FA.md](design/FINANCE_CASH_AND_PAYMENTS_UX_V3_FA.md)، شناسه `DESIGN-FINANCE-PAYMENTS-2026-001`، نسخه 0.1، وضعیت «آماده بازبینی مفهومی».
+- `CashRegisterService`، `CashRegisterController`، `CashRepository` و `FinanceWorkspace.tsx` بررسی شدند. API واقعی برای ایجاد صندوق، بازکردن شیفت، گردش نقدی دستی با دلیل، بستن با شمارش، وضعیت requires_review و بررسی مدیریتی وجود دارد؛ عملیات دارای idempotency و audit است.
+- Frontend خودش اعلام می‌کند پرداخت سفارش، هزینه و گزارش مالی هنوز در بسته‌های بعدی تکمیل می‌شوند.
+- schema شامل payment/payment events/refunds/settlement batches/items/expenses/cash movements است؛ اما Payment/Refund/Settlement/Expense service و UI عملیاتی در مسیرهای بررسی‌شده اثبات نشدند.
+- UX پرداخت سفارش، refund مستقل، هزینه و settlement به‌عنوان هدف آینده طراحی شد؛ از اعلام عملیاتی‌بودن آن‌ها خودداری شده است.
+- سند در design README نمایه و D-11 در backlog به «آماده بازبینی مفهومی» ارتقا یافت.
+- این بسته فقط مستندات طراحی است؛ تست runtime و پذیرش فاز 6 انجام نشده‌اند.
+
+### نقطه ادامه
+
+- بسته بعدی طراحی: **D-12 — تنظیمات، کاربران، نقش‌ها، مجوزها و entitlement قابلیت‌ها**.
+- ابتدا آخرین HEAD و سند تصمیمات را تازه fetch کن؛ سپس Auth/PermissionService، route middleware، تنظیمات کسب‌وکار، feature flags، frontend settings/users و schema را بررسی کن.
+- تصمیم LIC-MODULE-CONTROL-2026-001 لازم‌الاجراست: entitlement از Central و enforcement سمت Backend؛ بسته‌های فروش/ترکیب امکانات هنوز تعیین نشده و نباید حدس زده شوند.
+- مجوز RBAC و entitlement لایسنس دو لایه متفاوت‌اند و در UX باید جدا نمایش داده شوند.
