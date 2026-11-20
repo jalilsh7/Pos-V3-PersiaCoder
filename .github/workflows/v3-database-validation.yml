@@ -116,11 +116,11 @@ jobs:
           php database/v3/bin/preflight.php
           php database/v3/bin/install.php
           php scripts/check-v3-install.php
-          printf "CREATE TABLE v3_ci_migration_probe (id INT UNSIGNED NOT NULL PRIMARY KEY) ENGINE=InnoDB;" > database/v3/migrations/013_ci-smoke.sql
+          printf "CREATE TABLE v3_ci_migration_probe (id INT UNSIGNED NOT NULL PRIMARY KEY) ENGINE=InnoDB;" > database/v3/migrations/9999_ci-smoke.sql
           php database/v3/bin/migrate.php
           php database/v3/bin/migrate.php
           php scripts/check-v3-migration.php
-          rm -f database/v3/migrations/013_ci-smoke.sql
+          rm -f database/v3/migrations/9999_ci-smoke.sql
           php scripts/check-v3-inventory-posting-integration.php
           php scripts/check-v3-auth-integration.php
           php scripts/check-v3-order-payment-integration.php
