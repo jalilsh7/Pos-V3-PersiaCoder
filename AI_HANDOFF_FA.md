@@ -588,3 +588,11 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - وارد مرحله تبدیل طراحی به taskهای پیاده‌سازی شو؛ اولویت موج اول POS، پرداخت/رسید، مرکز سفارش و تکمیل UI کاتالوگ/رسپی است.
 - قبل از کدنویسی، آخرین HEAD و `FINAL_PRODUCT_DECISIONS_FA.md` را تازه بخوان؛ ممیزی قدیمی را به HEAD جدید تعمیم نده.
 - پس از تکمیل موج اول، موج انبار/مشتری/وفاداری/پیامک را end-to-end ببند. تست‌های حیاتی امنیت، پرداخت، داده و مسیر فروش را حفظ کن.
+
+
+### اصلاح نهایی مرجع D-16
+
+- در بازبینی نهایی پوشه مشخص شد سند کامل‌تر [FINAL_DESIGN_REVIEW_AND_DEVELOPMENT_HANDOFF_V3_FA.md](design/FINAL_DESIGN_REVIEW_AND_DEVELOPMENT_HANDOFF_V3_FA.md) شامل Traceability Matrix، gapها، quality gates و موج‌های تحویل است؛ این سند مرجع canonical D-16 است.
+- `DESIGN_INTEGRATION_REVIEW_AND_HANDOFF_V3_FA.md` نسخه مقدماتی بود و به archive stub با لینک سند canonical تبدیل شد.
+- لینک D-15 در README و backlog اصلاح شد: سند اصلی سخت‌افزار `INTEGRATIONS_AND_HARDWARE_UX_V3_FA.md` و ضمیمه پیامک `INTEGRATIONS_SMS_TERMINALS_AND_PRINTING_UX_V3_FA.md` است.
+- README و backlog دوباره fetch شدند تا ارجاع‌های D-15/D-16 با مرجع canonical منطبق شوند.
