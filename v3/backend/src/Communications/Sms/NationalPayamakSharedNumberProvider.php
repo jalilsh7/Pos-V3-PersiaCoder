@@ -63,7 +63,7 @@ final readonly class NationalPayamakSharedNumberProvider implements SmsTemplateP
         if ($response->statusCode !== 200 || $retStatus !== 1
             || !in_array($strStatus, ['ok', 'success'], true)
             || !preg_match('/^[0-9]{16,19}$/D', $providerId)
-            || filter_var($providerId, FILTER_VALIDATE_INT) === false) {
+) {
             throw self::providerError($decoded, $response->statusCode);
         }
 
@@ -73,6 +73,49 @@ final readonly class NationalPayamakSharedNumberProvider implements SmsTemplateP
             'provider_id' => $providerId,
             'status' => 'queued',
         ];
+    }
+
+    /**
+     * Looks up one shared-number message using the supplied GetDeliveries2 REST sample.
+     * @return array{provider_id:string,raw_status:int,status:string,terminal:bool}
+     */
+    public function getDeliveryStatus(string $providerId): array
+    {
+        if (!preg_match('/^[0-9]{16,19}$/D', $providerId)) {
+            throw new SmsProviderException('sms_shared_delivery_id_invalid');
+        }
+        try {
+            $response = $this->http->postForm('https://rest.payamak-panel.com/api/SendSMS/GetDeliveries2', [
+                'username' => $this->config->username,
+                'password' => $this->config->apiKey(),
+                'recID' => $providerId,
+            ], $this->config->timeoutSeconds);
+        } catch (SmsProviderException $exception) {
+            throw $exception;
+        } catch (\Throwable) {
+            throw new SmsProviderException('sms_delivery_outcome_unknown', null, false, true);
+        }
+        try {
+            $decoded = json_decode($response->body, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            throw new SmsProviderException('sms_delivery_response_invalid', null, false, true);
+        }
+        if ($response->statusCode !== 200 || !is_array($decoded) || array_is_list($decoded)
+            || (int) ($decoded['RetStatus'] ?? 0) !== 1
+            || strtolower(trim((string) ($decoded['StrRetStatus'] ?? ''))) !== 'ok') {
+            throw new SmsProviderException('sms_delivery_lookup_rejected', null, false, false);
+        }
+        $raw = $decoded['Value'] ?? null;
+        if (!(is_int($raw) || (is_string($raw) && preg_match('/^-?[0-9]{1,4}$/D', $raw)))) {
+            throw new SmsProviderException('sms_delivery_status_invalid', null, false, true);
+        }
+        $rawStatus = (int) $raw;
+        [$status, $terminal] = match ($rawStatus) {
+            1 => ['delivered', true],
+            2, 3, 16, 35, 300 => ['failed', true],
+            default => ['accepted', false],
+        };
+        return ['provider_id'=>$providerId,'raw_status'=>$rawStatus,'status'=>$status,'terminal'=>$terminal];
     }
 
     private static function providerError(array $decoded, int $httpStatus): SmsProviderException

@@ -1324,3 +1324,12 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - API فقط‌خواندنی `GET /api/v1/communications/sms/service-outbox` با `communications.read` اضافه شد و صفحه گزارش پیامک، صف قالب خدماتی را نیز نمایش می‌دهد؛ شماره، مقادیر متغیر، ciphertext و شناسه provider به UI افشا نمی‌شوند.
 - **محدودیت باقیمانده:** reconciliation تحویل Shared Number هنوز پیاده نشده است. ZIP نمونه `GetDeliveries2` را نشان می‌دهد، اما قرارداد کامل status mapping در منابع بررسی‌شده موجود نیست؛ تا دریافت/تأیید قرارداد وضعیت، از حدس‌زدن وضعیت تحویل خودداری شود.
 - migration اجرا نشده، تست/build اجرا نشده و هیچ پیامک واقعی ارسال نشده است. این بسته برای gate تجمیعی SMS و تست واقعی کنترل‌شده باقی است.
+
+## SMS-SERVICE-04 — تکمیل گزارش تحویل Shared Number (2026-11-21)
+- وضعیت: پیاده‌سازی تکمیل شد؛ اجرای migration و دروازه تست تجمیعی هنوز لازم است.
+- بر اساس نمونه REST ارسالی، استعلام تک‌پیام با GetDeliveries2 و username/password/recID از طریق HTTPS و form-urlencoded اضافه شد.
+- کدهای تحویل مستند provider به وضعیت‌های delivered/failed/pending نگاشت می‌شوند؛ کدهای ناشناخته یا خطای استعلام باعث retry ارسال پیامک نمی‌شوند.
+- migration 018 زمان/کد آخرین بررسی و زمان بررسی بعدی را اضافه می‌کند؛ poller مستقل scripts/poll-v3-sms-service-template-deliveries.php با cooldown محدود ساخته شد.
+- گزارش صف، کد وضعیت اپراتور و زمان آخرین بررسی را نمایش می‌دهد؛ شناسه و داده خصوصی گیرنده/متغیرها افشا نمی‌شوند.
+- شناسه رسید provider به‌صورت رشته نگهداری می‌شود تا مقادیر ۱۶ تا ۱۹ رقمی به محدودیت integer PHP برخورد نکنند.
+- تست‌های واحد adapter برای GetDeliveries2، وضعیت pending/delivered و شناسه بلند اضافه شدند؛ اجرا نشده‌اند. تست واقعی provider، اجرای migration و CI هنوز gate پذیرش‌اند.

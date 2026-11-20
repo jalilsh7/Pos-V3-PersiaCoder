@@ -34,6 +34,25 @@ const statusMeta: Record<string, { label: string; variant: "neutral" | "success"
   unknown: { label: "نامشخص", variant: "warning" },
   cancelled: { label: "لغوشده", variant: "neutral" },
 };
+const deliveryStatusLabel = (code: number | null) => {
+  if (code === null) return null;
+  const labels: Record<number, string> = {
+    0: "ارسال‌شده به مخابرات",
+    1: "رسیده به گوشی",
+    2: "نرسیده به گوشی",
+    3: "خطای مخابراتی",
+    5: "وضعیت نامشخص",
+    8: "رسیده به مخابرات",
+    16: "نرسیده به مخابرات",
+    35: "شماره در فهرست سیاه",
+    100: "وضعیت نامشخص",
+    200: "ارسال‌شده",
+    300: "فیلترشده",
+    400: "در صف ارسال",
+    500: "عدم پذیرش / وضعیت نامشخص",
+  };
+  return labels[code] ?? `کد وضعیت ${code}`;
+};
 const dateLabel = (value: string) => {
   const date = new Date(value.includes("Z") ? value : `${value.replace(" ", "T")}Z`);
   return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat("fa-IR", { dateStyle: "short", timeStyle: "short" }).format(date);
@@ -120,6 +139,8 @@ export function SmsOutboxWorkspace() {
                     <div className="sms-outbox-item__meta">
                       <span>ارائه‌دهنده: {message.provider}</span>
                       <span>تلاش‌ها: {message.attempt_count.toLocaleString("fa-IR")}</span>
+                      {deliveryStatusLabel(message.delivery_status_code) ? <span>گزارش مخابرات: {deliveryStatusLabel(message.delivery_status_code)}</span> : null}
+                      {message.delivery_checked_at ? <span>آخرین بررسی: {dateLabel(message.delivery_checked_at)}</span> : null}
                       <span>ثبت: {dateLabel(message.created_at)}</span>
                       {message.delivered_at ? <span>تحویل: {dateLabel(message.delivered_at)}</span> : null}
                     </div>

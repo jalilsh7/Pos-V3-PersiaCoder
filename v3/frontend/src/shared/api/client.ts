@@ -1063,6 +1063,8 @@ export type SmsOutboxMessage = {
   status: "queued" | "processing" | "accepted" | "sent_to_carrier" | "delivered" | "failed" | "rejected" | "unknown" | "cancelled";
   attempt_count: number;
   failure_code: string | null;
+  delivery_status_code: number | null;
+  delivery_checked_at: string | null;
   created_at: string;
   updated_at: string;
   accepted_at: string | null;

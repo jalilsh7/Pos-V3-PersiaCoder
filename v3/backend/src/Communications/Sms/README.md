@@ -147,3 +147,10 @@ php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
 - Read-only branch-scoped report: `GET /api/v1/communications/sms/service-outbox` (`communications.read`). The SMS report UI shows trigger, body ID, status and attempt count only; recipient, variable values, ciphertext and provider IDs remain private.
 - Shared Number delivery polling is still pending. `Rest-Sample.zip` includes a legacy `GetDeliveries2` form request, but the reviewed sources do not establish a complete response/status mapping for this adapter. Do not invent status meanings or claim delivery until that contract is confirmed.
 - Migration 017 has not been applied; tests/build have not been run in this implementation batch; no real provider request or SMS send has been made.
+
+## Shared Number delivery reconciliation
+- GetDeliveries2 lookup follows the supplied REST sample (/api/SendSMS/GetDeliveries2, form-urlencoded username, password, recID) over HTTPS.
+- Delivery codes are mapped conservatively: 1 delivered; 2, 3, 16, 35 and 300 failed; other codes remain pending and are checked again after a bounded cooldown.
+- CLI: scripts/poll-v3-sms-service-template-deliveries.php; apply migration 018 first. Schedule the CLI on the customer server with the same protected Shared Number environment credentials as the send worker.
+- Unknown lookup outcomes never trigger a new SMS send. Provider receipt IDs are treated as strings to preserve 16–19 digit values.
+- Status mapping and actual account response must be verified in a controlled provider test before declaring production acceptance.

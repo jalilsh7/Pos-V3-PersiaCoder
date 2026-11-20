@@ -18,7 +18,7 @@ final readonly class SmsServiceTemplateOutboxReadService
         if ($scope->branchId === null) throw new HttpException(400,'business_branch_context_required','A branch context is required.');
         if ($limit < 1 || $limit > 100) throw new HttpException(422,'sms_outbox_limit_invalid','Limit must be between 1 and 100.');
         if ($status !== null && !in_array($status,self::STATUSES,true)) throw new HttpException(422,'sms_outbox_status_invalid','The SMS status filter is not supported.');
-        $sql='SELECT public_id,trigger_key,provider_code,provider_body_id,status,attempt_count,failure_code,created_at,updated_at
+        $sql='SELECT public_id,trigger_key,provider_code,provider_body_id,status,attempt_count,failure_code,delivery_status_code,delivery_checked_at,created_at,updated_at
               FROM pos_sms_service_outbox WHERE business_id=:business_id AND branch_id=:branch_id';
         $params=['business_id'=>$scope->businessId,'branch_id'=>$scope->branchId];
         if($status!==null){$sql.=' AND status=:status';$params['status']=$status;}
@@ -37,6 +37,8 @@ final readonly class SmsServiceTemplateOutboxReadService
                 'status'=>(string)$r['status'],
                 'attempt_count'=>(int)$r['attempt_count'],
                 'failure_code'=>$r['failure_code']===null?null:(string)$r['failure_code'],
+                'delivery_status_code'=>$r['delivery_status_code']===null?null:(int)$r['delivery_status_code'],
+                'delivery_checked_at'=>$r['delivery_checked_at']===null?null:(string)$r['delivery_checked_at'],
                 'created_at'=>(string)$r['created_at'],
                 'updated_at'=>(string)$r['updated_at'],
             ];

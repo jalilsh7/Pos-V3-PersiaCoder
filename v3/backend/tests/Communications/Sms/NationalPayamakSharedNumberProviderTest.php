@@ -96,4 +96,14 @@ try {
 }
 $assert($unknown, 'SharedNumber HTTP 5xx outcome must be treated as unknown.');
 
+
+$largeIdHttp = new FakeSharedNumberHttpClient(new SmsHttpResponse(
+    200,
+    json_encode(['Value' => '9999999999999999999', 'RetStatus' => 1, 'StrRetStatus' => 'OK'], JSON_THROW_ON_ERROR),
+));
+$largeIdResult = (new NationalPayamakSharedNumberProvider($config, $largeIdHttp))
+    ->sendTemplate('09123456789', 4321, ['value']);
+$assert($largeIdResult['provider_id'] === '9999999999999999999',
+    'A valid 19-digit provider receipt ID must remain an opaque string.');
+
 echo 'National Payamak SharedNumber template adapter tests passed.' . PHP_EOL;
