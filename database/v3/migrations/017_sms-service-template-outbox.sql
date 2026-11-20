@@ -24,7 +24,6 @@ CREATE TABLE IF NOT EXISTS pos_sms_service_outbox (
   created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
   PRIMARY KEY (id),
-  UNIQUE KEY uq_sms_service_outbox_business_id (business_id, id),
   UNIQUE KEY uq_sms_service_outbox_idempotency (business_id, idempotency_key),
   UNIQUE KEY uq_sms_service_outbox_provider_id (business_id, provider_code, provider_message_id),
   KEY idx_sms_service_outbox_queue (status, next_attempt_at, id),

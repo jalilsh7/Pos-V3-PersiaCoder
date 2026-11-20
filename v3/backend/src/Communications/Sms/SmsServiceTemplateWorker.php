@@ -19,7 +19,7 @@ final readonly class SmsServiceTemplateWorker
     {
         $limit = max(1, min(100, $limit));
         // A worker crash after provider acceptance must never cause a blind resend.
-        $this->db->exec(\"UPDATE pos_sms_service_outbox SET status = 'unknown', failure_code = 'sms_worker_stale_processing', updated_at = UTC_TIMESTAMP(3) WHERE status = 'processing' AND updated_at <= UTC_TIMESTAMP(3) - INTERVAL 10 MINUTE\");
+        $this->db->exec("UPDATE pos_sms_service_outbox SET status = 'unknown', failure_code = 'sms_worker_stale_processing', updated_at = UTC_TIMESTAMP(3) WHERE status = 'processing' AND updated_at <= UTC_TIMESTAMP(3) - INTERVAL 10 MINUTE");
         $this->db->beginTransaction();
         try {
             $q = $this->db->prepare(

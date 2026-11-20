@@ -594,9 +594,7 @@ final readonly class OrderService
                     'created_at' => (string) $order['created_at'],
                     'order_status' => $targetStatus,
                 ];
-                if (!in_array($targetStatus, ['ready', 'completed'], true)) {
-                    $this->queueServiceSms($scope, 'order.status_changed', $smsContext);
-                }
+                $this->queueServiceSms($scope, 'order.status_changed', $smsContext);
                 if ($targetStatus === 'ready') {
                     $this->queueServiceSms($scope, 'order.ready', $smsContext);
                 } elseif ($targetStatus === 'completed') {
