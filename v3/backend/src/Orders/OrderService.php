@@ -12,6 +12,7 @@ use PersiaCoder\PosV3\Infrastructure\Database\AuditLogRepository;
 use PersiaCoder\PosV3\Infrastructure\Database\OrderRepository;
 use PersiaCoder\PosV3\Security\AuditLogService;
 use PersiaCoder\PosV3\Security\IdempotencyService;
+use PersiaCoder\PosV3\Communications\Sms\SmsServiceTemplateOutbox;
 
 final readonly class OrderService
 {
@@ -21,6 +22,7 @@ final readonly class OrderService
     private OrderRepository $orders;
     private IdempotencyService $idempotency;
     private AuditLogService $audit;
+    private SmsServiceTemplateOutbox $smsTemplates;
 
     public function __construct(
         PDO $connection,
@@ -30,6 +32,7 @@ final readonly class OrderService
         $this->orders = new OrderRepository($connection);
         $this->idempotency = new IdempotencyService($connection, $applicationKey);
         $this->audit = new AuditLogService(new AuditLogRepository($connection));
+        $this->smsTemplates = new SmsServiceTemplateOutbox($connection, $applicationKey);
     }
 
     public function list(
@@ -427,6 +430,15 @@ final readonly class OrderService
                     $sourceChannel,
                     $idempotencyHash,
                 );
+                $this->queueServiceSms($scope, 'order.created', [
+                    'order_id' => $orderId,
+                    'customer_id' => $customerId,
+                    'recipient_phone' => $recipientPhone,
+                    'order_number' => $orderNumber,
+                    'total_amount' => $total,
+                    'created_at' => gmdate('Y-m-d H:i:s'),
+                    'order_status' => 'draft',
+                ]);
                 $this->audit->record(
                     $actor->userId,
                     'order.created',
@@ -573,6 +585,21 @@ final readonly class OrderService
                     (string) $order['source_channel'],
                     hash('sha256', $idempotencyKey),
                 );
+                $smsContext = [
+                    'order_id' => (int) $order['id'],
+                    'customer_id' => isset($order['customer_id']) ? (int) $order['customer_id'] : null,
+                    'recipient_phone' => null,
+                    'order_number' => (int) $order['order_number'],
+                    'total_amount' => (int) $order['total_amount'],
+                    'created_at' => (string) $order['created_at'],
+                    'order_status' => $targetStatus,
+                ];
+                $this->queueServiceSms($scope, 'order.status_changed', $smsContext);
+                if ($targetStatus === 'ready') {
+                    $this->queueServiceSms($scope, 'order.ready', $smsContext);
+                } elseif ($targetStatus === 'completed') {
+                    $this->queueServiceSms($scope, 'order.completed', $smsContext);
+                }
                 $this->audit->record(
                     $actor->userId,
                     'order.status_changed',
@@ -812,6 +839,17 @@ final readonly class OrderService
     }
 
     /** @return list<string> */
+    private function queueServiceSms(BusinessScope $scope, string $trigger, array $context): void
+    {
+        try {
+            $this->smsTemplates->enqueueForOrderEvent($scope, $trigger, $context);
+        } catch (\Throwable $exception) {
+            // SMS is a side effect: never fail order creation or a valid status transition.
+            error_log('POS_V3 sms_template_enqueue_failed trigger=' . $trigger
+                . ' exception=' . $exception::class);
+        }
+    }
+
     private static function statuses(): array
     {
         return ['draft', 'awaiting_payment', 'accepted', 'preparing', 'ready', 'completed', 'cancelled', 'rejected'];

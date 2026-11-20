@@ -538,7 +538,7 @@ final readonly class OrderRepository
     {
         $statement = $this->connection->prepare(
             'SELECT id, public_id, order_number, source_channel, order_status, payment_status,
-                    total_amount, created_at
+                    customer_id, total_amount, created_at
              FROM pos_orders
              WHERE business_id = :business_id AND branch_id = :branch_id AND public_id = :public_id
              LIMIT 1 FOR UPDATE'
