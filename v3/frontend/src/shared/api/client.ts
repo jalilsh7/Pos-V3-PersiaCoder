@@ -314,6 +314,53 @@ export async function updateInventoryStockItem(itemId: string, payload: {
 }
 
 
+export type RecipeVersionLine = {
+  stock_item_id: string;
+  stock_item_name: string;
+  quantity: string;
+  unit_code: string;
+  unit_name: string;
+  conversion_factor_snapshot: string;
+  waste_percent: string;
+};
+export type RecipeVersion = {
+  id: string;
+  version_no: number;
+  status: "draft" | "active" | "retired";
+  effective_from: string | null;
+  lines: RecipeVersionLine[];
+};
+export type ProductRecipe = {
+  id: string;
+  name: string;
+  is_active: boolean;
+  versions: RecipeVersion[];
+};
+export async function getProductRecipe(productId: string, variantId?: string): Promise<ProductRecipe | null> {
+  const query = new URLSearchParams();
+  if (variantId) query.set("variant_id", variantId);
+  const queryString = query.toString();
+  const suffix = queryString ? `?${queryString}` : "";
+  const data = await request<{ recipe: ProductRecipe | null }>(`/catalog/products/${encodeURIComponent(productId)}/recipe${suffix}`);
+  return data.recipe;
+}
+export async function createRecipeDraftVersion(productId: string, payload: {
+  name: string;
+  variant_id?: string;
+  lines: { stock_item_id: string; quantity: string; unit_code: string; waste_percent: string }[];
+}): Promise<{ recipe: { id: string; name: string; version: { id: string; version_no: number; status: string } } }> {
+  return request<{ recipe: { id: string; name: string; version: { id: string; version_no: number; status: string } } }>(
+    `/catalog/products/${encodeURIComponent(productId)}/recipe-versions`,
+    { method: "POST", body: JSON.stringify(payload) },
+  );
+}
+export async function activateRecipeVersion(versionId: string): Promise<void> {
+  await request<{ recipe_version: { id: string; status: string } }>(
+    `/catalog/recipe-versions/${encodeURIComponent(versionId)}/activate`,
+    { method: "POST", body: "{}" },
+  );
+}
+
 export type InventoryUnit = { code: string; name: string; dimension: string };
 export type InventoryDocumentType =
   | "purchase_receipt" | "consumption" | "transfer" | "adjustment_in" | "adjustment_out" | "waste";

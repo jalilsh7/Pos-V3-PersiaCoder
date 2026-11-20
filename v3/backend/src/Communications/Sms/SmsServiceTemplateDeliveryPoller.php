@@ -49,7 +49,7 @@ final readonly class SmsServiceTemplateDeliveryPoller
                     "UPDATE pos_sms_service_outbox
                      SET delivery_status_code=?,delivery_checked_at=UTC_TIMESTAMP(3),
                          status=CASE WHEN ? IN ('delivered','failed') THEN ? ELSE status END,
-                         failure_code=CASE WHEN ?='failed' THEN CONCAT('sms_delivery_status_',?) ELSE failure_code END,
+                         failure_code=CASE WHEN ?='failed' THEN CONCAT('sms_delivery_status_',?) ELSE NULL END,
                          updated_at=UTC_TIMESTAMP(3)
                      WHERE id=? AND business_id=? AND status='accepted'"
                 );

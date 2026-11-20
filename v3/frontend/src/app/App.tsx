@@ -28,6 +28,7 @@ import { OrderCenter } from "../features/orders/OrderCenter";
 import { KitchenBoard } from "../features/kitchen/KitchenBoard";
 import { CatalogWorkspace } from "../features/catalog/CatalogWorkspace";
 import { InventoryWorkspace } from "../features/inventory/InventoryWorkspace";
+import { RecipeWorkspace } from "../features/recipes/RecipeWorkspace";
 import { CustomersWorkspace } from "../features/customers/CustomersWorkspace";
 import { FinanceWorkspace } from "../features/finance/FinanceWorkspace";
 import { BusinessSettingsWorkspace } from "../features/settings/BusinessSettingsWorkspace";
@@ -36,7 +37,7 @@ import { StorefrontWorkspace } from "../features/storefront/StorefrontWorkspace"
 import { SmsOutboxWorkspace } from "../features/communications/SmsOutboxWorkspace";
 import { SmsServiceTemplatesWorkspace } from "../features/communications/SmsServiceTemplatesWorkspace";
 
-type ViewId = "overview" | "pos" | "orders" | "kitchen" | "catalog" | "inventory" | "customers" | "finance" | "settings" | "storefront" | "access" | "communications" | "smsTemplates";
+type ViewId = "overview" | "pos" | "orders" | "kitchen" | "catalog" | "inventory" | "recipes" | "customers" | "finance" | "settings" | "storefront" | "access" | "communications" | "smsTemplates";
 
 type NavigationItem = {
   id: ViewId;
@@ -65,7 +66,8 @@ const navigation: NavigationGroup[] = [
     title: "کاتالوگ و منابع",
     items: [
       { id: "catalog", label: "منو و محصولات", icon: Utensils, description: "محصولات، دسته‌ها و افزودنی‌ها" },
-      { id: "inventory", label: "مواد اولیه و انبار", icon: Boxes, description: "رسپی، موجودی و گردش انبار" },
+      { id: "inventory", label: "مواد اولیه و انبار", icon: Boxes, description: "موجودی، اسناد و گردش انبار" },
+      { id: "recipes", label: "رسپی و ترکیبات", icon: ChefHat, description: "نسخه‌بندی مواد مصرفی محصولات" },
       { id: "customers", label: "مشتریان", icon: Users, description: "پروفایل مشتری و وفاداری" },
       { id: "communications", label: "گزارش پیامک", icon: MessageSquare, description: "صف و گزارش تحویل پیامک" },
       { id: "smsTemplates", label: "قالب خدماتی پیامک", icon: MessageSquare, description: "کد قالب و راهنمای متغیرهای ملی‌پیامک" },
@@ -223,7 +225,7 @@ function AuthenticatedWorkspace({ user, business, branch, onLogout, actionError 
 
         <div className="content-area">
           {actionError ? <div className="auth-error" role="alert">{actionError}</div> : null}
-          {activeView === "overview" ? <Overview /> : activeView === "pos" ? <PosWorkspace /> : activeView === "orders" ? <OrderCenter timeZone={branch.timezone ?? business.timezone} /> : activeView === "kitchen" ? <KitchenBoard timeZone={branch.timezone ?? business.timezone} /> : activeView === "catalog" ? <CatalogWorkspace /> : activeView === "inventory" ? <InventoryWorkspace /> : activeView === "customers" ? <CustomersWorkspace /> : activeView === "finance" ? <FinanceWorkspace /> : activeView === "settings" ? <BusinessSettingsWorkspace /> : activeView === "storefront" ? <StorefrontWorkspace /> : activeView === "access" ? <AccessManagementWorkspace /> : activeView === "communications" ? <SmsOutboxWorkspace /> : activeView === "smsTemplates" ? <SmsServiceTemplatesWorkspace /> : (
+          {activeView === "overview" ? <Overview /> : activeView === "pos" ? <PosWorkspace /> : activeView === "orders" ? <OrderCenter timeZone={branch.timezone ?? business.timezone} /> : activeView === "kitchen" ? <KitchenBoard timeZone={branch.timezone ?? business.timezone} /> : activeView === "catalog" ? <CatalogWorkspace /> : activeView === "inventory" ? <InventoryWorkspace /> : activeView === "recipes" ? <RecipeWorkspace /> : activeView === "customers" ? <CustomersWorkspace /> : activeView === "finance" ? <FinanceWorkspace /> : activeView === "settings" ? <BusinessSettingsWorkspace /> : activeView === "storefront" ? <StorefrontWorkspace /> : activeView === "access" ? <AccessManagementWorkspace /> : activeView === "communications" ? <SmsOutboxWorkspace /> : activeView === "smsTemplates" ? <SmsServiceTemplatesWorkspace /> : (
             <div className="page-stack">
               <PageHeader
                 eyebrow={activeItem.description}
