@@ -12,10 +12,10 @@ import {
   ApiError,
   captureCashPayment,
   createPosOrder,
-  getCashRegisters,
+  getOpenCashPaymentSessions,
   getPosCatalogProductDetails,
   getPosCatalogProducts,
-  type CashRegisterSummary,
+  type OpenCashPaymentSession,
   type PosCatalogProduct,
   type PosCatalogProductDetail,
 } from "../../shared/api/client";
@@ -132,7 +132,7 @@ export function PosWorkspace() {
   const [createdOrder, setCreatedOrder] = useState<{
     number: number; total: number; id: string; paymentStatus: string; capturedAmount: number; dueAmount: number;
   } | null>(null);
-  const [cashRegisters, setCashRegisters] = useState<CashRegisterSummary[]>([]);
+  const [openCashSessions, setOpenCashSessions] = useState<OpenCashPaymentSession[]>([]);
   const [cashSessionId, setCashSessionId] = useState("");
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
@@ -161,19 +161,18 @@ export function PosWorkspace() {
 
   useEffect(() => {
     if (!createdOrder) {
-      setCashRegisters([]);
+      setOpenCashSessions([]);
       setCashSessionId("");
       return;
     }
     let active = true;
-    getCashRegisters()
-      .then((registers) => {
+    getOpenCashPaymentSessions()
+      .then((sessions) => {
         if (!active) return;
-        setCashRegisters(registers);
-        const openSessions = registers.filter((register) => register.is_active && register.active_session?.status === "open");
-        setCashSessionId((current) => openSessions.some((register) => register.active_session?.id === current)
+        setOpenCashSessions(sessions);
+        setCashSessionId((current) => sessions.some((session) => session.id === current)
           ? current
-          : openSessions[0]?.active_session?.id ?? "");
+          : sessions[0]?.id ?? "");
         setPaymentError(null);
       })
       .catch((cause: unknown) => {
@@ -393,10 +392,6 @@ export function PosWorkspace() {
     }
   }
 
-  const openCashSessions = cashRegisters.filter(
-    (register) => register.is_active && register.active_session?.status === "open",
-  );
-
   return (
     <div className="page-stack pos-workspace">
       <div className="pos-page-heading">
@@ -438,9 +433,9 @@ export function PosWorkspace() {
               <label className="pos-payment-field">
                 <span>شیفت صندوق</span>
                 <select value={cashSessionId} onChange={(event) => setCashSessionId(event.target.value)}>
-                  {openCashSessions.map((register) => (
-                    <option key={register.active_session!.id} value={register.active_session!.id}>
-                      {register.name} · {register.code}
+                  {openCashSessions.map((session) => (
+                    <option key={session.id} value={session.id}>
+                      {session.register_name} · {session.register_code}
                     </option>
                   ))}
                 </select>
