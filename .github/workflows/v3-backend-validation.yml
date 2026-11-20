@@ -62,3 +62,4 @@ jobs:
         run: |
           php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
           php v3/backend/tests/Communications/Sms/NationalPayamakSmartSmsProviderTest.php
+          php v3/backend/tests/Communications/Sms/NationalPayamakSharedNumberProviderTest.php
