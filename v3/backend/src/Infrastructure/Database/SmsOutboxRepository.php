@@ -80,6 +80,7 @@ final readonly class SmsOutboxRepository
                         attempt_count, max_attempts
                  FROM pos_sms_outbox
                  WHERE status = \'queued\'
+                   AND provider_code = \'national_payamak_smartsms\'
                    AND (scheduled_at IS NULL OR scheduled_at <= UTC_TIMESTAMP(3))
                    AND (next_attempt_at IS NULL OR next_attempt_at <= UTC_TIMESTAMP(3))
                  ORDER BY id ASC
@@ -186,7 +187,7 @@ final readonly class SmsOutboxRepository
                 'attempt_count' => $attemptNumber,
                 'next_attempt_at' => $nextAttemptAt,
                 'failure_code' => $errorCode,
-                'failure_message' => mb_substr($safeMessage, 0, 255, 'UTF-8'),
+                'failure_message' => substr($safeMessage, 0, 255),
                 'id' => (int) $row['id'],
             ]);
             $this->insertAttempt($row, $attemptNumber, 'send', 'retryable_failure', null, null, $errorCode);
@@ -235,14 +236,14 @@ final readonly class SmsOutboxRepository
                 'SELECT id, business_id, branch_id, provider_code, provider_message_id, status, attempt_count
                  FROM pos_sms_outbox
                  WHERE status IN (\'accepted\', \'sent_to_carrier\')
+                   AND provider_code = \'national_payamak_smartsms\'
                    AND provider_message_id IS NOT NULL
-                   AND (last_delivery_check_at IS NULL
-                        OR last_delivery_check_at <= DATE_SUB(UTC_TIMESTAMP(3), INTERVAL :cooldown SECOND))
+                   AND (last_delivery_check_at IS NULL OR last_delivery_check_at <= :cutoff)
                  ORDER BY COALESCE(last_delivery_check_at, \'1970-01-01 00:00:00\') ASC, id ASC
                  LIMIT :limit
                  FOR UPDATE SKIP LOCKED'
             );
-            $statement->bindValue(':cooldown', $cooldownSeconds, PDO::PARAM_INT);
+            $statement->bindValue(':cutoff', gmdate('Y-m-d H:i:s', time() - $cooldownSeconds));
             $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
             $statement->execute();
             $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -277,7 +278,7 @@ final readonly class SmsOutboxRepository
                 'UPDATE pos_sms_outbox SET status = :status,
                     delivered_at = ' . $deliveredAt . ',
                     failure_code = :failure_code,
-                    failure_message = CASE WHEN :failure_code IS NULL THEN failure_message ELSE \'Provider delivery report indicates failure\' END,
+                    failure_message = CASE WHEN :failure_code IS NULL THEN NULL ELSE \'Provider delivery report indicates failure\' END,
                     updated_at = UTC_TIMESTAMP(3)
                  WHERE id = :id'
             );
