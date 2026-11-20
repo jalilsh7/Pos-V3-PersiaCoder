@@ -198,7 +198,8 @@ $assert(count($list['customers']) === 1 && $list['customers'][0]['id'] === $cust
     'Customer search/status filter did not return the updated customer.');
 
 $secondBusinessPublicId = $uuid();
-$insert->execute(['public_id' => $secondBusinessPublicId, 'code' => $prefix . '-other', 'name' => 'Other CI Business']);
+$insertOtherBusiness = $pdo->prepare('INSERT INTO pos_businesses (public_id, code, name) VALUES (:public_id, :code, :name)');
+$insertOtherBusiness->execute(['public_id' => $secondBusinessPublicId, 'code' => $prefix . '-other', 'name' => 'Other CI Business']);
 $secondBusinessId = (int) $pdo->lastInsertId();
 $otherScope = new BusinessScope($secondBusinessId, $secondBusinessPublicId, null, null);
 $scopeBlocked = false;
