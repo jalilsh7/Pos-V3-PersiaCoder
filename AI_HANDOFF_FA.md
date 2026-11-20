@@ -356,3 +356,24 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - بسته بعدی طراحی: **D-12 — تنظیمات، کاربران، نقش‌ها و مجوز قابلیت‌ها**.
 - پیش از طراحی، آخرین HEAD و سند یکتای تصمیمات را تازه بخوان؛ سپس UserManagementService، RoleManagementService، PermissionRepository، BusinessSetup/Settings، route middleware، schema و frontend را تطبیق بده.
 - entitlement از Central باید با permission داخلی RBAC تفکیک شود. ترکیب پلن‌ها/بسته‌های تجاری و سیاست‌های خاموشی ماژول هنوز مصوب نیست؛ هیچ ترکیبی حدس یا hard-code نشود.
+
+
+## بسته طراحی D-11 — مالی، صندوق و کنترل گردش نقدی (2026-11-20)
+
+- سند UX ایجاد شد: [FINANCE_AND_CASH_CONTROL_UX_V3_FA.md](design/FINANCE_AND_CASH_CONTROL_UX_V3_FA.md)، شناسه `DESIGN-FINANCE-CASH-2026-001`، نسخه 0.1، وضعیت «آماده نمونه‌سازی مرحله‌ای».
+- کد بررسی‌شده: `CashRegisterService`، `CashRegisterController`، `CashRepository`، routeهای `/api/v1/cash/*`، `FinanceWorkspace.tsx` و schema.
+- قابلیت موجود: ایجاد صندوق، بازکردن شیفت با opening float، گردش نقدی دستی in/out روی شیفت باز، بستن با counted cash، محاسبه difference و requires_review، ثبت بررسی، idempotency و audit.
+- API/UI تاریخچه کامل cash movements، expense management، bank accounts، payment-to-cash reconciliation و گزارش مالی end-to-end در مسیرهای بررسی‌شده اثبات نشدند؛ schema وجود جدول payment/refund/expense را به‌تنهایی عملیاتی بودن آن‌ها ثابت نمی‌کند.
+- سند D-11 در README طراحی نمایه و در بک‌لاگ به «آماده نمونه‌سازی مرحله‌ای» ارتقا یافت.
+- تست runtime یا E2E جدید در این بسته اجرا نشده است.
+
+### یادداشت وضعیت بسته D-10
+
+- بسته D-10 در commitهای موجود روی شاخه main توسط تغییرات قبلی تکمیل مستنداتی شده و سند `CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md` در README و backlog ثبت است.
+- قبل از توسعه D-10، Customer API/DB و SMS runtime واقعی باید از روی HEAD بررسی شوند؛ consent تبلیغاتی معتبر و opt-out مطابق تصمیمات قطعی بمانند.
+
+### نقطه ادامه
+
+- بسته بعدی: **D-12 — تنظیمات، کاربران، نقش‌ها و entitlement قابلیت‌ها**.
+- پیش از طراحی، تصمیمات محصول و آخرین HEAD را تازه بخوان؛ routeها و PermissionService/RoleRepository/BusinessScope و ساختار entitlement را با سند LIC-MODULE-CONTROL-2026-001 تطبیق بده.
+- هیچ پلن/بسته فروش یا ترکیب ماژول‌ها را حدس نزن؛ تصمیم تجاری بسته‌بندی هنوز باز است.
