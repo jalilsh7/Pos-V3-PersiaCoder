@@ -246,3 +246,16 @@
 - تست‌ها: typecheck/build، تست مرورگر و تست API واقعی در این بسته اجرا نشده‌اند؛ workflowهای V3 دستی هستند و ابزار dispatch در اتصال فعلی در دسترس نبود. بنابراین PASS ادعا نمی‌شود.
 - محدودیت فعلی: ثبت گردش نقدی دستی، expenses، ledger/حسابداری عملیاتی کامل، اتصال پرداخت‌ها به cash movements و گزارش‌های مالی هنوز در این UI پیاده‌سازی نشده‌اند. پیامک و storefront نیز هنوز اتصال عملیاتی کامل ندارند.
 - گام بعدی: اجرای typecheck/build در CI/محیط runner؛ سپس تکمیل عملیات مالی (گردش/هزینه/گزارش) و در مسیر اصلی محصول، ممیزی و تکمیل سفارش → پرداخت → انبار → آشپزخانه. بعد از تثبیت قراردادهای کاتالوگ/سفارش/پرداخت، storefront و سپس SMS را به هسته رویدادمحور متصل کنید.
+
+
+## گزارش پیشرفت کدنویسی — بسته FIN-02 (2026-11-20)
+- وضعیت: **کد ثبت‌شده؛ تست‌های PHP/DB/Frontend اجرا نشده؛ بسته باز است**.
+- دامنه: ثبت اتمیک و idempotent دریافت/پرداخت نقدی دستی در شیفت باز.
+- Backend: متد `CashRegisterService::createManualMovement` با کنترل session باز، مبلغ مثبت، دلیل اجباری، جلوگیری از برداشت بیش از وجه مورد انتظار، ثبت movement، به‌روزرسانی balance و audit log؛ مسیر `POST /api/v1/cash/sessions/{sessionPublicId}/movements` با نشست، scope شعبه، مجوز `finance.manage`، CSRF و same-origin.
+- Repository: متد `decreaseExpectedCash` با شرط موجودی کافی و وضعیت open؛ تغییر balance و درج movement در transaction واحد IdempotencyService انجام می‌شوند.
+- Frontend: تابع API و فرم ثبت دریافت/پرداخت دستی به FinanceWorkspace افزوده شد؛ پس از ثبت، داده صندوق دوباره از سرور خوانده می‌شود.
+- فایل‌ها: `v3/backend/src/Infrastructure/Database/CashRepository.php`، `v3/backend/src/Finance/CashRegisterService.php`، `v3/backend/src/Finance/CashRegisterController.php`، `v3/backend/public/index.php`، `v3/frontend/src/shared/api/client.ts`، `v3/frontend/src/features/finance/FinanceWorkspace.tsx`.
+- commitهای FIN-02: `61542e57354f0e9ac278c41f2793923a4ee2630a`، `685d0e2baf16955eca2b0a7037c6e6b2cb767a99`، `a0ff168899f10dfe16bb9a90ff774746ea29408c`، `000e5c7cc33b8860c1fa54486b3d4ebd3d72f36`، `1930b0ec8ae82d53252564713a3f33887d8fa84c`، `3145f18e349acb40b8132333869446ee28898343`، `84e1d11cfddfb46dfc992a77698c6305ee6ed163`.
+- کنترل قراردادی انجام‌شده: permission `finance.manage` در migration/seed موجود است؛ IdempotencyService callback را در transaction واحد اجرا و response را همراه عملیات ذخیره می‌کند؛ schema movement typeهای `manual_in/manual_out` و reason اجباری را پشتیبانی می‌کند.
+- تست‌ها: هیچ lint/PHP syntax/DB integration/typecheck/build/API/E2E در این بسته اجرا نشده است؛ PASS اعلام نشود.
+- باقی‌مانده: نمایش تاریخچه گردش‌ها، هزینه‌های عملیاتی، اتصال فروش/پرداخت/refund به cash movement، reconciliation، گزارش مالی و ledger.
