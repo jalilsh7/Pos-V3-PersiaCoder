@@ -20,3 +20,25 @@ Run the focused parser check with:
 ```sh
 php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
 ```
+
+## National Payamak SmartSMS REST adapter
+
+- Implemented provider adapter: NationalPayamakSmartSmsProvider.
+- REST endpoints:
+  - POST https://rest.payamak-panel.com/api/SmartSMS/Send for identical text to up to 100 recipients.
+  - POST https://rest.payamak-panel.com/api/SmartSMS/SendMultiple for personalized text arrays (up to 100, equal recipient/text ordering).
+  - POST https://rest.payamak-panel.com/api/SmartSMS/GetDeliveries for batch delivery lookup by stored provider IDs.
+- Credentials are injected only from server environment:
+  - POS_V3_SMS_NATIONAL_PAYAMAK_USERNAME
+  - POS_V3_SMS_NATIONAL_PAYAMAK_API_KEY
+  - POS_V3_SMS_NATIONAL_PAYAMAK_SENDER
+  - POS_V3_SMS_NATIONAL_PAYAMAK_BACKUP_SENDER_ONE (optional)
+  - POS_V3_SMS_NATIONAL_PAYAMAK_BACKUP_SENDER_TWO (optional)
+  - POS_V3_SMS_HTTP_TIMEOUT (optional; 5–60 seconds, default 20)
+- API key is sent in the provider's documented password field but kept private in the config object. It is never exposed to frontend code.
+- HTTPS, JSON, TLS certificate verification, no redirects, bounded timeouts and max-100 batches are enforced.
+- The adapter returns provider IDs for persistence and maps documented delivery status codes.
+- Network/5xx outcomes are marked deliveryUnknown and must not be blindly retried. A caller must persist returned provider IDs and reconcile delivery status.
+- Unit tests use a fake HTTP transport. No real credentials or provider send have been used.
+- Queue/outbox persistence, consent/opt-out enforcement, scheduled worker, retry policy, delivery polling and settings UI are still pending. Do not wire a user-facing send action until those controls are implemented.
+
