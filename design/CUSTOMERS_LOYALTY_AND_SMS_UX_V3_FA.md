@@ -8,7 +8,7 @@
 - مرجع تصمیمات: `FINAL_PRODUCT_DECISIONS_FA.md`
 - مراجع بررسی‌شده: `database/v3/schema.sql`، `v3/frontend/src/features/customers/CustomersWorkspace.tsx`، `v3/backend/src/Communications/Sms/LegacySmsParser.php`، `v3/backend/src/Communications/Sms/README.md` و `docs/integrations/NATIONAL-PAYAMAK-SMS-FA.md`
 
-> این سند عمداً میان schema موجود، UI نمونه و کد parser پیامک تمایز می‌گذارد. در HEAD بررسی‌شده، صفحه مشتریان هنوز seed/local state است؛ CustomerService/API عملیاتی در مسیرهای بررسی‌شده پیدا نشد. جدول مشتری و ledger وفاداری در schema وجود دارند، اما این موضوع به معنی فعال بودن CRUD، محاسبه امتیاز یا گزارش سابقه نیست. SMS V3 نیز فعلاً parser ورودی/سازگاری است و ارسال، صف، delivery، تنظیمات امن و consent/opt-out اجرایی ندارد.
+> این سند عمداً میان طراحی UX، schema و runtime واقعی تمایز می‌گذارد. در snapshot مورخ 2026-11-20، CRM پایه شامل CRUD/API، جست‌وجوی مشتری در POS، سوابق سفارش و محاسبه net spend پیاده‌سازی شده است؛ اما وفاداری/امتیاز و consent هنوز عملیاتی نیستند. SMS نیز دارای SmartSMS و SharedNumber adapters، outbox رمزگذاری‌شده، worker و delivery poller است؛ بااین‌حال هیچ پیام واقعی ارسال نشده، event/template registry و اتصال به رویداد سفارش وجود ندارد، route عمومی ارسال متن آزاد عمداً حذف شده و consent/opt-out و UI تنظیمات هنوز تکمیل نشده‌اند.
 
 ## 1. هدف محصول
 
@@ -31,13 +31,14 @@
 `pos_customers` شامل public_id، name، phone_normalized، phone_display، notes، is_active و timestamp است. `pos_orders.customer_id` به مشتری وصل می‌شود. جدول `pos_customer_ledger` دارای event_key یکتا، points_delta، credit_delta، visit_delta، reason، order_id و created_at است.
 
 ### SMS
-کلاس `LegacySmsParser` فقط:
-- تبدیل ارقام فارسی/عربی.
-- تشخیص فرمان صریح تاریخ تولد شمسی.
-- parse پاسخ inbox در ساختار مستند National Payamak.
-- normalize شماره موبایل ایران.
-
-انجام می‌دهد. خود کلاس صریحاً ارسال پیام، تغییر مشتری یا رضایت را انجام نمی‌دهد. README پیامک نیز نبود ارسال، polling، persistence، delivery، queue/retry، credential management و consent را اعلام می‌کند.
+کلاس `LegacySmsParser` همچنان فقط parsing/normalization سازگاری را انجام می‌دهد و ارسال یا رضایت را مدیریت نمی‌کند. علاوه بر آن، در snapshot 2026-11-20:
+- NationalPayamakSmartSmsProvider برای Send/SendMultiple/GetDeliveries اضافه شده است.
+- NationalPayamakSharedNumberProvider برای BaseServiceNumber با bodyId تأییدشده اضافه شده است.
+- Outbox و delivery attempts با رمزگذاری AES-256-GCM، idempotency، worker و delivery poller وجود دارند.
+- ارسال SmartSMS به لغو11 در انتهای متن نیاز دارد؛ متن به‌صورت خودکار بازنویسی نمی‌شود.
+- هیچ ارسال واقعی یا trigger از رویداد سفارش انجام نشده است.
+- event template registry، permissionهای مجزای SMS، settings UI، consent/opt-out و marketing suppression باقی‌اند.
+- endpoint عمومی free-text پس از بازبینی محصول حذف شده؛ enqueue فقط باید از application event/template داخلی انجام شود.
 
 ## 3. ناوبری پیشنهادی
 
@@ -47,7 +48,7 @@
 - رضایت و ترجیحات ارتباطی
 - پیامک‌ها و گزارش ارسال (تا زمان تکمیل Backend صرفاً نمای طراحی/غیرفعال)
 
-صفحه‌های پیامک مدیریتی شامل تنظیمات provider، قالب‌ها، صف، گزارش تحویل و opt-out خواهند بود؛ هیچ‌کدام نباید دکمه عملیاتی داشته باشند تا endpoint و permission واقعی موجود شود.
+صفحه‌های پیامک مدیریتی شامل تنظیمات provider، قالب‌ها، صف، گزارش تحویل و opt-out خواهند بود؛ زیرساخت outbox/worker اکنون موجود است اما UI و permissionهای مجزای SMS هنوز آماده نیستند، بنابراین دکمه ارسال عملیاتی نباید نمایش داده شود.
 
 ## 4. فهرست مشتریان
 
@@ -286,7 +287,7 @@ UI باید وضعیت‌ها را به‌صورت «رضایت ثبت‌شده�
 - phone_normalized در schema ایندکس دارد، اما unique constraint برای شماره تلفن در migration بررسی‌شده وجود ندارد؛ duplicate/merge policy باز است.
 - جدول `pos_customer_ledger` ساختار امتیاز، اعتبار و مراجعه را دارد، اما route یا service فعال برای ثبت/محاسبه آن در مسیرهای فعلی مشاهده نشد.
 - جدول consent/opt-out و فیلد birthday در schema بررسی‌شده وجود ندارد؛ parser تاریخ تولد فقط خروجی parse می‌دهد و آن را در پروفایل ذخیره نمی‌کند.
-- در `public/index.php` هیچ route مدیریتی customer، loyalty یا SMS ثبت نشده است.
+- در `public/index.php` routeهای CRM پایه ثبت شده‌اند؛ routeهای loyalty و SMS management وجود ندارند و endpoint عمومی ارسال متن آزاد عمداً حذف شده است.
 
 ### مستندات provider که باید مبنای adapter باشند
 - `docs/integrations/NATIONAL-PAYAMAK-SMS-FA.md` قرارداد SmartSMS REST، BaseServiceNumber و BaseServiceNumberSchedule را از مستندات ارائه‌شده پروژه خلاصه کرده است.
