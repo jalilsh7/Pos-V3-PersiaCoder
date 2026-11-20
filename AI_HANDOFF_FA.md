@@ -433,3 +433,19 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - ابتدا آخرین HEAD و تصمیمات محصول را تازه fetch کن؛ سپس Storefront UI، cart، checkout، order API، ساعات کاری/کانال‌ها، fulfillment، payment و routeهای عمومی را بررسی کن.
 - اصل غیرقابل نقض: Storefront یک presentation channel برای همان موتور سفارش مشترک است؛ سفارش storefront باید در POS/مرکز سفارش و گردش fulfillment ظاهر شود. قیمت/موجودی/مجوز/پرداخت در Backend معتبرند.
 - قالب عمومی منودار باید با پروفایل صنفی قابل پیکربندی باشد؛ برای هر صنف runtime جداگانه نساز.
+
+
+## بسته طراحی D-13 — فروشگاه آنلاین و checkout عمومی (2026-11-20)
+
+- سند UX: [STOREFRONT_AND_PUBLIC_CHECKOUT_UX_V3_FA.md](design/STOREFRONT_AND_PUBLIC_CHECKOUT_UX_V3_FA.md)، نسخه 0.1.
+- تصمیم محصول قالب واحد عمومی و قابل پیکربندی برای صنف‌های منودار رعایت شد؛ storefrontهای جدا برای هر صنف ساخته نمی‌شوند.
+- `StorefrontWorkspace.tsx` فقط منوی نمونه، cart محلی، pickup/delivery نمایشی و وضعیت باز نمایشی دارد.
+- route عمومی catalog/checkout در Backend بررسی‌شده وجود ندارد. OrderService کانال storefront را می‌شناسد، اما route سفارش فعلی session/permission لازم دارد و public checkout نیست.
+- schema fulfillment و payment موجود است؛ ساعات کاری، delivery zone، هزینه ارسال، public payment و online callback end-to-end اثبات نشده‌اند.
+- README و backlog D-13 ثبت شدند؛ این بسته طراحی است و public API یا UI عملیاتی ساخته نشده است.
+
+### نقطه ادامه
+- بسته بعدی طراحی: **D-14 — آشپزخانه/KDS، آماده‌سازی، تحویل و تجهیزات عملیاتی**.
+- ابتدا آخرین HEAD و تصمیمات محصول را تازه بررسی کن؛ سپس وضعیت dining/table sessions، order status/kitchen status، event/history، چاپگر و هر فایل/route مرتبط را از کد استخراج کن.
+- نقش‌های آشپزخانه، ایستگاه‌ها، اولویت، زمان آماده‌سازی و تحویل را فقط مطابق state machine/داده موجود طراحی کن؛ هیچ SLA یا transition جدیدی را حدس نزن.
+- کارتخوان/چاپگر و تجهیزات به‌عنوان integrationهای جدا از workflow سفارش طراحی شوند؛ پروتکل سخت‌افزار بدون مدل/مستند واقعی قطعی نشود.
