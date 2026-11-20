@@ -1031,3 +1031,11 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - مستند مرجع APIهای SmartSMS و خط خدماتی اشتراکی: `docs/integrations/NATIONAL-PAYAMAK-SMS-FA.md`.
 - بازمانده‌ها: provider adapter، ارسال تراکنشی، صف/retry/deduplication، گزارش تحویل، ذخیره امن تنظیمات، مدیریت رضایت تبلیغاتی و opt-out. بنابراین ماژول SMS هنوز عملیاتی یا آماده تولید نیست.
 
+
+
+## ARCH-MASTER-2026-001 — آغاز معماری فنی مادر (2026-11-20)
+- وضعیت: **در حال انجام؛ نسخه پایه سند ثبت شد**.
+- خروجی: `ARCHITECTURE_MASTER_V3_FA.md`؛ مرز ماژول‌ها، لایه‌ها، استقرار، Central، جریان‌های POS/Storefront/SMS، event/queue، API، امنیت و آفلاین.
+- مبنای شروع: `4f3d79f3ac7331d0258020300615eb520a2bb508`.
+- ERD نهایی، OpenAPI، outbox/queue، tenancy/license/offline و threat model هنوز باز هستند. تست اجرایی نرم‌افزار در این بسته انجام نشده؛ فاز 1 تکمیل‌شده نیست.
+- گام بعدی: تطبیق ERD و مدل دامنه با migrations، repositories، services و APIهای جاری.
