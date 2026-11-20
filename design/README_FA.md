@@ -30,9 +30,9 @@
 | D-12 | [ACCESS_CONTROL_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md](ACCESS_CONTROL_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md) | تنظیمات، کاربران، نقش‌ها، RBAC و entitlement Central | آماده نمونه‌سازی مرحله‌ای؛ entitlement runtime باقی است |
 | D-13 | [STOREFRONT_AND_PUBLIC_CHECKOUT_UX_V3_FA.md](STOREFRONT_AND_PUBLIC_CHECKOUT_UX_V3_FA.md) | قالب عمومی صنفی، منو، سبد، checkout و سفارش آنلاین | آماده بازبینی مفهومی؛ public API/checkout باقی است |
 | D-14 | [KITCHEN_KDS_AND_FULFILLMENT_UX_V3_FA.md](KITCHEN_KDS_AND_FULFILLMENT_UX_V3_FA.md) | KDS، صف آشپزخانه، آماده‌سازی، سالن/میز و تحویل | آماده بازبینی مفهومی؛ KDS/تحویل پیشرفته باقی است |
-| D-15 | [INTEGRATIONS_SMS_TERMINALS_AND_PRINTING_UX_V3_FA.md](INTEGRATIONS_AND_HARDWARE_UX_V3_FA.md) | کارتخوان، agent، چاپگر و adapter سخت‌افزار | آماده بازبینی معماری؛ protocol واقعی دستگاه لازم است |
+| D-15 | [INTEGRATIONS_AND_HARDWARE_UX_V3_FA.md](INTEGRATIONS_AND_HARDWARE_UX_V3_FA.md) | کارتخوان، agent، چاپگر و adapter سخت‌افزار | آماده بازبینی معماری؛ protocol واقعی دستگاه لازم است |
 | D-15-SMS | [INTEGRATIONS_SMS_TERMINALS_AND_PRINTING_UX_V3_FA.md](INTEGRATIONS_SMS_TERMINALS_AND_PRINTING_UX_V3_FA.md) | ضمیمه فنی SmartSMS/SharedNumber، صف، delivery، consent و الزامات چاپ/KOT | ضمیمه مرجع؛ provider runtime باقی است |
-| D-16 | [DESIGN_INTEGRATION_REVIEW_AND_HANDOFF_V3_FA.md](DESIGN_INTEGRATION_REVIEW_AND_HANDOFF_V3_FA.md) | بازبینی یکپارچگی، canonical map و موج‌های تحویل به توسعه | بازبینی اولیه انجام شد؛ تبدیل به task و نمونه‌سازی باقی است |
+| D-16 | [FINAL_DESIGN_REVIEW_AND_DEVELOPMENT_HANDOFF_V3_FA.md](FINAL_DESIGN_REVIEW_AND_DEVELOPMENT_HANDOFF_V3_FA.md) | traceability تصمیمات تا UX/API/DB/test، canonical map، شکاف‌ها و موج‌های تحویل به توسعه | بازبینی اولیه؛ نمونه‌سازی و تست/پذیرش باقی است |
 | — | [UX_BLUEPRINT_V3_FA.md](UX_BLUEPRINT_V3_FA.md) | نقشه کلان تجربه و معماری صفحات | در حال طراحی |
 | — | [DESIGN_BACKLOG_V3_FA.md](DESIGN_BACKLOG_V3_FA.md) | وضعیت بسته‌ها و معیار پذیرش | فعال |
 
