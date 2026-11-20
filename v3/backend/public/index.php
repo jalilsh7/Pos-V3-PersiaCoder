@@ -376,7 +376,13 @@ try {
         [$sessionMiddleware, $makePermissionMiddleware('orders.update', true), $csrfMiddleware, $originMiddleware],
     );
 
-    $router->add('GET', '/api/v1/orders',
+    $smsOutboxReadController = null;
+    $getSmsOutboxReadController = static function () use (&$smsOutboxReadController, $getConnection): SmsOutboxReadController {
+        if (!$smsOutboxReadController instanceof SmsOutboxReadController) $smsOutboxReadController = new SmsOutboxReadController(new SmsOutboxReadService($getConnection()));
+        return $smsOutboxReadController;
+    };
+
+    $router->add('GET', '/api/v1/communications/sms/outbox',\n        static fn (Request $request): Response => $getSmsOutboxReadController()->list($request),\n        [$sessionMiddleware, $makePermissionMiddleware('communications.read', true)],\n    );\n\n    $router->add('GET', '/api/v1/orders',
         static fn (Request $request): Response => $getOrderController()->list($request),
         [$sessionMiddleware, $makePermissionMiddleware('orders.read', true)],
     );

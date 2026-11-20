@@ -1255,3 +1255,14 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - Integration script مشتری برای چند صفحه، عدم تکرار/جاافتادگی و cursor نامعتبر توسعه یافت.
 - تست مرحله‌ای پس از این تغییر هنوز اجرا نشده؛ در phase gate بعدی Backend و Database validation باید اجرا شوند.
 
+
+
+## SMS-API-02 — Read-only queue and delivery history (2026-11-21)
+
+- Added branch-scoped read-only endpoint: `GET /api/v1/communications/sms/outbox`.
+- Added granular permission `communications.read`; migration 015 grants it to manager. Owner wildcard access remains unchanged.
+- Supports exact status filtering and bounded keyset pagination (1–100 rows).
+- Response excludes recipient phone, message body, customer ID, ciphertext, provider message IDs and raw provider payloads.
+- No resend/retry operation is exposed; `unknown` remains unresolved and must not be blindly retried.
+- UI, event/template trigger, marketing consent/opt-out, provider settings UI and SharedNumber delivery reconciliation remain open.
+- No tests/build were run in this batch by request; validate auth/scope/cursor/privacy and migration at the consolidated phase gate.

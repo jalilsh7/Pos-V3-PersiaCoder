@@ -85,3 +85,12 @@ php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
 - UI, queue/report browsing and provider configuration remain pending. No tests were run for this API wiring in this batch; include it in the consolidated end-of-phase validation.
 
 - No public free-text enqueue endpoint is registered. Outbox enqueue is an internal application-service operation and must be called only by approved domain-event/template flows. Do not expose arbitrary message text under a generic transactional endpoint.
+
+## Read-only queue and delivery history API
+
+- `GET /api/v1/communications/sms/outbox` is branch-scoped and requires `communications.read`.
+- Supports `limit` (1–100), an optional exact `status` filter, and keyset `cursor` pagination.
+- Returns public message ID, type, provider code, status, attempt count, safe failure code, timestamps and safe delivery-attempt metadata only.
+- Recipient numbers, message bodies, ciphertext, customer identifiers, provider message IDs and raw provider payloads are never returned.
+- `unknown` is informational only. No retry/resend action is exposed.
+- Permission is granted to the manager role; owner wildcard access follows existing RBAC.

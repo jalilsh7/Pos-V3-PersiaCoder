@@ -775,3 +775,14 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - تغییرات پس از آخرین DB/Backend PASS انجام شده‌اند؛ این نسخه هنوز phase-gate test نشده است. Workflowها manual workflow_dispatch-only هستند؛ در gate بعدی اجرا شود.
 - گام بعدی: تست مرحله‌ای؛ سپس بررسی customer inline creation in POS و policy permissions قبل از افزودن آن. Loyalty/consent همچنان جداگانه و بدون حدس باقی بمانند.
 
+
+
+## نقطه ادامه پس از SMS-API-02 — API گزارش فقط‌خواندنی (2026-11-21)
+
+- HEAD مبنا: `4cf789b13171a1155e50ab5967f70267f4db8497`.
+- API فقط‌خواندنی `GET /api/v1/communications/sms/outbox` با مجوز `communications.read` و scope شعبه اضافه شد.
+- صفحه‌بندی keyset و فیلتر وضعیت دارد. شماره مقصد، متن پیام، شناسه مشتری، ciphertext و provider message ID افشا نمی‌شوند.
+- migration 015 مجوز را برای نقش manager تعریف می‌کند؛ owner از wildcard موجود استفاده می‌کند.
+- هیچ retry/resend وجود ندارد؛ وضعیت unknown صرفاً نمایش داده می‌شود.
+- تست/build در این بسته اجرا نشده؛ اعتبارسنجی API، scope، cursor، privacy و migration باید در phase gate تجمیعی انجام شود.
+- گام بعد: UI صف/گزارش با pagination و فیلتر وضعیت؛ سپس تنظیمات امن provider. ارسال خودکار و پیام تبلیغاتی تا تکمیل template/event policy و consent/opt-out غیرفعال می‌مانند.
