@@ -11,7 +11,7 @@ spl_autoload_register(static function (string $class) use ($backendRoot): void {
 
 use PersiaCoder\PosV3\Communications\Sms\NationalPayamakSharedNumberProvider;
 use PersiaCoder\PosV3\Communications\Sms\SharedNumberConfig;
-use PersiaCoder\PosV3\Communications\Sms\SmsHttpClient;
+use PersiaCoder\PosV3\Communications\Sms\SmsFormHttpClient;
 use PersiaCoder\PosV3\Communications\Sms\SmsHttpResponse;
 use PersiaCoder\PosV3\Communications\Sms\SmsProviderException;
 
