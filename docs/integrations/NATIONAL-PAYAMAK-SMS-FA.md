@@ -86,3 +86,23 @@
 - زمان‌بندی و محدودیت ساعت ارسال
 - adapter خط خدماتی اشتراکی/الگو (BaseServiceNumber)؛ این adapter جداگانه است و با SmartSMS یکی نیست.
 
+
+### خط خدماتی اشتراکی / الگوی تأییدشده (BaseServiceNumber)
+
+طبق PDF خط خدماتی اشتراکی، صفحات 6 تا 8:
+- REST endpoint ارسال فوری: POST https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber.
+- پارامترها: username، password (در عمل ApiKey)، text، to و bodyId.
+- فقط یک شماره موبایل در هر درخواست پذیرفته می‌شود.
+- bodyId باید متن/الگوی از قبل ثبت و تأییدشده در پنل باشد؛ مقادیر جایگزین در text با ; و به همان ترتیب تعریف الگو ارسال می‌شوند.
+- موفقیت: RetStatus برابر 1، StrRetStatus برابر OK و Value یک شناسه عددی بیش از 15 رقم است؛ شناسه باید ذخیره شود.
+- خطاهای مهم: -110 الزام ApiKey، -109 تنظیم IP مجاز، -108 مسدودی IP، -10 لینک در متغیر، -5 عدم تطابق متغیرها، -4 bodyId نامعتبر/تأییدنشده، -3 خط تعریف‌نشده، -2 بیش از یک گیرنده، -1 دسترسی غیرفعال، 0 اعتبارنامه نادرست، 2 اعتبار ناکافی، 7 کلمه فیلترشده، 18 موبایل نامعتبر و 19 سقف روزانه.
+- BaseServiceNumberSchedule نیز در صفحه 7 معرفی شده است؛ زمان مجاز 07:00 تا 22:00 و فرمت scheduleDate به شکل YYYY-MM-DD HH:MM:SS است. این متد فعلاً پیاده‌سازی نشده است تا queue و timezone policy مشخص شوند.
+
+### Adapter فعلی خط خدماتی اشتراکی
+
+- NationalPayamakSharedNumberProvider پیاده‌سازی شده است.
+- فقط template ID تأییدشده و یک گیرنده می‌پذیرد؛ متغیرها را با ; می‌سازد.
+- API key از environment سمت سرور خوانده و در property خصوصی config نگهداری می‌شود.
+- پاسخ و خطاهای مستندشده parse می‌شوند؛ HTTP 5xx/transport unknown هستند و retry کور ندارند.
+- تست fake transport اضافه شده؛ ارسال واقعی و delivery polling هنوز انجام نشده‌اند.
+
