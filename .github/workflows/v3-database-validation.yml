@@ -1,0 +1,124 @@
+name: V3 database engine validation
+
+on:
+  push:
+    branches:
+      - feature/3food-pos-next-release-v2
+  pull_request:
+    branches:
+      - feature/3food-pos-next-release-v2
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-v3-schema:
+    name: V3 schema / ${{ matrix.engine.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        engine:
+          - name: MySQL 8.4
+            image: mysql:8.4
+            root_password: mysql-ci-password
+          - name: MariaDB 10.6
+            image: mariadb:10.6
+            root_password: mariadb-ci-password
+    services:
+      database:
+        image: ${{ matrix.engine.image }}
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ matrix.engine.root_password }}
+          MARIADB_ROOT_PASSWORD: ${{ matrix.engine.root_password }}
+          MYSQL_DATABASE: pos_v3_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -p${{ matrix.engine.root_password }}"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo, pdo_mysql, pcntl
+
+      - name: Verify PHP tooling syntax
+        run: |
+          php -l database/v3/bin/bootstrap.php
+          php -l database/v3/bin/install.php
+          php -l database/v3/bin/preflight.php
+          php -l database/v3/bin/migrate.php
+          php -l database/v3/bin/backup.php
+          php -l database/v3/bin/restore.php
+          php -l scripts/check-v3-database-schema.php
+          php -l scripts/check-v3-install.php
+          php -l scripts/check-v3-migration.php
+          php -l scripts/check-v3-backup-binary-restore.php
+          php -l scripts/check-v3-sql-parser.php
+          php -l scripts/check-v3-inventory-posting-integration.php
+          php -l scripts/check-v3-auth-integration.php
+          php scripts/check-v3-sql-parser.php
+          python3 -m py_compile scripts/tamper-v3-backup.py
+
+      - name: Install isolated V3 baseline into disposable database
+        env:
+          MYSQL_PWD: ${{ matrix.engine.root_password }}
+        run: mysql --host=127.0.0.1 --port=3306 --user=root pos_v3_ci < database/v3/schema.sql
+
+      - name: Verify schema metadata and enforced constraints
+        env:
+          MYSQL_TEST_HOST: 127.0.0.1
+          MYSQL_TEST_PORT: 3306
+          MYSQL_TEST_DATABASE: pos_v3_ci
+          MYSQL_TEST_USERNAME: root
+          MYSQL_TEST_PASSWORD: ${{ matrix.engine.root_password }}
+        run: php scripts/check-v3-database-schema.php
+
+      - name: Exercise guarded installer and checksum migration runner
+        env:
+          POS_V3_DB_HOST: 127.0.0.1
+          POS_V3_DB_PORT: 3306
+          POS_V3_DB_NAME: pos_v3_install_ci
+          POS_V3_DB_USER: root
+          POS_V3_DB_PASSWORD: ${{ matrix.engine.root_password }}
+          POS_V3_ADMIN_USERNAME: ci-owner
+          POS_V3_ADMIN_PASSWORD: ci-only-password-12345
+          POS_V3_ADMIN_NAME: CI Owner
+        run: |
+          MYSQL_PWD="${{ matrix.engine.root_password }}" mysql --host=127.0.0.1 --user=root -e "CREATE DATABASE pos_v3_install_ci CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+          php database/v3/bin/preflight.php
+          php database/v3/bin/install.php
+          php scripts/check-v3-install.php
+          printf "CREATE TABLE v3_ci_migration_probe (id INT UNSIGNED NOT NULL PRIMARY KEY) ENGINE=InnoDB;" > database/v3/migrations/013_ci-smoke.sql
+          php database/v3/bin/migrate.php
+          php database/v3/bin/migrate.php
+          php scripts/check-v3-migration.php
+          rm -f database/v3/migrations/013_ci-smoke.sql
+          php scripts/check-v3-inventory-posting-integration.php
+          php scripts/check-v3-auth-integration.php
+          export POS_V3_BACKUP_HMAC_KEY='ci-only-v3-backup-key-32-bytes-minimum'
+          BACKUP_FILE="${RUNNER_TEMP}/persiacoder-pos-v3-ci-backup.jsonl.gz"
+          TAMPERED_FILE="${RUNNER_TEMP}/persiacoder-pos-v3-ci-backup-tampered.jsonl.gz"
+          php database/v3/bin/backup.php "$BACKUP_FILE"
+          test "$(stat -c '%a' "$BACKUP_FILE")" = "600"
+          python3 scripts/tamper-v3-backup.py "$BACKUP_FILE" "$TAMPERED_FILE"
+          MYSQL_PWD="${POS_V3_DB_PASSWORD}" mysql --host=127.0.0.1 --user=root -e "CREATE DATABASE pos_v3_restore_ci CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+          export POS_V3_DB_NAME=pos_v3_restore_ci
+          if php database/v3/bin/restore.php "$TAMPERED_FILE"; then
+            echo "Tampered backup was incorrectly accepted."
+            exit 1
+          fi
+          REMAINING_OBJECTS="$(MYSQL_PWD="${POS_V3_DB_PASSWORD}" mysql --host=127.0.0.1 --user=root --batch --skip-column-names -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='pos_v3_restore_ci'")"
+          test "$REMAINING_OBJECTS" = "0"
+          php database/v3/bin/restore.php "$BACKUP_FILE"
+          php scripts/check-v3-install.php
+          php scripts/check-v3-migration.php
+          php scripts/check-v3-backup-binary-restore.php
