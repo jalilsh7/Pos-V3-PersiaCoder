@@ -15,6 +15,7 @@ import {
 } from "../../shared/api/client";
 import { Button, SelectField, StatusBadge, Surface, TextField } from "../../shared/ui";
 import "./catalog.css";
+import { CatalogOptionsEditor } from "./CatalogOptionsEditor";
 
 const money = (value: number) => new Intl.NumberFormat("fa-IR").format(value);
 const normalizeDigits = (value: string) => value
@@ -350,6 +351,7 @@ export function CatalogWorkspace() {
                 {selectedDetail.variants.filter((item) => item.is_active).map((variant) => <div className="catalog-option" key={variant.id}><span>{variant.name}</span><b>{variant.price_delta_amount ? `${variant.price_delta_amount > 0 ? "+" : ""}${money(variant.price_delta_amount)} تومان` : "بدون تغییر قیمت"}</b></div>)}
               </div>
             ) : null}
+            {selectedDetail && !loadingDetail ? <CatalogOptionsEditor key={selectedDetail.id} productId={selectedDetail.id} detail={selectedDetail} onSaved={() => refreshCatalog(selectedDetail.id)} /> : null}
             <div className="catalog-detail-actions">
               <Button variant="secondary" disabled={saving} onClick={() => startProductEdit(selected)}>ویرایش محصول</Button>
               <Button variant={selected.is_active ? "secondary" : "primary"} disabled={saving} onClick={() => { void toggleAvailability(selected); }}>
