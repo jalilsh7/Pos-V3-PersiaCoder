@@ -103,7 +103,11 @@ final readonly class CustomerRepository
     }
 
     /** @return list<array<string,mixed>> */
-    public function list(int $businessId, string $search, string $status, int $limit): array
+    /**
+     * @param array{updated_at:string,id:int}|null $cursor
+     * @return array{customers:list<array<string,mixed>>,next_cursor_data:array{updated_at:string,id:int}|null}
+     */
+    public function list(int $businessId, string $search, string $status, int $limit, ?array $cursor = null): array
     {
         $where = ['c.business_id = :business_id'];
         $params = ['business_id' => $businessId];
@@ -116,7 +120,12 @@ final readonly class CustomerRepository
             $params['search_phone_display'] = $needle;
             $params['search_phone'] = $needle;
         }
-        $sql = 'SELECT c.public_id, c.name, c.phone_display, c.notes, c.is_active, c.created_at, c.updated_at,
+        if ($cursor !== null) {
+            $where[] = '(c.updated_at < :cursor_updated_at OR (c.updated_at = :cursor_updated_at AND c.id < :cursor_id))';
+            $params['cursor_updated_at'] = $cursor['updated_at'];
+            $params['cursor_id'] = $cursor['id'];
+        }
+        $sql = 'SELECT c.id AS cursor_id, c.public_id, c.name, c.phone_display, c.notes, c.is_active, c.created_at, c.updated_at,
                     (SELECT COUNT(*) FROM pos_orders o
                      WHERE o.business_id = c.business_id AND o.customer_id = c.id) AS order_count,
                     (SELECT COALESCE(SUM(
@@ -134,15 +143,28 @@ final readonly class CustomerRepository
                 FROM pos_customers c
                 WHERE ' . implode(' AND ', $where) . '
                 ORDER BY c.updated_at DESC, c.id DESC
-                LIMIT :limit';
+                LIMIT :fetch_limit';
         $statement = $this->connection->prepare($sql);
-        foreach ($params as $key => $value) $statement->bindValue(':' . $key, $value);
-        $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+        foreach ($params as $key => $value) {
+            $statement->bindValue(':' . $key, $value, $key === 'cursor_id' || $key === 'business_id' ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $statement->bindValue(':fetch_limit', $limit + 1, PDO::PARAM_INT);
         $statement->execute();
-        return array_map(self::mapCustomer(...), $statement->fetchAll(PDO::FETCH_ASSOC));
+        $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $hasMore = count($rows) > $limit;
+        $rows = array_slice($rows, 0, $limit);
+        $last = $rows === [] ? null : $rows[array_key_last($rows)];
+        $nextCursorData = $hasMore && is_array($last) ? [
+            'updated_at' => (string) $last['updated_at'],
+            'id' => (int) $last['cursor_id'],
+        ] : null;
+
+        return [
+            'customers' => array_map(self::mapCustomer(...), $rows),
+            'next_cursor_data' => $nextCursorData,
+        ];
     }
 
-    /** @return array<string,mixed>|null */
     public function detail(int $businessId, string $publicId): ?array
     {
         $customer = $this->findByPublicId($businessId, $publicId);
