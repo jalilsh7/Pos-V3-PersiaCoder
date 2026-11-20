@@ -9,7 +9,7 @@ import {
   reviewCashSession,
   type CashRegisterSummary,
 } from "../../shared/api/client";
-import { Button, Notice, StatusBadge, Surface, TextField } from "../../shared/ui";
+import { Button, Notice, SelectField, StatusBadge, Surface, TextField } from "../../shared/ui";
 import "./finance.css";
 
 const money = (value: number) => new Intl.NumberFormat("fa-IR").format(value);
@@ -122,7 +122,7 @@ export function FinanceWorkspace() {
       </div>
       <Notice variant="info">این بخش اکنون به API صندوق V3 متصل است. ثبت دریافت/پرداخت دستی، هزینه‌ها و گزارش مالی در بسته‌های بعدی همین ماژول تکمیل می‌شوند.</Notice>
       {error ? <Notice variant="warning">{error}</Notice> : null}
-      {notice ? <Notice variant="success">{notice}</Notice> : null}
+      {notice ? <Notice variant="info">{notice}</Notice> : null}
       <div className="finance-metrics">
         <Surface padding="sm"><span>تعداد صندوق‌ها</span><strong>{loading ? "…" : money(totalRegisters)}</strong></Surface>
         <Surface padding="sm"><span>شیفت‌های باز</span><strong>{loading ? "…" : money(openRegisters)}</strong></Surface>
@@ -135,7 +135,7 @@ export function FinanceWorkspace() {
           {activeSession ? <StatusBadge variant={activeSession.status === "open" ? "success" : "warning"}>{activeSession.status === "open" ? "شیفت باز" : "نیازمند بررسی"}</StatusBadge> : <StatusBadge variant="neutral">بدون شیفت فعال</StatusBadge>}
         </div>
         <div className="finance-form-fields">
-          <label className="ui-field"><span className="ui-field__label">انتخاب صندوق</span><select className="ui-select" value={selectedId} onChange={(event) => setSelectedId(event.target.value)} disabled={loading || busy}><option value="">انتخاب صندوق</option>{registers.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.code}</option>)}</select></label>
+          <SelectField label="انتخاب صندوق" value={selectedId} onChange={(event) => setSelectedId(event.target.value)} disabled={loading || busy} placeholder="انتخاب صندوق" options={registers.map((item) => ({ value: item.id, label: `${item.name} · ${item.code}` }))} />
           {selected && activeSession ? (
             <div className="finance-close-values">
               <span>موجودی ابتدای شیفت<strong>{money(activeSession.opening_amount)} تومان</strong></span>
