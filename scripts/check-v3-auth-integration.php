@@ -256,7 +256,7 @@ $insertOrder = $pdo->prepare(
         (:business_id, :branch_id, :public_id, :order_number, 'manual', 'draft', :payment_status, :created_by)"
 );
 $orderIds = [];
-foreach ([80001 => 'unpaid', 80002 => 'paid', 80003 => 'partial'] as $orderNumber => $paymentStatus) {
+foreach ([80001 => 'unpaid', 80002 => 'paid', 80003 => 'partially_paid'] as $orderNumber => $paymentStatus) {
     $insertOrder->execute([
         'business_id' => $businessId,
         'branch_id' => $branchId,
