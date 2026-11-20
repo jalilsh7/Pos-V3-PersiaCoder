@@ -83,3 +83,12 @@ MySQL/MariaDB برای بسیاری از دستورات DDL implicit commit ان
 - رسپی و نسخه‌های رسپی شناسه عمومی UUID و business scope می‌گیرند؛ variant اختیاری باید متعلق به همان product باشد. برای هر محصول/تنوع حداکثر یک رکورد recipe تعریف می‌شود و تغییر فرمول با نسخه جدید انجام می‌گیرد.
 - واحدهای مرجع mg/g/kg، ml/l و pcs و تبدیل‌های استاندارد پایه seed می‌شوند. ضریب تبدیل در هر recipe line snapshot می‌شود تا تغییرات بعدی تبدیل، نسخه‌های قبلی را تغییر ندهد.
 - migration برای نصب تازه و پیش از ورود داده عملیاتی طراحی شده است؛ به علت ستون‌های NOT NULL و تغییر FKها، برای دیتابیس دارای داده نیازمند طرح backfill جداگانه است. فقط ثبت شده و اجرا نشده است.
+
+## Migration 013 — صف رمزگذاری‌شده پیامک
+
+- فایل 013_sms-outbox-and-delivery-attempts.sql جدول outbox پیامک‌های transactional/verification و delivery attempts را business-scoped ایجاد می‌کند.
+- متن و شماره مقصد به‌صورت ciphertext با nonce/tag جدا ذخیره می‌شوند؛ recipient_hash و message_hash برای بررسی یکپارچگی و بدون نگهداری مقدار خام هستند.
+- شناسه provider، وضعیت ارسال/تحویل، attempt count، زمان retry و delivery check ذخیره می‌شود.
+- پیام تبلیغاتی در enum این نسخه وجود ندارد؛ تا زمان پیاده‌سازی consent/opt-out ارسال marketing مجاز نیست.
+- این migration فقط در مخزن ثبت شده؛ اجرای واقعی آن باید از DB validation workflow روی MySQL و MariaDB تأیید شود.
+
