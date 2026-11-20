@@ -1148,3 +1148,43 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - اصلاح انجام شد: `$prefix` اکنون با رشته double-quoted و escape صحیح namespace تعریف می‌شود.
 - commit اصلاح: `491faecd8e585ef894d5643f3d8d6026bff1629f`.
 - Workflow دیتابیس، این فایل را با `php -l` بررسی و سپس تست integration پرداخت را روی MySQL و MariaDB اجرا می‌کند؛ اجرای مربوط به اصلاح جدید باید نتیجه‌اش دوباره بررسی شود.
+
+## POS-PAY-06 — بازپرداخت نقدی، رسید و تست دیتابیس پرداخت (2026-11-20)
+
+- وضعیت: **پیاده‌سازی و تست integration دیتابیس PASS**؛ UI و مسیرهای غیرنقدی هنوز محدودیت دارند.
+- جزئیات:
+  - دریافت نقدی کامل/جزئی، شیفت باز، دفتر پرداخت، payment event، گردش sale_in، idempotency و audit.
+  - بازپرداخت نقدی کامل/جزئی فقط با finance.manage، دلیل اجباری، تأیید صریح و شیفت باز دارای وجه کافی.
+  - refund row، event نوع cash_refunded، cash movement نوع refund_out، کاهش وجه مورد انتظار و به‌روزرسانی payment_status در یک تراکنش.
+  - تاریخچه پرداخت و بازپرداخت در جزئیات سفارش؛ فرم بازپرداخت مدیرمحور.
+  - رسید نقدی قابل چاپ از POS.
+  - سفارش کاملاً refunded دیگر دریافت مجدد نمی‌پذیرد؛ سفارش partially_refunded تا تعیین تکلیف مانده قابل لغو نیست.
+- تست‌ها:
+  - Backend Validation روی PHP 8.2/8.3/8.4 موفق: run 44808797656، commit 20776753b09669e92c0bd2ec83bcb0de82800129.
+  - DB integration روی MySQL 8.4 و MariaDB 10.6 موفق: run 44808955417، commit c68c425d9b9bb5d1d60f676be3915d21a3213f56.
+  - تست integration شامل دریافت جزئی، idempotency replay، رد overpayment، دریافت نهایی، سه بازپرداخت، تطبیق cash session، جمع payment/refund/event/movement و جلوگیری از دریافت پس از refund کامل است.
+  - تست کارتخوان، درگاه آنلاین، پرداخت ترکیبی و تست E2E مرورگر اجرا نشده‌اند.
+
+## POS-CUST-01 — CRM واقعی مشتری و اتصال به فروش POS (2026-11-20)
+
+- وضعیت: **Backend و integration دیتابیس ثبت شده؛ Frontend CI نهایی در حال اجرا در زمان این یادداشت**.
+- Backend:
+  - CustomerRepository، CustomerService و CustomerController اضافه شدند.
+  - APIهای GET list/detail، POST create، PATCH update و GET quick search مخصوص POS.
+  - business-scoped، permission-based، idempotent create/update، audit، نرمال‌سازی موبایل ایران و جلوگیری از شماره تکراری در سطح business.
+  - فیلتر active/inactive، جست‌وجوی نام/موبایل، notes، order count، آخرین سفارش و recent orders.
+  - total_spent از net captured payments منهای succeeded refunds محاسبه می‌شود، نه از جمع خام سفارش‌ها.
+  - POS quick-search فقط id/name/phone را با مجوز pos.sell برمی‌گرداند؛ داده‌های notes و آمار در endpoint مدیریتی می‌مانند.
+- Frontend:
+  - CustomersWorkspace از داده نمونه به API واقعی تغییر کرد: فهرست، جست‌وجو، فیلتر، ساخت/ویرایش/غیرفعال‌سازی و جزئیات سفارش.
+  - POS امکان جست‌وجوی مشتری فعال و ارسال customer_id به سفارش را دارد؛ سفارش ناشناس همچنان مجاز است.
+  - وفاداری/امتیاز، تولد، consent تبلیغاتی و segmentهای فرضی نمایش داده نمی‌شوند چون schema/قواعد مصوب آن‌ها هنوز آماده نیست.
+- تست:
+  - تست CRUD/نرمال‌سازی موبایل/جلوگیری از duplicate/idempotency/آمار net spend و business isolation روی MySQL 8.4 و MariaDB 10.6 در DB run 44808955417 موفق شد.
+  - در اجرای اولیه، collation mismatch بین ascii_bin و utf8mb4 در جست‌وجوی phone شناسایی و با تبدیل صریح collation اصلاح شد؛ سپس run جدید PASS شد.
+  - Frontend validation run 44809101478 روی HEAD این بخش در حال اجرا بود؛ نتیجه را قبل از اعلام PASS بررسی کن.
+- محدودیت‌های باز:
+  - فهرست فعلاً حداکثر 100 مشتری را می‌گیرد؛ pagination/total count باقی است.
+  - ساخت مشتری از داخل POS هنوز نیست؛ انتخاب مشتری موجود فعال است.
+  - سیاست loyalty، رضایت بازاریابی، تولد و گروه‌بندی مشتری هنوز باید جداگانه تصمیم‌گیری شود.
+
