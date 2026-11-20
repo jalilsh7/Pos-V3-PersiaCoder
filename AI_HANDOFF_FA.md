@@ -743,3 +743,23 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - This endpoint only enqueues. It does not send SMS itself; worker delivery remains a separate CLI action. No automatic order lifecycle trigger or real provider send is enabled.
 - No test/build/lint was run for this wiring in this batch by request. Include it in the consolidated phase gate.
 - Next related work: queue/report read API and management UI, then event-triggered transactional templates only after message content and trigger policy are defined. Marketing remains blocked pending real consent/opt-out.
+
+## اصلاح SMS-API-01 — endpoint متن آزاد غیرفعال شد (2026-11-20)
+
+- بررسی تطبیق با D-10 نشان داد endpoint عمومی free-text برای enqueue پیام transactional با قاعده «پیام تراکنشی از رویداد معتبر و قالب کنترل‌شده» سازگار نیست و به دارنده pos.sell امکان ارسال متن دلخواه می‌داد.
+- برای جلوگیری از misuse، route POST /api/v1/communications/sms/transactional، factory و SmsOutboxController حذف شدند.
+- SmsOutboxService، outbox رمزگذاری‌شده، worker و poller باقی هستند اما فقط از مسیر داخلی/application service قابل استفاده‌اند؛ endpoint آزاد عمومی وجود ندارد.
+- اتصال SMS به OrderService تا زمان تعریف event type، template registry، متن‌های مصوب و قواعد فعال/غیرفعال‌سازی هر رویداد انجام نمی‌شود.
+- Marketing همچنان کاملاً مسدود است تا consent معتبر، evidence و opt-out/suppression سمت سرور پیاده‌سازی شود.
+- این اصلاح با تصمیمات محصول و D-10 هماهنگ است؛ endpoint آزاد را دوباره اضافه نکن.
+
+## وضعیت جاری پس از SMS-API-01 (2026-11-20)
+
+- HEAD: 6cf4bb9a3230a774b122b65dfeb4af5872fc1809.
+- workflowهای Backend، Database و Frontend طبق روش تست مرحله‌ای مالک فقط با workflow_dispatch اجرا می‌شوند؛ تست جامع در انتهای هر فاز انجام شود.
+- آخرین Backend PASS: run 44812435613 روی commit 844b9996666fbd52964f6ac2807b9aed3a43666b؛ شامل PHP 8.2/8.3/8.4 و تست‌های SMS.
+- آخرین Database PASS: run 44812435596 روی commit 844b9996666fbd52964f6ac2807b9aed3a43666b؛ MySQL 8.4 و MariaDB 10.6، شامل migration 013 و outbox integration.
+- آخرین Frontend PASS مربوط به CRM/POS customer picker: run 44809101478.
+- پس از حذف controller/route یک اجرای نهایی Backend/Database phase gate لازم است؛ این اجرا هنوز ثبت نشده است.
+- محدودیت‌های واقعی: no real SMS sent; no order event trigger; no template registry/settings UI; no consent/opt-out; SharedNumber adapter not wired to queue; scheduled send pending.
+
