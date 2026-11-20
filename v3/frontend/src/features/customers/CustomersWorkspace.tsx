@@ -37,6 +37,8 @@ export function CustomersWorkspace() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<CustomerDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
@@ -57,8 +59,9 @@ export function CustomersWorkspace() {
   async function refreshCustomers() {
     setError(null);
     try {
-      const result = await getCustomers({ query, status, limit: 100 });
+      const result = await getCustomers({ query, status, limit: 50 });
       setCustomers(result.customers);
+      setNextCursor(result.next_cursor);
       if (selectedId && !result.customers.some((customer) => customer.id === selectedId)) {
         setSelectedId(null);
         setDetail(null);
@@ -74,10 +77,12 @@ export function CustomersWorkspace() {
   useEffect(() => {
     let active = true;
     setLoading(true);
-    getCustomers({ query, status, limit: 100 })
+    setNextCursor(null);
+    getCustomers({ query, status, limit: 50 })
       .then((result) => {
         if (!active) return;
         setCustomers(result.customers);
+        setNextCursor(result.next_cursor);
         if (selectedId && !result.customers.some((customer) => customer.id === selectedId)) {
           setSelectedId(null);
           setDetail(null);
@@ -92,6 +97,24 @@ export function CustomersWorkspace() {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [query, status]);
+
+  async function loadMoreCustomers() {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const result = await getCustomers({ query, status, limit: 50, cursor: nextCursor });
+      setCustomers((current) => {
+        const existing = new Set(current.map((customer) => customer.id));
+        return [...current, ...result.customers.filter((customer) => !existing.has(customer.id))];
+      });
+      setNextCursor(result.next_cursor);
+      setError(null);
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : "بارگذاری ادامه فهرست مشتریان انجام نشد.");
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   useEffect(() => {
     if (!selectedId) {
@@ -188,9 +211,9 @@ export function CustomersWorkspace() {
       {error ? <Notice variant="warning">{error}</Notice> : null}
       {actionError ? <Notice variant="warning">{actionError}</Notice> : null}
       <div className="customers-metrics">
-        <Surface padding="sm"><span>مشتریان ثبت‌شده</span><strong>{money(customers.length)}</strong></Surface>
-        <Surface padding="sm"><span>مشتریان فعال</span><strong>{money(activeCount)}</strong></Surface>
-        <Surface padding="sm"><span>سفارش‌های مرتبط</span><strong>{money(orderCount)}</strong></Surface>
+        <Surface padding="sm"><span>مشتریان بارگذاری‌شده</span><strong>{money(customers.length)}</strong></Surface>
+        <Surface padding="sm"><span>فعال در فهرست</span><strong>{money(activeCount)}</strong></Surface>
+        <Surface padding="sm"><span>سفارش‌های فهرست</span><strong>{money(orderCount)}</strong></Surface>
       </div>
       {showCreate ? (
         <Surface padding="md" className="customers-create">
@@ -210,7 +233,7 @@ export function CustomersWorkspace() {
       ) : null}
       <div className="customers-layout">
         <Surface padding="md" className="customers-list">
-          <div className="customers-list-title"><div><h2><UserRound size={17} /> فهرست مشتریان</h2><p>{money(visible.length)} مورد</p></div></div>
+          <div className="customers-list-title"><div><h2><UserRound size={17} /> فهرست مشتریان</h2><p>{money(visible.length)} مورد بارگذاری‌شده</p></div></div>
           <label className="customers-search">
             <Search size={16} />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="نام یا شماره همراه" />
@@ -231,6 +254,13 @@ export function CustomersWorkspace() {
             ))}
             {!loading && visible.length === 0 ? <div className="customers-empty">مشتری‌ای با این مشخصات پیدا نشد.</div> : null}
           </div>
+          {nextCursor ? (
+            <div className="customers-load-more">
+              <Button variant="secondary" onClick={() => { void loadMoreCustomers(); }} disabled={loadingMore}>
+                {loadingMore ? "در حال بارگذاری..." : "بارگذاری مشتریان بیشتر"}
+              </Button>
+            </div>
+          ) : null}
         </Surface>
         <Surface padding="md" className="customers-detail">
           {detailLoading ? <Notice variant="info">در حال دریافت پروفایل مشتری...</Notice> : null}
