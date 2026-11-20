@@ -573,6 +573,46 @@ export async function createPosOrder(payload: CreatePosOrderPayload, idempotency
   return data.order;
 }
 
+export type OrderPaymentSummary = {
+  order_id: string;
+  order_number: number;
+  payment_status: string;
+  total_amount: number;
+  captured_amount: number;
+  refunded_amount: number;
+  due_amount: number;
+  payments: {
+    id: string;
+    method: string;
+    amount: number;
+    currency_code: string;
+    status: string;
+    provider_reference: string | null;
+    captured_at: string | null;
+    created_at: string;
+  }[];
+};
+
+export async function getOrderPayments(orderId: string): Promise<OrderPaymentSummary> {
+  return request<OrderPaymentSummary>(`/orders/${encodeURIComponent(orderId)}/payments`);
+}
+
+export async function captureCashPayment(
+  orderId: string,
+  cashSessionId: string,
+  amount: number,
+  idempotencyKey: string,
+): Promise<{
+  payment: { id: string; method: "cash"; amount: number; status: "captured"; captured_at: string };
+  order: { id: string; order_number: number; payment_status: string; captured_amount: number; due_amount: number };
+}> {
+  return request(`/orders/${encodeURIComponent(orderId)}/payments/cash`, {
+    method: "POST",
+    headers: { "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify({ cash_session_id: cashSessionId, amount }),
+  });
+}
+
 export type OrderStatus =
   | "draft" | "awaiting_payment" | "accepted" | "preparing"
   | "ready" | "completed" | "cancelled" | "rejected";
