@@ -173,7 +173,7 @@ final readonly class CashRepository
             'minimum_amount' => $amount,
         ]);
         if ($statement->rowCount() !== 1) {
-            throw new \\RuntimeException('The cash session does not have enough expected cash or is no longer open.');
+            throw new \RuntimeException('The cash session does not have enough expected cash or is no longer open.');
         }
     }
 
