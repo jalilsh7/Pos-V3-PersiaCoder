@@ -22,6 +22,8 @@ use PersiaCoder\PosV3\Finance\CashRegisterController;
 use PersiaCoder\PosV3\Finance\CashRegisterService;
 use PersiaCoder\PosV3\Finance\OrderPaymentController;
 use PersiaCoder\PosV3\Finance\OrderPaymentService;
+use PersiaCoder\PosV3\Communications\Sms\SmsOutboxController;
+use PersiaCoder\PosV3\Communications\Sms\SmsOutboxService;
 use PersiaCoder\PosV3\Customers\CustomerController;
 use PersiaCoder\PosV3\Customers\CustomerService;
 use PersiaCoder\PosV3\Auth\AuthController;
