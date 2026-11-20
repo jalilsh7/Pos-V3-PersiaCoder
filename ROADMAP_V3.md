@@ -1243,3 +1243,15 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - اتصال order lifecycle فقط پس از تعریف event type، template registry، متن‌های قابل تنظیم و policy فعال/غیرفعال‌سازی هر رویداد مجاز است.
 - Marketing تا تکمیل consent/evidence/opt-out/suppression سمت سرور مسدود است.
 
+
+## POS-CUST-02 — صفحه‌بندی مشتریان (2026-11-20)
+
+- API فهرست مشتریان از limit ثابت به keyset cursor بر اساس updated_at DESC و id DESC ارتقا یافت.
+- Migration 014 شاخص business_id, updated_at, id را اضافه می‌کند.
+- cursor ورودی در Backend decode/validate می‌شود؛ cursor خراب با 400 رد می‌شود.
+- UI مشتریان صفحه اول 50 مورد را می‌گیرد و با «بارگذاری مشتریان بیشتر» صفحه بعد را append می‌کند.
+- پاسخ‌های قدیمی در صورت تغییر فیلتر/جست‌وجو نادیده گرفته می‌شوند تا داده صفحات با هم مخلوط نشود.
+- معیارهای بالای صفحه اکنون صریحاً داده‌های بارگذاری‌شده را نشان می‌دهند، نه total business count.
+- Integration script مشتری برای چند صفحه، عدم تکرار/جاافتادگی و cursor نامعتبر توسعه یافت.
+- تست مرحله‌ای پس از این تغییر هنوز اجرا نشده؛ در phase gate بعدی Backend و Database validation باید اجرا شوند.
+
