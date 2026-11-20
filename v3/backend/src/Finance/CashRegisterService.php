@@ -243,6 +243,101 @@ final readonly class CashRegisterService
         );
     }
 
+    public function createManualMovement(
+        AuthenticatedPrincipal $actor,
+        BusinessScope $scope,
+        string $sessionPublicId,
+        array $payload,
+        string $idempotencyKey,
+        string $requestId,
+        string $ipAddress,
+    ): array {
+        if (!self::isUuid($sessionPublicId)) {
+            throw new HttpException(400, 'cash_session_id_invalid', 'The cash session identifier is invalid.');
+        }
+        $direction = $payload['direction'] ?? null;
+        if (!in_array($direction, ['in', 'out'], true)) {
+            throw new HttpException(422, 'cash_movement_direction_invalid', 'Movement direction must be in or out.');
+        }
+        $amount = self::parseAmount($payload['amount'] ?? null, 'movement_amount');
+        if ($amount <= 0) {
+            throw new HttpException(422, 'cash_movement_amount_invalid', 'Movement amount must be greater than zero.');
+        }
+        $reason = $payload['reason'] ?? null;
+        if (!is_string($reason) || trim($reason) === '' || self::unicodeLength($reason) > 500) {
+            throw new HttpException(422, 'cash_movement_reason_required', 'A reason of up to 500 characters is required.');
+        }
+        $reason = trim($reason);
+        $movementType = $direction === 'in' ? 'manual_in' : 'manual_out';
+        $fingerprint = self::fingerprint([
+            'session_id' => $sessionPublicId,
+            'direction' => $direction,
+            'amount' => $amount,
+            'reason' => $reason,
+        ]);
+
+        return $this->idempotency->execute(
+            $actor->userId,
+            $scope,
+            'cash.movements.manual',
+            $idempotencyKey,
+            $fingerprint,
+            function (PDO $connection) use ($actor, $scope, $sessionPublicId, $direction, $movementType, $amount, $reason, $idempotencyKey, $requestId, $ipAddress): array {
+                $session = $this->cash->findOpenSessionForUpdate($scope->businessId, (int) $scope->branchId, $sessionPublicId);
+                if ($session === null) {
+                    throw new HttpException(409, 'cash_session_not_open', 'Manual cash movements require an open cash session.');
+                }
+                $expectedBefore = (int) $session['expected_cash_amount'];
+                if ($direction === 'out' && $expectedBefore < $amount) {
+                    throw new HttpException(409, 'cash_balance_insufficient', 'The withdrawal exceeds the expected cash balance.');
+                }
+
+                if ($direction === 'in') {
+                    $this->cash->increaseExpectedCash($scope->businessId, (int) $scope->branchId, (int) $session['id'], $amount);
+                } else {
+                    $this->cash->decreaseExpectedCash($scope->businessId, (int) $scope->branchId, (int) $session['id'], $amount);
+                }
+                $this->cash->createMovement(
+                    $scope->businessId,
+                    (int) $scope->branchId,
+                    (int) $session['id'],
+                    self::uuidV4(),
+                    $movementType,
+                    $amount,
+                    null,
+                    null,
+                    null,
+                    $reason,
+                    $actor->userId,
+                    hash('sha256', 'manual-cash:' . $idempotencyKey),
+                );
+                $expectedAfter = $direction === 'in' ? $expectedBefore + $amount : $expectedBefore - $amount;
+                $this->audit->record(
+                    $actor->userId,
+                    'cash.manual_movement_created',
+                    'cash_session',
+                    $sessionPublicId,
+                    ['expected_cash_amount' => $expectedBefore],
+                    ['movement_type' => $movementType, 'amount' => $amount, 'expected_cash_amount' => $expectedAfter],
+                    $reason,
+                    $requestId,
+                    $ipAddress,
+                    $scope->businessId,
+                    $scope->branchId,
+                );
+                return [
+                    'status' => 201,
+                    'body' => ['data' => [
+                        'session_id' => $sessionPublicId,
+                        'movement_type' => $movementType,
+                        'amount' => $amount,
+                        'expected_cash_amount' => $expectedAfter,
+                    ], 'meta' => (object) []],
+                ];
+            },
+        );
+    }
+
     public function reviewSession(
         AuthenticatedPrincipal $actor,
         BusinessScope $scope,
