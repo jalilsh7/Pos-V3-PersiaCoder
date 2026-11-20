@@ -30,8 +30,6 @@ use PersiaCoder\PosV3\Auth\BusinessSetupController;
 use PersiaCoder\PosV3\Auth\BusinessContextController;
 use PersiaCoder\PosV3\Communications\Sms\SmsOutboxReadController;
 use PersiaCoder\PosV3\Communications\Sms\SmsOutboxReadService;
-use PersiaCoder\PosV3\Communications\Sms\SmsServiceTemplateOutboxReadController;
-use PersiaCoder\PosV3\Communications\Sms\SmsServiceTemplateOutboxReadService;
 use PersiaCoder\PosV3\Auth\BranchManagementController;
 use PersiaCoder\PosV3\Auth\BranchManagementService;
 use PersiaCoder\PosV3\Auth\BusinessSetupService;
@@ -388,21 +386,6 @@ try {
 
     $router->add('GET', '/api/v1/communications/sms/outbox',
         static fn (Request $request): Response => $getSmsOutboxReadController()->list($request),
-        [$sessionMiddleware, $makePermissionMiddleware('communications.read', true)],
-    );
-
-    $smsServiceOutboxReadController = null;
-    $getSmsServiceOutboxReadController = static function () use (&$smsServiceOutboxReadController, $getConnection): SmsServiceTemplateOutboxReadController {
-        if (!$smsServiceOutboxReadController instanceof SmsServiceTemplateOutboxReadController) {
-            $smsServiceOutboxReadController = new SmsServiceTemplateOutboxReadController(
-                new SmsServiceTemplateOutboxReadService($getConnection()),
-            );
-        }
-        return $smsServiceOutboxReadController;
-    };
-
-    $router->add('GET', '/api/v1/communications/sms/service-outbox',
-        static fn (Request $request): Response => $getSmsServiceOutboxReadController()->list($request),
         [$sessionMiddleware, $makePermissionMiddleware('communications.read', true)],
     );
 

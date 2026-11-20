@@ -4,6 +4,13 @@ import { ApiError, getSmsOutboxMessages, getSmsServiceOutboxMessages, type SmsOu
 import { Button, Notice, PageHeader, StatusBadge, Surface } from "../../shared/ui";
 import "./communications.css";
 
+const triggerLabels: Record<string, string> = {
+  "order.created": "ثبت سفارش",
+  "order.status_changed": "تغییر وضعیت سفارش",
+  "order.ready": "آماده‌شدن سفارش",
+  "order.completed": "تکمیل / تحویل سفارش",
+};
+
 const statusOptions = [
   { value: "all", label: "همه وضعیت‌ها" },
   { value: "queued", label: "در صف" },
@@ -149,7 +156,7 @@ export function SmsOutboxWorkspace() {
           <div className="sms-outbox-list">
             {serviceMessages.map((message) => {
               const meta = statusMeta[message.status] ?? { label: message.status, variant: "neutral" as const };
-              const trigger = labels[message.trigger_key] ?? message.trigger_key;
+              const trigger = triggerLabels[message.trigger_key] ?? message.trigger_key;
               return (
                 <article className="sms-outbox-item" key={message.id}>
                   <div className="sms-outbox-item__main">
