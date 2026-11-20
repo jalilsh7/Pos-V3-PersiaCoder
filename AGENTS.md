@@ -49,3 +49,13 @@
 - Never silently override an approved decision. Propose changes with rationale and impact; wait for owner approval where required.
 - Never claim implementation, test, CI, deployment or phase completion without inspecting actual code and evidence. Distinguish documented, implemented, tested and owner-accepted states.
 - The online storefront is a mandatory core V3 capability in Phase 7, not an optional future feature. It must share the POS catalog/order core; see `PROJECT_MEMORY_FA.md` DEC-2026-008.
+
+
+## Speed-first autonomous execution policy (owner-approved)
+- Continue routine implementation, bug fixes, low-risk refactors, documentation and safe technical choices within the approved product scope without waiting for per-task owner approval.
+- Prefer cohesive batches and keep momentum; do not block on low-value or repetitive tests.
+- Run targeted sanity checks during a phase and reserve comprehensive relevant validation for phase gates.
+- Never skip critical checks for security/access control, financial correctness, data integrity, destructive migrations, core order flows or phase acceptance.
+- Never report an unrun test as passing; record deferred low-value tests and their risk.
+- Stop for owner input only when a change alters approved product scope or a binding decision, introduces foundational architectural change, risks irreversible data loss, incurs external cost/commitment, performs a high-risk production/public release action, or raises a sensitive legal/security issue.
+- Report concrete commits, actual test results, deferred checks and risks. See DEC-2026-012 in PROJECT_MEMORY_FA.md.
