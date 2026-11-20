@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PersiaCoder\\PosV3\\Communications\\Sms;
+namespace PersiaCoder\PosV3\Communications\Sms;
 
 use InvalidArgumentException;
 use JsonException;
@@ -9,7 +9,7 @@ use JsonException;
 /**
  * Allow-list of provider-approved shared-number templates.
  *
- * The provider body IDs are account-specific and must be supplied by the
+ * Provider body IDs are account-specific and must be supplied by the
  * installation operator after approval in the National Payamak panel.
  */
 final readonly class SharedNumberTemplateRegistry
@@ -35,7 +35,6 @@ final readonly class SharedNumberTemplateRegistry
         if (!is_string($raw) || trim($raw) === '') {
             return new self([]);
         }
-
         try {
             $decoded = json_decode($raw, true, 32, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
@@ -44,7 +43,6 @@ final readonly class SharedNumberTemplateRegistry
         if (!is_array($decoded) || array_is_list($decoded)) {
             throw new InvalidArgumentException('sms_shared_template_registry_invalid');
         }
-
         return new self($decoded);
     }
 

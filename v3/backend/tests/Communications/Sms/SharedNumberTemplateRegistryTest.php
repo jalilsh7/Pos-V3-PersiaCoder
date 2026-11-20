@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-use PersiaCoder\\PosV3\\Communications\\Sms\\SharedNumberTemplateRegistry;
-use PersiaCoder\\PosV3\\Communications\\Sms\\SmsProviderException;
+use PersiaCoder\PosV3\Communications\Sms\SharedNumberTemplateRegistry;
+use PersiaCoder\PosV3\Communications\Sms\SmsProviderException;
 
-require_once dirname(__DIR__, 4) . '/src/Communications/Sms/SmsProviderException.php';
-require_once dirname(__DIR__, 4) . '/src/Communications/Sms/SharedNumberTemplateRegistry.php';
+require_once dirname(__DIR__, 3) . '/src/Communications/Sms/SmsProviderException.php';
+require_once dirname(__DIR__, 3) . '/src/Communications/Sms/SharedNumberTemplateRegistry.php';
 
 $registry = new SharedNumberTemplateRegistry([
     'order_ready' => ['body_id' => 123456, 'variable_count' => 2],
