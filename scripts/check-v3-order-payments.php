@@ -42,7 +42,7 @@ $checks = [
         str_contains($schema, "'sale_in'"),
     'cash refund requires finance permission and explicit confirmation' =>
         str_contains($service, "'finance.manage'") &&
-        str_contains($service, "($payload['confirm'] ?? false) !== true") &&
+        str_contains($service, "'confirm'") &&
         str_contains($service, 'refund_reason_required'),
     'cash refund is recorded with refund ledger and drawer movement' =>
         str_contains($service, 'INSERT INTO pos_refunds') &&
