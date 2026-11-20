@@ -85,3 +85,8 @@
 .catalog-editor-message { margin:0; color:var(--pc-brand); font-size:10px; }
 .catalog-editor-form>.ui-button { justify-self:start; }
 @media(max-width:700px) { .catalog-editor-row { grid-template-columns:minmax(0,1fr) auto; } .catalog-editor-row .ui-button { grid-column:2; } .catalog-editor-form { grid-template-columns:1fr; } }
+
+
+.catalog-category-management { display:flex; flex-direction:column; gap:9px; padding-top:12px; border-top:1px solid var(--pc-line); }
+.catalog-category-management>strong { color:var(--pc-ink); font-size:11px; }
+.catalog-category-edit-row { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:8px; }
