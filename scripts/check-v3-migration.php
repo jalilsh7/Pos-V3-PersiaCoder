@@ -9,7 +9,7 @@ if (!$probe) {
     throw new RuntimeException('Migration probe table is missing.');
 }
 
-$count = (int) $pdo->query("SELECT COUNT(*) FROM app_schema_migrations WHERE version = '013_ci-smoke'")->fetchColumn();
+$count = (int) $pdo->query("SELECT COUNT(*) FROM app_schema_migrations WHERE version = '9999_ci-smoke'")->fetchColumn();
 if ($count !== 1) {
     throw new RuntimeException("Expected exactly one migration record, found {$count}.");
 }
