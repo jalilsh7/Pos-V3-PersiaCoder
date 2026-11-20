@@ -395,3 +395,20 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - آخرین HEAD و تصمیمات محصول را تازه fetch کن؛ سپس storefront فعلی، cart، API سفارش، ساعات کاری، روش دریافت/ارسال، قالب و routeهای عمومی را بررسی کن.
 - قالب واحد قابل پیکربندی برای صنف‌های غذا و نوشیدنی مبناست؛ برای هر صنف storefront مستقل نساز. فروشگاه آنلاین باید از همان catalog/order engine استفاده کند و سیستم سفارش موازی ایجاد نکند.
 - پرداخت آنلاین، ساعت کاری، تعطیلی فروشگاه، delivery zone و پیش‌سفارش را فقط بر اساس کد و تصمیمات مصوب طراحی کن؛ جزئیات باز را حدس نزن.
+
+
+## بسته طراحی D-12 — تنظیمات، کاربران، نقش‌ها و entitlement (2026-11-20)
+
+- سند UX ایجاد شد: [ACCESS_CONTROL_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md](design/ACCESS_CONTROL_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md)، شناسه `DESIGN-ACCESS-CONTROL-2026-001`، نسخه 0.1، آماده نمونه‌سازی مرحله‌ای.
+- کد بررسی‌شده: `PermissionService`، `RoleManagementService`، `UserManagementService`، `BranchManagementService`، `BusinessScopeResolver`، repositoryهای مرتبط، routeهای access و `BusinessSettingsWorkspace.tsx`.
+- Backend برای فهرست/ایجاد کاربران business و branch، فهرست/ایجاد/ویرایش custom roles، فهرست permissions، assign/remove نقش در scope کسب‌وکار/شعبه و مدیریت شعبه route دارد.
+- Backend مانع واگذاری owner/wildcard و privilege escalation می‌شود؛ temporary password هنگام ایجاد کاربر فقط یک‌بار برمی‌گردد و `must_change_password=true` است. UI باید credential را امن و یک‌بارنمایش مدیریت کند.
+- صفحه BusinessSettingsWorkspace فعلی صرفاً preview local است و ذخیره تنظیمات کسب‌وکار/کانال/ساعات کاری در سرور انجام نمی‌دهد.
+- Central entitlement و feature-level enforcement در runtime بررسی‌شده وجودش اثبات نشد؛ سند، تصمیم LIC-MODULE-CONTROL-2026-001 را به‌عنوان الزام معماری/UX لحاظ کرده و بسته‌بندی تجاری را باز نگه داشته است.
+- سند در README طراحی نمایه و D-12 در بک‌لاگ به «آماده نمونه‌سازی مرحله‌ای» ارتقا یافت. تست امنیتی جدید در این بسته اجرا نشده است.
+
+### نقطه ادامه
+
+- بسته بعدی: **D-13 — فروشگاه آنلاین و checkout مشتری**.
+- پیش از طراحی، آخرین HEAD و تصمیمات محصول را تازه بخوان؛ storefront فعلی، APIهای catalog/order/payment، ساعات کاری، کانال‌ها و frontend preview/cart را بررسی کن.
+- اصل ثابت: Storefront لایه ارائه است و سفارش را از همان موتور مشترک POS/Orders ثبت می‌کند؛ سیستم سفارش موازی نساز.
