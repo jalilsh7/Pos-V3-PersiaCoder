@@ -820,3 +820,11 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 متن اصلی قالب خدماتی فقط در پنل ملی‌پیامک ساخته و تأیید می‌شود؛ POS متن اصلی را ذخیره یا ارسال نمی‌کند. مدیر هر کسب‌وکار برای هر تریگر، کد قالب صادرشده از ملی‌پیامک و نگاشت/ترتیب متغیرهای موردنیاز را در POS تنظیم می‌کند. پنل باید برای هر متغیر راهنمای نام، معنی، منبع داده، نمونه و ترتیب ارسال داشته باشد؛ preview فقط مقادیر متغیرهای ارسالی را نشان می‌دهد. هر تریگر دارای enabled، bodyId اختصاصی حساب و نگاشت متغیرهاست. منبع حقیقت تنظیمات، ذخیره‌سازی tenant-scoped سمت سرور است؛ env/registry سراسری فقط validator فنی است. bodyId نمونه یا مشترک hard-code نشود. ارسال در صف و مستقل از تراکنش سفارش؛ خطای SMS نباید سفارش را fail کند. تبلیغاتی همچنان مسدود تا consent/evidence/opt-out سمت سرور.
 - پیاده‌سازی فعلی: outbox، صفحه مشاهده صف، Shared Number provider و registry اعتبارسنجی پایه وجود دارند؛ اما تنظیم tenant-managed کد قالب و نگاشت متغیرها، API/پنل راهنمای متغیرها، اتصال trigger/worker و delivery reconciliation هنوز پیاده نشده‌اند.
 - گام بعد: migration جدول قالب‌ها با business/branch scope، repository/service/API دارای RBAC و audit، سپس UI تنظیمات تریگرها و اتصال type-safe به صف.
+
+
+## Latest continuation — SMS variable mapping foundation
+- Added migration 016, branch-scoped template configuration, audit, communications.manage permission, GET/PUT API and Persian configuration UI.
+- POS stores only National Payamak body ID and allow-listed ordered variable keys; no message body text.
+- API: GET/PUT /api/v1/communications/sms/service-templates.
+- Remaining: actual order lifecycle integration and immutable variable snapshots into Shared Number worker. Initial trigger/source catalog is guidance only, not active automatic sending.
+- Tests/build/migration execution not run in this batch.

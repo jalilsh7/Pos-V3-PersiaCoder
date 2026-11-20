@@ -1082,3 +1082,14 @@ export async function getSmsOutboxMessages(filters: {
     `/communications/sms/outbox?${query.toString()}`,
   );
 }
+
+
+export type SmsServiceVariable = { key: string; label: string; source: string; example: string };
+export type SmsServiceTrigger = { key: string; variables: SmsServiceVariable[] };
+export type SmsServiceTemplate = { trigger_key: string; provider_body_id: number; enabled: boolean; variable_keys: string[]; version: number; updated_at?: string };
+export async function getSmsServiceTemplates(): Promise<{ templates: SmsServiceTemplate[]; catalog: SmsServiceTrigger[] }> {
+ return request<{ templates: SmsServiceTemplate[]; catalog: SmsServiceTrigger[] }>("/communications/sms/service-templates");
+}
+export async function saveSmsServiceTemplate(payload: { trigger_key: string; provider_body_id: number; enabled: boolean; variable_keys: string[] }): Promise<SmsServiceTemplate> {
+ const data=await request<{template:SmsServiceTemplate}>("/communications/sms/service-templates",{method:"PUT",body:JSON.stringify(payload)});return data.template;
+}

@@ -129,3 +129,10 @@ php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
 - POS stores the account-specific provider template/body ID per business trigger, plus the ordered mapping from provider template variables to approved POS event data.
 - The UI provides a variable guide (variable name, meaning, source field, example value, ordinal position) and previews the outgoing variable values only. It does not preview or edit the final provider-side message body.
 - A controlled test send submits the configured template ID and ordered variable values. Never invent template IDs or send arbitrary user text through the template endpoint.
+
+
+## POS-managed National Payamak variable mapping
+- Full service message text is authored and approved only in National Payamak; POS does not store the body.
+- Migration 016 adds branch-scoped body IDs, allow-listed ordered variable keys, enabled/version fields and audit history.
+- GET/PUT /api/v1/communications/sms/service-templates requires communications.manage and authenticated business/branch context; PUT also requires CSRF and same-origin.
+- UI shows variable source/example and outgoing values only. Order lifecycle enqueue/worker integration remains pending.

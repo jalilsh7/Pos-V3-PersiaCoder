@@ -34,8 +34,9 @@ import { BusinessSettingsWorkspace } from "../features/settings/BusinessSettings
 import { AccessManagementWorkspace } from "../features/access/AccessManagementWorkspace";
 import { StorefrontWorkspace } from "../features/storefront/StorefrontWorkspace";
 import { SmsOutboxWorkspace } from "../features/communications/SmsOutboxWorkspace";
+import { SmsServiceTemplatesWorkspace } from "../features/communications/SmsServiceTemplatesWorkspace";
 
-type ViewId = "overview" | "pos" | "orders" | "kitchen" | "catalog" | "inventory" | "customers" | "finance" | "settings" | "storefront" | "access" | "communications";
+type ViewId = "overview" | "pos" | "orders" | "kitchen" | "catalog" | "inventory" | "customers" | "finance" | "settings" | "storefront" | "access" | "communications" | "smsTemplates";
 
 type NavigationItem = {
   id: ViewId;
@@ -66,7 +67,8 @@ const navigation: NavigationGroup[] = [
       { id: "catalog", label: "منو و محصولات", icon: Utensils, description: "محصولات، دسته‌ها و افزودنی‌ها" },
       { id: "inventory", label: "مواد اولیه و انبار", icon: Boxes, description: "رسپی، موجودی و گردش انبار" },
       { id: "customers", label: "مشتریان", icon: Users, description: "پروفایل مشتری و وفاداری" },
-      { id: "communications", label: "پیامک‌ها", icon: MessageSquare, description: "صف و گزارش تحویل پیامک" },
+      { id: "communications", label: "گزارش پیامک", icon: MessageSquare, description: "صف و گزارش تحویل پیامک" },
+      { id: "smsTemplates", label: "قالب خدماتی پیامک", icon: MessageSquare, description: "کد قالب و راهنمای متغیرهای ملی‌پیامک" },
     ],
   },
   {
@@ -221,7 +223,7 @@ function AuthenticatedWorkspace({ user, business, branch, onLogout, actionError 
 
         <div className="content-area">
           {actionError ? <div className="auth-error" role="alert">{actionError}</div> : null}
-          {activeView === "overview" ? <Overview /> : activeView === "pos" ? <PosWorkspace /> : activeView === "orders" ? <OrderCenter timeZone={branch.timezone ?? business.timezone} /> : activeView === "kitchen" ? <KitchenBoard timeZone={branch.timezone ?? business.timezone} /> : activeView === "catalog" ? <CatalogWorkspace /> : activeView === "inventory" ? <InventoryWorkspace /> : activeView === "customers" ? <CustomersWorkspace /> : activeView === "finance" ? <FinanceWorkspace /> : activeView === "settings" ? <BusinessSettingsWorkspace /> : activeView === "storefront" ? <StorefrontWorkspace /> : activeView === "access" ? <AccessManagementWorkspace /> : activeView === "communications" ? <SmsOutboxWorkspace /> : (
+          {activeView === "overview" ? <Overview /> : activeView === "pos" ? <PosWorkspace /> : activeView === "orders" ? <OrderCenter timeZone={branch.timezone ?? business.timezone} /> : activeView === "kitchen" ? <KitchenBoard timeZone={branch.timezone ?? business.timezone} /> : activeView === "catalog" ? <CatalogWorkspace /> : activeView === "inventory" ? <InventoryWorkspace /> : activeView === "customers" ? <CustomersWorkspace /> : activeView === "finance" ? <FinanceWorkspace /> : activeView === "settings" ? <BusinessSettingsWorkspace /> : activeView === "storefront" ? <StorefrontWorkspace /> : activeView === "access" ? <AccessManagementWorkspace /> : activeView === "communications" ? <SmsOutboxWorkspace /> : activeView === "smsTemplates" ? <SmsServiceTemplatesWorkspace /> : (
             <div className="page-stack">
               <PageHeader
                 eyebrow={activeItem.description}

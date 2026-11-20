@@ -389,6 +389,24 @@ try {
         [$sessionMiddleware, $makePermissionMiddleware('communications.read', true)],
     );
 
+    $smsServiceTemplateController = null;
+    $getSmsServiceTemplateController = static function () use (&$smsServiceTemplateController, $getConnection): SmsServiceTemplateController {
+        if (!$smsServiceTemplateController instanceof SmsServiceTemplateController) {
+            $smsServiceTemplateController = new SmsServiceTemplateController(new SmsServiceTemplateService($getConnection()));
+        }
+        return $smsServiceTemplateController;
+    };
+
+    $router->add('GET', '/api/v1/communications/sms/service-templates',
+        static fn (Request $request): Response => $getSmsServiceTemplateController()->list($request),
+        [$sessionMiddleware, $makePermissionMiddleware('communications.manage', true)],
+    );
+
+    $router->add('PUT', '/api/v1/communications/sms/service-templates',
+        static fn (Request $request): Response => $getSmsServiceTemplateController()->save($request),
+        [$sessionMiddleware, $makePermissionMiddleware('communications.manage', true), $csrfMiddleware, $originMiddleware],
+    );
+
     $router->add('GET', '/api/v1/orders',
         static fn (Request $request): Response => $getOrderController()->list($request),
         [$sessionMiddleware, $makePermissionMiddleware('orders.read', true)],

@@ -1306,3 +1306,9 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - رویدادهای اولیه: ثبت سفارش، تغییر وضعیت، آماده‌شدن و تکمیل/تحویل؛ اتصال پس از تطبیق با lifecycle واقعی.
 - ارسال غیرهمزمان است و شکست SMS نباید سفارش را متوقف کند؛ تبلیغاتی تابع consent و opt-out.
 - مرجع: `SMS-TEMPLATE-2026-002` در سند تصمیمات محصول.
+
+
+### SMS template variable mapping (in progress)
+- Added branch-scoped template ID and ordered variable mapping storage, audit, manager permission, GET/PUT API and Persian UI.
+- Provider-side message body remains exclusively in National Payamak.
+- Remaining: connect real order lifecycle events to immutable variable snapshots and Shared Number worker; validate variable sources against actual order transitions; run automated gates.
