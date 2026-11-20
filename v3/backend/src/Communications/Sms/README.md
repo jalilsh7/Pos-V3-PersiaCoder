@@ -55,3 +55,5 @@ php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
 - No real provider credentials or sends have been used; tests use a fake HTTP transport.
 - Delivery report polling for shared-service IDs, queue persistence, approved-template registry, template-variable validation against provider metadata and operational consent policy remain pending.
 
+
+- SmartSMS requires the documented literal suffix لغو11 at the end of every text. The adapter and outbox reject messages without it; the text is not silently rewritten.
