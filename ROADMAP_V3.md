@@ -1234,3 +1234,12 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - این API فقط پیام را در صف پایدار ثبت می‌کند؛ ارسال شبکه‌ای فقط توسط CLI worker جداگانه انجام می‌شود. هیچ trigger خودکار از چرخه سفارش و هیچ ارسال واقعی پیامک فعال نشده است.
 - تست endpoint، PHP lint، E2E و UI در این بسته اجرا نشده‌اند؛ در تست تجمیعی پایان فاز بررسی شوند.
 - باقی‌مانده: UI مدیریت صف و گزارش تحویل، تنظیمات امن provider، اتصال پیام‌های transactional به رویداد سفارش پس از تثبیت template و قواعد ارسال، consent/opt-out برای marketing.
+
+## SMS-API-01 — توقف endpoint متن آزاد و حفظ مرز event/template (2026-11-20)
+
+- یک endpoint برای enqueue پیام transactional با متن آزاد اضافه شد، اما در بازبینی محصول مشخص شد با قاعده D-10 مبنی بر رویداد معتبر و قالب کنترل‌شده سازگار نیست و می‌توانست به ارسال دلخواه با مجوز pos.sell منجر شود.
+- route، factory و controller حذف شدند؛ outbox/worker/poller به‌عنوان زیرساخت داخلی باقی مانده‌اند.
+- هیچ API آزاد برای ارسال متن دلخواه SMS وجود ندارد.
+- اتصال order lifecycle فقط پس از تعریف event type، template registry، متن‌های قابل تنظیم و policy فعال/غیرفعال‌سازی هر رویداد مجاز است.
+- Marketing تا تکمیل consent/evidence/opt-out/suppression سمت سرور مسدود است.
+
