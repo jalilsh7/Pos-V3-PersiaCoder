@@ -42,7 +42,16 @@ final readonly class UserRepository
     {
         $statement = $this->connection->prepare(
             'SELECT u.public_id, u.username, u.display_name, u.is_active,
-                    u.must_change_password, u.last_login_at
+                    u.must_change_password, u.last_login_at,
+                    (SELECT GROUP_CONCAT(DISTINCT r.code ORDER BY r.code SEPARATOR ',')
+                     FROM app_user_business_roles ubr
+                     INNER JOIN app_roles r ON r.id = ubr.role_id AND r.is_active = 1
+                     WHERE ubr.user_id = u.id AND ubr.business_id = :business_roles_business_id) AS business_role_codes,
+                    (SELECT GROUP_CONCAT(DISTINCT r.code ORDER BY r.code SEPARATOR ',')
+                     FROM app_user_branch_roles ubr
+                     INNER JOIN pos_branches b ON b.id = ubr.branch_id
+                     INNER JOIN app_roles r ON r.id = ubr.role_id AND r.is_active = 1
+                     WHERE ubr.user_id = u.id AND b.business_id = :branch_roles_business_id) AS branch_role_codes
              FROM app_users u
              WHERE EXISTS (
                  SELECT 1 FROM app_user_business_roles ubr
@@ -63,6 +72,8 @@ final readonly class UserRepository
         $statement->execute([
             'business_id' => $businessId,
             'branch_business_id' => $businessId,
+            'business_roles_business_id' => $businessId,
+            'branch_roles_business_id' => $businessId,
         ]);
 
         return array_map(
@@ -73,6 +84,8 @@ final readonly class UserRepository
                 'is_active' => (int) $row['is_active'] === 1,
                 'must_change_password' => (int) $row['must_change_password'] === 1,
                 'last_login_at' => $row['last_login_at'] === null ? null : (string) $row['last_login_at'],
+                'business_roles' => is_string($row['business_role_codes']) && $row['business_role_codes'] !== '' ? explode(',', $row['business_role_codes']) : [],
+                'branch_roles' => is_string($row['branch_role_codes']) && $row['branch_role_codes'] !== '' ? explode(',', $row['branch_role_codes']) : [],
             ],
             $statement->fetchAll(PDO::FETCH_ASSOC),
         );
@@ -82,7 +95,15 @@ final readonly class UserRepository
     {
         $statement = $this->connection->prepare(
             'SELECT u.public_id, u.username, u.display_name, u.is_active,
-                    u.must_change_password, u.last_login_at
+                    u.must_change_password, u.last_login_at,
+                    (SELECT GROUP_CONCAT(DISTINCT r.code ORDER BY r.code SEPARATOR ',')
+                     FROM app_user_business_roles ubr
+                     INNER JOIN app_roles r ON r.id = ubr.role_id AND r.is_active = 1
+                     WHERE ubr.user_id = u.id AND ubr.business_id = :business_roles_business_id) AS business_role_codes,
+                    (SELECT GROUP_CONCAT(DISTINCT r.code ORDER BY r.code SEPARATOR ',')
+                     FROM app_user_branch_roles ubr
+                     INNER JOIN app_roles r ON r.id = ubr.role_id AND r.is_active = 1
+                     WHERE ubr.user_id = u.id AND ubr.branch_id = :branch_roles_branch_id) AS branch_role_codes
              FROM app_users u
              WHERE EXISTS (
                  SELECT 1 FROM app_user_business_roles ubr
@@ -98,7 +119,12 @@ final readonly class UserRepository
              )
              ORDER BY u.display_name ASC, u.username ASC'
         );
-        $statement->execute(['business_id' => $businessId, 'branch_id' => $branchId]);
+        $statement->execute([
+            'business_id' => $businessId,
+            'branch_id' => $branchId,
+            'business_roles_business_id' => $businessId,
+            'branch_roles_branch_id' => $branchId,
+        ]);
 
         return array_map(
             static fn (array $row): array => [
@@ -108,6 +134,8 @@ final readonly class UserRepository
                 'is_active' => (int) $row['is_active'] === 1,
                 'must_change_password' => (int) $row['must_change_password'] === 1,
                 'last_login_at' => $row['last_login_at'] === null ? null : (string) $row['last_login_at'],
+                'business_roles' => is_string($row['business_role_codes']) && $row['business_role_codes'] !== '' ? explode(',', $row['business_role_codes']) : [],
+                'branch_roles' => is_string($row['branch_role_codes']) && $row['branch_role_codes'] !== '' ? explode(',', $row['branch_role_codes']) : [],
             ],
             $statement->fetchAll(PDO::FETCH_ASSOC),
         );
