@@ -484,3 +484,19 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - ابتدا آخرین HEAD و تصمیمات محصول را تازه fetch کن؛ سپس DiningService، order state transitions، kitchen routes, order list UI و schema مربوط به table/session/fulfillment را بررسی کن.
 - سفارش POS و storefront باید یک شناسه و state machine مشترک داشته باشند؛ نمای آشپزخانه فقط projection/queue عملیاتی است و منبع حقیقت سفارش نیست.
 - زمان‌های آماده‌سازی، اولویت، station routing، چاپ و اعلان فقط در صورت وجود داده/قرارداد واقعی طراحی شوند؛ transitionهای جدید وضعیت سفارش را حدس نزن.
+
+
+## بسته طراحی D-14 — آشپزخانه، آماده‌سازی و تحویل (2026-11-20)
+
+- سند UX ایجاد شد: [KITCHEN_PREPARATION_AND_HANDOFF_UX_V3_FA.md](design/KITCHEN_PREPARATION_AND_HANDOFF_UX_V3_FA.md)، شناسه `DESIGN-KITCHEN-HANDOFF-2026-001`، نسخه 0.1.
+- کد بررسی‌شده: `KitchenBoard.tsx`، `OrderCenter.tsx`، `OrderService`، `DiningService`، `DiningRepository` و routeهای dining/orders.
+- KitchenBoard واقعی به Orders API متصل است و سفارش‌های accepted/preparing/ready را نشان می‌دهد؛ اقلام، تنوع و گزینه‌ها از Order Details API خوانده می‌شوند. آشپزخانه فقط transitionهای preparing و ready را با `kitchen.update` اجرا می‌کند؛ completed در مرکز سفارش است.
+- Dining API برای area/table و open/close table session وجود دارد؛ بستن session با سفارش unfinished مسدود می‌شود. UI مدیریت سالن/میز در featureهای بررسی‌شده مشاهده نشد.
+- schema preparation/station دارد، اما API مدیریت station، تخصیص item به station، KOT printing، push refresh و fulfillment dispatch/delivered در مسیرهای بررسی‌شده اثبات نشدند.
+- سند در README طراحی نمایه و D-14 در backlog به «آماده بازبینی و نمونه‌سازی» ارتقا یافت. تست runtime/E2E جدید اجرا نشده است.
+
+### نقطه ادامه
+
+- بسته بعدی: **D-15 — یکپارچگی‌ها، تجهیزات و سخت‌افزار**.
+- قبل از طراحی، آخرین HEAD و مستندات دستگاه‌های آپلودشده را بررسی کن؛ مستندات SharedNumber و SmartSMS و نمونه PHP/REST باید از محتوای واقعی استخراج شوند. سپس معماری adapter و قابلیت‌های کارتخوان/چاپگر/پیامک را از protocolهای مستند و کد جاری جدا کن.
+- هیچ پروتکل سخت‌افزاری را بدون مدرک مدل/نسخه دستگاه قطعی فرض نکن.
