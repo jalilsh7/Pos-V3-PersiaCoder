@@ -579,7 +579,7 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
                     ))}
                     {refundSessions.length === 0 && paymentSummary.payments.some((payment) =>
                       payment.method === "cash" && refundableAmount(payment.id, payment.amount) > 0
-                    ) ? <Notice variant="warning">برای ثبت بازپرداخت نقدی، ابتدا یک شیفت صندوق باز کنید.</Notice> : null}
+                    ) ? <Notice variant="warning">بازپرداخت نقدی به مجوز مدیریت مالی و یک شیفت صندوق باز نیاز دارد؛ دسترسی و وضعیت صندوق را بررسی کنید.</Notice> : null}
                   </>
                 ) : null}
                 {refundSuccess ? <div className="auth-success" role="status">{refundSuccess}</div> : null}
