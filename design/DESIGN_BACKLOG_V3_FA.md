@@ -2,31 +2,42 @@
 
 - شناسه: DESIGN-BACKLOG-V3-001
 - تاریخ: 2026-11-20
-- وضعیت: فعال
+- وضعیت: فعال؛ فهرست canonical بسته‌های D-01 تا D-16
 
-| شناسه | بسته طراحی | وضعیت | خروجی/معیار پذیرش |
+| شناسه | بسته طراحی | وضعیت طراحی | خروجی/معیار پذیرش |
 |---|---|---|---|
-| D-01 | سیستم طراحی و زبان بصری | در حال طراحی | توکن‌ها و اجزای پایه با نمونه و قواعد RTL |
-| D-02 | پوسته برنامه و ناوبری نقش‌محور | آماده نمونه‌سازی | مشخصات UX در UI_SHELL_DASHBOARD_V3_FA.md ثبت شد؛ نمونه بصری و اعتبارسنجی باقی است |
-| D-03 | داشبورد مدیر و صفحه آغازین نقش‌ها | آماده نمونه‌سازی | مشخصات UX در UI_SHELL_DASHBOARD_V3_FA.md ثبت شد؛ نمونه بصری و اعتبارسنجی باقی است |
-| D-04 | صندوق POS دسکتاپ | آماده نمونه‌سازی | چیدمان کاتالوگ/سبد، جست‌وجو، انتخاب کالا، مشتری، نوع سفارش، جمع و حالت‌های خطا در POS_SALES_WORKSPACE_V3_FA.md |
-| D-05 | POS تبلت/نمایشگر کوچک | آماده نمونه‌سازی | رفتار پنل سبد، نوار اقدام، چیدمان عمودی/افقی و تعامل لمسی در POS_SALES_WORKSPACE_V3_FA.md |
-| D-06 | پرداخت و رسید | آماده نمونه‌سازی | جریان نقدی/کارتخوان، تفکیک storefront، وضعیت unknown، idempotency، رسید، چاپ مجدد و refund در PAYMENT_AND_RECEIPT_UX_V3_FA.md |
-| D-07 | مرکز سفارش‌ها و جزئیات | آماده نمونه‌سازی | فهرست چندکاناله، فیلترهای مطابق API، صفحه جزئیات، اقلام و افزودنی‌ها، timeline رویدادهای وضعیت، وضعیت پرداخت مستقل، state machine و حالات خطا در ORDER_CENTER_AND_DETAILS_UX_V3_FA.md |
-| D-08 | کاتالوگ، تنوع، افزودنی و رسپی | آماده نمونه‌سازی مشروط | طراحی دسته/محصول، تنوع و اختلاف قیمت، گروه گزینه و اتصال به محصول، رسپی نسخه‌دار و مرز انبار در CATALOG_OPTIONS_AND_RECIPES_UX_V3_FA.md؛ UI کامل رسپی/افزودنی و API client فرانت‌اند باقی است |
-| D-09 | انبار، موجودی و اسناد گردش کالا | آماده بازبینی و نمونه‌سازی | داشبورد dimension-aware، مواد اولیه، مکان، تأمین‌کننده، سند چندردیفی، posting، valuation و ledger در INVENTORY_AND_STOCK_MOVEMENTS_UX_V3_FA.md؛ اصلاح جمع واحدهای ناهمگون و اتصال سفارش/رسپی باقی است |
-| D-10 | مشتری، وفاداری و پیامک | آماده بازبینی مفهومی | پرونده مشتری، سفارش‌های واقعی، ledger امتیاز/اعتبار، consent/opt-out و صف/گزارش پیامک در CUSTOMERS_LOYALTY_AND_SMS_UX_V3_FA.md؛ Customer API و SMS runtime هنوز لازم است |
-| D-11 | مالی، صندوق‌ها و تطبیق | آماده بازبینی | صندوق/شیفت و گردش دستی موجود؛ UX پرداخت، refund، هزینه و settlement در FINANCE_CASH_AND_RECONCILIATION_UX_V3_FA.md؛ APIهای مالی عملیاتی باز هستند |
-| D-11 | مالی، صندوق و پرداخت | آماده بازبینی مفهومی | صندوق/شیفت واقعی، payment lifecycle، refund، expense، settlement و گزارش در FINANCE_CASH_AND_PAYMENTS_UX_V3_FA.md؛ پرداخت سفارش و سرویس‌های مالی تکمیلی نیازمند Backend است |
-| D-12 | تنظیمات، کاربران، نقش‌ها و entitlement | آماده نمونه‌سازی مرحله‌ای | طراحی business/branch settings، مدیریت کاربر و رمز موقت یک‌بارنمایش، custom roles و permission scope، جداسازی RBAC از Central entitlement و موارد باز LIC-MODULE-CONTROL-2026-001 در ACCESS_CONTROL_SETTINGS_AND_ENTITLEMENTS_UX_V3_FA.md |
-| D-13 | فروشگاه آنلاین و checkout مشتری | آماده نمونه‌سازی مفهومی | طراحی قالب عمومی، منو/سبد، دریافت و ساعات کاری، checkout امن، payment state، و اتصال به موتور سفارش مشترک در STOREFRONT_AND_CUSTOMER_CHECKOUT_UX_V3_FA.md؛ public API و پرداخت عملیاتی باقی است |
-| D-14 | آشپزخانه، آماده‌سازی و تحویل | آماده بازبینی و نمونه‌سازی | صف سفارش accepted/preparing/ready، transitionهای مجاز، اقلام snapshot، تفکیک order/fulfillment، سالن/میز و roadmap KDS چندایستگاهی در KITCHEN_PREPARATION_AND_HANDOFF_UX_V3_FA.md |
-| D-15 | یکپارچگی‌ها، پیامک و سخت‌افزار | آماده بازبینی معماری | SmartSMS/SharedNumber بر اساس مستندات آپلودی، provider adapter، queue/delivery/consent، کارتخوان LAN/Wi-Fi مدل‌محور و print/KOT jobs در INTEGRATIONS_SMS_TERMINALS_AND_PRINTING_UX_V3_FA.md؛ اجرای provider/device و پروتکل واقعی باقی است |
-| D-16 | بازبینی یکپارچگی و تحویل به توسعه | ثبت‌شده | انطباق طراحی، تصمیمات و معیارهای پذیرش |
+| D-01 | سیستم طراحی و زبان بصری | در حال طراحی | توکن‌ها، typography، spacing، components و قواعد RTL؛ اعتبارسنجی نمونه لازم است |
+| D-02 | پوسته برنامه و ناوبری نقش‌محور | آماده نمونه‌سازی | مشخصات در UI_SHELL_DASHBOARD_V3_FA.md؛ نمونه بصری و تست responsive باقی است |
+| D-03 | داشبورد مدیر و صفحه آغازین نقش‌ها | آماده نمونه‌سازی | مشخصات در UI_SHELL_DASHBOARD_V3_FA.md؛ اتصال داده و role-specific views باید verify شود |
+| D-04 | صندوق POS دسکتاپ | آماده نمونه‌سازی | کاتالوگ/سبد، انتخاب محصول، مشتری، نوع سفارش و حالت‌های خطا در POS_SALES_WORKSPACE_V3_FA.md |
+| D-05 | POS تبلت/نمایشگر کوچک | آماده نمونه‌سازی | پنل سبد، نوار اقدام، چیدمان و تعامل لمسی در POS_SALES_WORKSPACE_V3_FA.md |
+| D-06 | پرداخت و رسید | آماده نمونه‌سازی | نقدی/کارتخوان، unknown، idempotency، رسید و refund در PAYMENT_AND_RECEIPT_UX_V3_FA.md |
+| D-07 | مرکز سفارش‌ها و جزئیات | آماده نمونه‌سازی | فهرست چندکاناله، فیلتر API، جزئیات، timeline و state machine در ORDER_CENTER_AND_DETAILS_UX_V3_FA.md |
+| D-08 | کاتالوگ، افزودنی و رسپی | آماده نمونه‌سازی مشروط | Catalog API و Recipe API پایه وجود دارند؛ UI کامل رسپی و اتصال سفارش به رزرو/مصرف انبار باقی است |
+| D-09 | انبار، موجودی و اسناد گردش کالا | آماده بازبینی و نمونه‌سازی | مواد اولیه، مکان، تأمین‌کننده، سند، posting، valuation و ledger؛ dimension-safe totals و order integration باقی است |
+| D-10 | مشتری، وفاداری و پیامک | آماده بازبینی مفهومی | Customer API، ledger، consent/opt-out و SMS queue/delivery باید تکمیل شوند |
+| D-11 | مالی، صندوق و پرداخت | آماده بازبینی مفهومی | Cash session API وجود دارد؛ payment/refund/expense/settlement عملیاتی و تست‌شده نیستند |
+| D-12 | تنظیمات، کاربران، نقش‌ها و entitlement | آماده بازبینی مفهومی | Auth/RBAC پایه وجود دارد؛ UI مدیریت، settings API و Central entitlement enforcement باقی است |
+| D-13 | فروشگاه آنلاین و checkout مشتری | آماده نمونه‌سازی مفهومی | Storefront preview فعلی local است؛ public checkout، payment و اتصال end-to-end باقی است |
+| D-14 | آشپزخانه، KDS و تحویل | آماده بازبینی مفهومی | kitchen-status و dining پایه وجود دارد؛ KDS، station API و delivery workflow باقی است |
+| D-15 | یکپارچگی‌ها و سخت‌افزار | آماده بازبینی معماری | schema پایه terminal/agent/station وجود دارد؛ driver، agent runtime، printer queue و تست دستگاه باقی است |
+| D-16 | بازبینی یکپارچگی و تحویل به توسعه | گزارش اولیه | traceability matrix و quality/release gates در FINAL_DESIGN_REVIEW_AND_DEVELOPMENT_HANDOFF_V3_FA.md؛ تست و تأیید مالک باقی است |
+
+## اولویت نمونه‌سازی/توسعه
+
+اولویت تجاری مالک: **POS/فروش + انبار + مشتری/وفاداری + پیامک**. ترتیب اجرا با وابستگی فنی تنظیم می‌شود، اما این اولویت محصول تغییر نمی‌کند.
+
+1. POS end-to-end، پرداخت و مرکز سفارش.
+2. کاتالوگ/رسپی و اتصال فروش به انبار.
+3. Customer API، وفاداری و consent.
+4. SMS provider/queue/delivery.
+5. RBAC/settings و Central entitlement.
+6. Storefront، KDS و hardware به‌صورت مرحله‌ای.
 
 ## قواعد
 
-- وضعیت «تأییدشده» فقط پس از بازبینی مالک ثبت شود.
-- تأیید طرح، معادل تکمیل کد یا تست نیست.
-- تغییرات طراحی با شناسه و تاریخ در سند مربوط ثبت شوند.
-- اولویت نمونه‌سازی اولیه: D-01 تا D-08. D-08 برای نمونه‌سازی آماده است؛ APIهای اصلی رسپی وجود دارند اما UI/API client کامل و اتصال end-to-end سفارش/انبار باز است.
+- «تأییدشده» فقط پس از بازبینی مالک.
+- تأیید طراحی معادل تکمیل کد یا تست نیست.
+- فایل‌های canonical در README فهرست می‌شوند؛ اسناد قدیمی/تکراری در بک‌لاگ فعال نمی‌مانند.
+- تست‌های حیاتی امنیت، مالی، موجودی، سفارش و داده حذف نمی‌شوند.
+- هر تغییر با شناسه و تاریخ ثبت شود.
