@@ -543,6 +543,10 @@ export async function getCatalogProducts(): Promise<PosCatalogProduct[]> {
   return data.products;
 }
 
+export async function updateCatalogCategory(categoryId: string, payload: { name?: string; is_active?: boolean; sort_order?: number }): Promise<void> {
+  await request(`/catalog/categories/${encodeURIComponent(categoryId)}`, { method: "PATCH", body: JSON.stringify(payload) });
+}
+
 export async function createCatalogCategory(name: string): Promise<CatalogCategory> {
   const data = await request<{ category: CatalogCategory }>("/catalog/categories", {
     method: "POST",
