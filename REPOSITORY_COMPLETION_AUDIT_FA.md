@@ -32,7 +32,7 @@ Snapshot مبدأ: `4e82753cfe95f2824d75fbbcda738d74e3bf9f64`
 
 - Frontend V3 هنوز طبق README خودش اسکلت UI/ناوبری است و اتصال عملیاتی کامل به API ندارد.
 - برای `v3/frontend` هنوز lockfile مستقل commit نشده است.
-- CI باید روی `main` اجرا و نتیجه هر سه workflow تأیید شود.
+- CI روی `main` برای هر سه workflow سبز شد: Backend `44766929323`، Frontend `44766929617`، Database `44766929722`؛ این نتایج مربوط به commit `fc1120e2e15b342742fefb863d5d86d1aeebef62` هستند.
 - سابقه نقشه راه 2026-11-19 مشکل تخصیص runner با `runner_id=0` را ثبت کرده بود؛ وضعیت جاری نیازمند بررسی مجدد است.
 - تست end-to-end مرورگر، نصب واقعی، تست MySQL/MariaDB، backup/restore و پذیرش staging هنوز باید تأیید شوند.
 - تکمیل قابلیت‌های محصول، تطبیق نیازهای V2 با معماری V3 و پیاده‌سازی ماژول‌های تجاری همچنان طبق `ROADMAP_V3.md` ادامه دارد.
@@ -47,7 +47,7 @@ Snapshot مبدأ: `4e82753cfe95f2824d75fbbcda738d74e3bf9f64`
 - [x] triggerهای push workflowها به `main` اصلاح شده‌اند.
 - [ ] فایل ZIP باینری تاریخی در آرشیو مقصد قرار گیرد.
 - [ ] lockfile مستقل frontend ایجاد و commit شود.
-- [ ] سه workflow روی `main` واقعاً اجرا و سبز شوند.
+- [x] سه workflow روی `main` در commit `fc1120e2e15b342742fefb863d5d86d1aeebef62` اجرا و سبز شدند: Backend run `44766929323` (PHP 8.2/8.3/8.4)، Frontend run `44766929617` (typecheck و production build)، Database run `44766929722` (MySQL 8.4 و MariaDB 10.6).
 - [ ] ممیزی وابستگی‌ها و اتصال کامل Frontend/Backend/Database انجام شود.
 - [ ] تست‌های E2E، staging و پذیرش عملیاتی انجام شوند.
 
