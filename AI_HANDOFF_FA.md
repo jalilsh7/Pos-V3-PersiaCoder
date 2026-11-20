@@ -656,3 +656,9 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - static contract check جدید در `scripts/check-v3-order-payments.php` از این قرارداد محافظت می‌کند.
 - Workflowهای Backend و Frontend برای commitهای جدید در زمان handoff در حال اجرا بودند؛ نتیجه را از Actions بررسی کن و فقط در صورت success گزارش PASS بده.
 - گام بعدی: بازبینی قراردادهای payment status و cancellation guard، بررسی race/refresh در UI بازپرداخت، سپس تست‌های DB/transaction/idempotency و چاپ/رسید. کارتخوان/پرداخت ترکیبی هنوز پیاده‌سازی نشده و نباید شبیه‌سازی شود.
+
+
+## تکمیل موازی POS-PAY-04 — محافظت پس از refund کامل (2026-11-20)
+- commit مشاهده‌شده روی main: `f9c4a602f3b8c504038502d3d10c7715fe8f35ca`.
+- OrderPaymentService اکنون مانده قابل پرداخت سفارش کاملاً مستردشده را صفر می‌کند و دریافت نقدی مجدد را با `order_fully_refunded` رد می‌کند.
+- این رفتار مانع recollection ناخواسته است؛ قابلیت reopen سفارش مستردشده هنوز وجود ندارد/اثبات نشده و نباید ضمنی فرض شود.
