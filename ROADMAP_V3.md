@@ -1266,3 +1266,12 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - No resend/retry operation is exposed; `unknown` remains unresolved and must not be blindly retried.
 - UI, event/template trigger, marketing consent/opt-out, provider settings UI and SharedNumber delivery reconciliation remain open.
 - No tests/build were run in this batch by request; validate auth/scope/cursor/privacy and migration at the consolidated phase gate.
+
+
+## SMS-API-03 — پنل مشاهده صف و گزارش پیامک (2026-11-21)
+
+- صفحه فارسی/RTL «پیامک‌ها» به ناوبری مدیریت اضافه شد.
+- صفحه از API فقط‌خواندنی SMS استفاده می‌کند؛ فیلتر وضعیت، تازه‌سازی، صفحه‌بندی «نمایش بیشتر» و جزئیات تلاش‌های ارسال/بررسی تحویل دارد.
+- شماره مقصد، متن پیام و شناسه provider در UI نمایش داده نمی‌شوند. برای وضعیت unknown هیچ دکمه retry/resend وجود ندارد.
+- مجوز سمت Backend همچنان مرجع نهایی دسترسی است؛ کاربران فاقد `communications.read` پاسخ مجاز دریافت نمی‌کنند.
+- تست/build فرانت‌اند در این بسته اجرا نشده است؛ در phase gate تجمیعی بررسی شود.

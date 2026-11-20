@@ -5,7 +5,7 @@ import {
   ChefHat,
   ChevronLeft,
   ClipboardList,
-  LayoutDashboard,
+  LayoutDashboard,\n  MessageSquare,
   Globe,
   LogOut,
   Search,
@@ -31,7 +31,7 @@ import { CustomersWorkspace } from "../features/customers/CustomersWorkspace";
 import { FinanceWorkspace } from "../features/finance/FinanceWorkspace";
 import { BusinessSettingsWorkspace } from "../features/settings/BusinessSettingsWorkspace";
 import { AccessManagementWorkspace } from "../features/access/AccessManagementWorkspace";
-import { StorefrontWorkspace } from "../features/storefront/StorefrontWorkspace";
+import { StorefrontWorkspace } from "../features/storefront/StorefrontWorkspace";\nimport { SmsOutboxWorkspace } from "../features/communications/SmsOutboxWorkspace";
 
 type ViewId = "overview" | "pos" | "orders" | "kitchen" | "catalog" | "inventory" | "customers" | "finance" | "settings" | "storefront" | "access";
 
@@ -63,7 +63,7 @@ const navigation: NavigationGroup[] = [
     items: [
       { id: "catalog", label: "منو و محصولات", icon: Utensils, description: "محصولات، دسته‌ها و افزودنی‌ها" },
       { id: "inventory", label: "مواد اولیه و انبار", icon: Boxes, description: "رسپی، موجودی و گردش انبار" },
-      { id: "customers", label: "مشتریان", icon: Users, description: "پروفایل مشتری و وفاداری" },
+      { id: "customers", label: "مشتریان", icon: Users, description: "پروفایل مشتری و وفاداری" },\n      { id: "communications", label: "پیامک‌ها", icon: MessageSquare, description: "صف و گزارش تحویل پیامک" },
     ],
   },
   {

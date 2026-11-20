@@ -1044,3 +1044,41 @@ export async function removeAccessRole(
     { method: "DELETE", headers: { "Idempotency-Key": idempotencyKey } },
   );
 }
+
+
+export type SmsOutboxAttempt = {
+  number: number;
+  type: "send" | "delivery_check";
+  outcome: "accepted" | "rejected" | "unknown" | "retryable_failure" | "status_received";
+  provider_status_code: number | null;
+  error_code: string | null;
+  attempted_at: string;
+  completed_at: string | null;
+};
+
+export type SmsOutboxMessage = {
+  id: string;
+  message_type: "transactional" | "verification";
+  provider: string;
+  status: "queued" | "processing" | "accepted" | "sent_to_carrier" | "delivered" | "failed" | "rejected" | "unknown" | "cancelled";
+  attempt_count: number;
+  failure_code: string | null;
+  created_at: string;
+  updated_at: string;
+  accepted_at: string | null;
+  delivered_at: string | null;
+  attempts: SmsOutboxAttempt[];
+};
+
+export async function getSmsOutboxMessages(filters: {
+  status?: string;
+  limit?: number;
+  cursor?: string | null;
+} = {}): Promise<{ messages: SmsOutboxMessage[]; next_cursor: string | null }> {
+  const query = new URLSearchParams({ limit: String(filters.limit ?? 25) });
+  if (filters.status && filters.status !== "all") query.set("status", filters.status);
+  if (filters.cursor) query.set("cursor", filters.cursor);
+  return request<{ messages: SmsOutboxMessage[]; next_cursor: string | null }>(
+    `/communications/sms/outbox?${query.toString()}`,
+  );
+}

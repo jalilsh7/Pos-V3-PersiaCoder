@@ -786,3 +786,12 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - هیچ retry/resend وجود ندارد؛ وضعیت unknown صرفاً نمایش داده می‌شود.
 - تست/build در این بسته اجرا نشده؛ اعتبارسنجی API، scope، cursor، privacy و migration باید در phase gate تجمیعی انجام شود.
 - گام بعد: UI صف/گزارش با pagination و فیلتر وضعیت؛ سپس تنظیمات امن provider. ارسال خودکار و پیام تبلیغاتی تا تکمیل template/event policy و consent/opt-out غیرفعال می‌مانند.
+
+
+## نقطه ادامه پس از SMS-API-03 — رابط گزارش پیامک (2026-11-21)
+
+- صفحه «پیامک‌ها» با فیلتر وضعیت، تازه‌سازی، صفحه‌بندی و جزئیات امن attemptها به ناوبری اضافه شد.
+- UI فقط از `GET /communications/sms/outbox` استفاده می‌کند و عملیات ارسال یا retry ندارد.
+- نمایش شماره و متن پیام ممنوع نگه داشته شده؛ وضعیت unknown فقط اطلاع‌رسانی می‌شود.
+- تست/build فرانت‌اند اجرا نشده است؛ در phase gate تجمیعی اجرا شود.
+- گام بعد: طراحی تنظیمات provider با ذخیره‌سازی امن server-side و عدم بازگرداندن secret؛ سپس consent/opt-out و template/event policy.
