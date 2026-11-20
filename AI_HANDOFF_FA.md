@@ -622,3 +622,19 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - الزام نقدی: شیفت باز و مجاز، مبلغ <= مانده، lock order/session، duplicate prevention، audit و cash movement یکتا. اگر شیفت باز نیست، دریافت نقدی رد شود؛ موجودی صندوق دستی نباید به‌صورت دوباره‌شماری افزایش یابد.
 - سپس UI پرداخت و رسید فقط با پاسخ سرور، نمایش مانده و وضعیت واقعی را اضافه کن. پرداخت ترکیبی/نسیه، refund و terminal provider را جداگانه و با قرارداد/driver واقعی تکمیل کن.
 - تست‌های PHP/DB/HTTP و build هنوز اجرا نشده‌اند؛ وضعیت PASS اعلام نشود.
+
+## نقطه ادامه پس از POS-PAY-01 — دریافت نقدی POS (2026-11-20)
+
+- آخرین HEAD ثبت‌شده: `5675a542fff85546abb6baa2e0048b3ac8136f0f` (main).
+- پیاده‌سازی اولیه دفتر دریافت نقدی و اتصال POS به شیفت صندوق در این بسته اضافه شد؛ فایل‌ها و قراردادها در `ROADMAP_V3.md`، بخش POS-PAY-01 شرح داده شده‌اند.
+- مسیرهای جدید:
+  - `GET /api/v1/cash/payment-sessions` برای فهرست شیفت‌های باز کاربر POS.
+  - `GET /api/v1/orders/{orderPublicId}/payments` برای خلاصه و تاریخچه دریافت‌های سفارش.
+  - `POST /api/v1/orders/{orderPublicId}/payments/cash` برای ثبت دریافت نقدی idempotent.
+- مسیر نقدی در یک تراکنش، پرداخت captured، payment event، cash movement نوع sale_in، افزایش وجه مورد انتظار شیفت و payment_status سفارش را ثبت می‌کند. دریافت جزئی مجاز است؛ مبلغ بیشتر از مانده رد می‌شود.
+- UI POS اکنون فرم دریافت نقدی و انتخاب شیفت باز را دارد. این هنوز رسید چاپی، refund، کارتخوان، درگاه یا پرداخت ترکیبی نیست.
+- Workflowهای validation روی push فعال شدند. در زمان این handoff، Backend run `44805844940` queued و Frontend run `44805848524` در حال اجرا بود؛ نتیجه را قبل از ادعای PASS دوباره بررسی کن.
+- فایل static contract check جدید: `scripts/check-v3-order-payments.php`؛ این جایگزین تست integration دیتابیس نیست.
+- گام بعدی: ابتدا نتیجه workflowها را بررسی و هر خطا را اصلاح کن؛ سپس تست MySQL/transaction برای cash capture و idempotency، و تکمیل رسید/تاریخچه پرداخت. بعد از بستن پرداخت نقدی، فروش را به recipe/inventory ledger وصل کن.
+- کارتخوان و درگاه آنلاین را بدون driver/provider واقعی و نتیجه معتبر فعال نکن. وضعیت unknown/reconciliation را برای مسیرهای غیرنقدی حفظ کن.
+
