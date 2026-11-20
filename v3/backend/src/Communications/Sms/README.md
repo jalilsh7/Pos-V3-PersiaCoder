@@ -122,3 +122,10 @@ php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
 - Each trigger has enabled state, editable text, provider template ID, ordered event-variable mapping, preview and controlled test-send support.
 - Do not hard-code sample IDs or assume IDs are shared across customer accounts. The business must create/approve the corresponding template in its own National Payamak account.
 - Marketing remains separately gated by verifiable consent and opt-out.
+
+
+## Service template variable mapping — correction
+- The service-message body text is authored and approved only in the National Payamak account. POS must not store or submit the full service-template text.
+- POS stores the account-specific provider template/body ID per business trigger, plus the ordered mapping from provider template variables to approved POS event data.
+- The UI provides a variable guide (variable name, meaning, source field, example value, ordinal position) and previews the outgoing variable values only. It does not preview or edit the final provider-side message body.
+- A controlled test send submits the configured template ID and ordered variable values. Never invent template IDs or send arbitrary user text through the template endpoint.
