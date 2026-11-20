@@ -613,13 +613,15 @@ export async function getCustomers(options: {
   query?: string;
   status?: "all" | "active" | "inactive";
   limit?: number;
-} = {}): Promise<{ customers: CustomerSummary[] }> {
+  cursor?: string | null;
+} = {}): Promise<{ customers: CustomerSummary[]; next_cursor: string | null }> {
   const params = new URLSearchParams();
   if (options.query) params.set("q", options.query);
   if (options.status) params.set("status", options.status);
   if (options.limit) params.set("limit", String(options.limit));
+  if (options.cursor) params.set("cursor", options.cursor);
   const suffix = params.toString();
-  return request<{ customers: CustomerSummary[] }>(`/customers${suffix ? `?${suffix}` : ""}`);
+  return request<{ customers: CustomerSummary[]; next_cursor: string | null }>(`/customers${suffix ? `?${suffix}` : ""}`);
 }
 
 export async function getCustomerDetails(customerId: string): Promise<CustomerDetail> {
