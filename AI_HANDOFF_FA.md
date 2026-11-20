@@ -339,3 +339,20 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - ابتدا آخرین HEAD و سند تصمیمات را تازه fetch کن؛ سپس Auth/PermissionService، route middleware، تنظیمات کسب‌وکار، feature flags، frontend settings/users و schema را بررسی کن.
 - تصمیم LIC-MODULE-CONTROL-2026-001 لازم‌الاجراست: entitlement از Central و enforcement سمت Backend؛ بسته‌های فروش/ترکیب امکانات هنوز تعیین نشده و نباید حدس زده شوند.
 - مجوز RBAC و entitlement لایسنس دو لایه متفاوت‌اند و در UX باید جدا نمایش داده شوند.
+
+
+## بسته طراحی D-11 — مالی، صندوق‌ها و تطبیق (2026-11-20)
+
+- سند UX: [FINANCE_CASH_AND_RECONCILIATION_UX_V3_FA.md](design/FINANCE_CASH_AND_RECONCILIATION_UX_V3_FA.md)، نسخه 0.1.
+- CashRegisterService/CashRepository و FinanceWorkspace فعلی صندوق، شیفت، مبلغ افتتاحیه، گردش دستی، بستن شیفت، اختلاف و بررسی مدیر را از API واقعی پشتیبانی می‌کنند.
+- payment/refund/settlement و expense tables در schema وجود دارند، اما route/service عملیاتی آن‌ها در HEAD بررسی‌شده پیدا نشد؛ وجود schema معادل قابلیت عملیاتی نیست.
+- OrderService سفارش را با payment_status اولیه unpaid می‌سازد؛ ثبت پرداخت واقعی سفارش و اتصال آن به cash movement در مسیر بررسی‌شده اثبات نشده است.
+- ناسازگاری وضعیت پرداخت باید اصلاح شود: schema سفارش از `partial` استفاده می‌کند، در حالی که typeهای فرانت/مستندات دیگری از `partially_paid` نام می‌برند.
+- لغو سفارش و refund مستقل باقی می‌مانند؛ timeout پرداخت/بازپرداخت باید unknown و نیازمند استعلام باشد.
+- README طراحی و backlog D-11 را ثبت کردند؛ وضعیت «آماده بازبینی» است، نه تکمیل پیاده‌سازی.
+- تست runtime یا provider در این بسته اجرا نشده است.
+
+### نقطه ادامه
+- بسته بعدی طراحی: **D-12 — تنظیمات، کاربران، نقش‌ها و مجوز قابلیت‌ها**.
+- پیش از طراحی، آخرین HEAD و سند یکتای تصمیمات را تازه بخوان؛ سپس UserManagementService، RoleManagementService، PermissionRepository، BusinessSetup/Settings، route middleware، schema و frontend را تطبیق بده.
+- entitlement از Central باید با permission داخلی RBAC تفکیک شود. ترکیب پلن‌ها/بسته‌های تجاری و سیاست‌های خاموشی ماژول هنوز مصوب نیست؛ هیچ ترکیبی حدس یا hard-code نشود.
