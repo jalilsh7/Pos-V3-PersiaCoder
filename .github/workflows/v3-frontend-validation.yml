@@ -3,7 +3,7 @@ name: V3 Frontend Validation
 on:
   push:
     branches:
-      - feature/3food-pos-next-release-v2
+      - main
     paths:
       - "v3/frontend/**"
       - ".github/workflows/v3-frontend-validation.yml"
