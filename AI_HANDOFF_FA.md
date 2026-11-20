@@ -596,3 +596,19 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - `DESIGN_INTEGRATION_REVIEW_AND_HANDOFF_V3_FA.md` نسخه مقدماتی بود و به archive stub با لینک سند canonical تبدیل شد.
 - لینک D-15 در README و backlog اصلاح شد: سند اصلی سخت‌افزار `INTEGRATIONS_AND_HARDWARE_UX_V3_FA.md` و ضمیمه پیامک `INTEGRATIONS_SMS_TERMINALS_AND_PRINTING_UX_V3_FA.md` است.
 - README و backlog دوباره fetch شدند تا ارجاع‌های D-15/D-16 با مرجع canonical منطبق شوند.
+
+
+## شروع پیاده‌سازی پس از D-16 — اصلاح شاخص‌های موجودی (2026-11-20)
+
+- در ممیزی کد جاری، جمع‌زدن `quantity_on_hand` و `quantity_available` برای همه اقلام بدون تفکیک واحد پایه در `InventoryWorkspace.tsx` شناسایی شد؛ این مقدار از نظر dimension قابل جمع نبود.
+- اصلاح واقعی Frontend ثبت شد: شاخص موجودی فیزیکی و قابل استفاده اکنون بر اساس `base_unit_code` گروه‌بندی و جدا نمایش داده می‌شوند؛ واحدهای مختلف با هم جمع نمی‌شوند.
+- فایل‌ها: `v3/frontend/src/features/inventory/InventoryWorkspace.tsx` و `v3/frontend/src/features/inventory/inventory.css`.
+- commitها: `c876b1bab7dc231d5039d2f5ce8d2139d2ae480a` و `1dfa0ff783cf85865848430ff85082f490991fda`.
+- سند D-09 و ماتریس D-16 به‌روزرسانی شدند.
+- **محدودیت اعتبارسنجی:** build، TypeScript typecheck و تست UI در این محیط اجرا نشده‌اند؛ این تغییر فقط از نظر متن کد fetch و بررسی شد.
+
+### بسته اجرایی بعدی
+
+- ادامه اولویت عرضه اولیه: تکمیل فروش POS end-to-end تا پرداخت و رسید.
+- ابتدا HEAD و `FINAL_PRODUCT_DECISIONS_FA.md` را تازه بخوان؛ سپس OrderService، POS frontend، CashRegisterService، schema payment/cash و هر تست موجود را تطبیق بده.
+- هدف: بستن شکاف ثبت سفارش draft/unpaid با payment واقعی و cash ledger، بدون جعل پرداخت و بدون retry کور؛ تا وقتی payment service/endpoint واقعی وجود ندارد، آن را به‌صورت امن و مستند طراحی و سپس مرحله‌ای پیاده‌سازی کن.
