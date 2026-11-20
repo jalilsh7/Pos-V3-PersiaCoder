@@ -53,6 +53,9 @@ $checks = [
         str_contains($routes, "\$makePermissionMiddleware('finance.manage', true), \$csrfMiddleware, \$originMiddleware"),
     'partially refunded orders cannot bypass refund before cancellation' =>
         str_contains($orderService, "'paid', 'partially_paid', 'partially_refunded'"),
+    'frontend partial-payment filter uses the backend canonical status' =>
+        str_contains(file_get_contents($root . '/v3/frontend/src/features/orders/OrderCenter.tsx'), 'value: "partially_paid", label: "پرداخت بخشی"') &&
+        !str_contains(file_get_contents($root . '/v3/frontend/src/features/orders/OrderCenter.tsx'), 'value: "partial", label: "پرداخت بخشی"'),
 ];
 
 $failed = [];
