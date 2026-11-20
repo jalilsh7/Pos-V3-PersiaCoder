@@ -393,3 +393,15 @@
 - تست‌های fake transport روی PHP 8.2/8.3/8.4 موفق شدند؛ هیچ پیام واقعی ارسال نشده است.
 - Queue/outbox، delivery attempts، worker، delivery polling، consent/opt-out، scheduled send و settings UI هنوز باقی‌اند.
 
+
+## SMS-MIG-2026-003 — صف پایدار پیامک (2026-11-20)
+
+- Migration 013 برای outbox و delivery attempts ثبت شد.
+- شماره مقصد و متن پیام با AES-256-GCM رمزگذاری می‌شوند؛ HMAC integrity قبل از ارسال بررسی می‌شود.
+- Enqueue پیام transactional idempotent و با permission pos.sell است؛ customer link باید با موبایل فعال مشتری match باشد.
+- SmartSMS suffix لغو11 اجباری است و خودکار اضافه نمی‌شود؛ marketing پشتیبانی نشده.
+- Worker از SKIP LOCKED، SendMultiple، provider ID persistence، duplicate-recipient deferral، retry محدود HTTP429 و unknown-state protection استفاده می‌کند.
+- Delivery poller از SmartSMS GetDeliveries استفاده می‌کند.
+- DB integration روی MySQL 8.4/MariaDB 10.6 و backend tests روی PHP 8.2/8.3/8.4 موفق شدند.
+- هیچ پیام واقعی ارسال نشده و اتصال به order lifecycle، consent/opt-out، UI مدیریت و SharedNumber delivery polling هنوز باقی است.
+
