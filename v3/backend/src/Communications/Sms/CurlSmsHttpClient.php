@@ -5,7 +5,7 @@ namespace PersiaCoder\PosV3\Communications\Sms;
 
 use RuntimeException;
 
-final class CurlSmsHttpClient implements SmsHttpClient
+final class CurlSmsHttpClient implements SmsFormHttpClient
 {
     public function postJson(string $url, array $payload, int $timeoutSeconds): SmsHttpResponse
     {
@@ -50,4 +50,39 @@ final class CurlSmsHttpClient implements SmsHttpClient
         }
         return new SmsHttpResponse($statusCode, (string) $responseBody);
     }
+    public function postForm(string $url, array $payload, int $timeoutSeconds): SmsHttpResponse
+    {
+        if (!function_exists('curl_init')) {
+            throw new SmsProviderException('sms_http_transport_unavailable', null, false, false);
+        }
+        if (!str_starts_with($url, 'https://')) {
+            throw new RuntimeException('sms_provider_https_required');
+        }
+
+        $handle = curl_init($url);
+        if ($handle === false) {
+            throw new SmsProviderException('sms_http_transport_unavailable', null, false, true);
+        }
+        $fields = http_build_query($payload, '', '&', PHP_QUERY_RFC3986);
+        curl_setopt_array($handle, [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $fields,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded', 'Accept: application/json'],
+            CURLOPT_CONNECTTIMEOUT => min(10, $timeoutSeconds),
+            CURLOPT_TIMEOUT => $timeoutSeconds,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_FOLLOWLOCATION => false,
+        ]);
+        $responseBody = curl_exec($handle);
+        $statusCode = (int) curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
+        $curlError = curl_errno($handle);
+        curl_close($handle);
+        if ($responseBody === false || $curlError !== 0) {
+            throw new SmsProviderException('sms_provider_transport_outcome_unknown', null, false, true);
+        }
+        return new SmsHttpResponse($statusCode, (string) $responseBody);
+    }
+
 }

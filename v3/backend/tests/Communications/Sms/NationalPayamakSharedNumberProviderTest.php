@@ -15,13 +15,17 @@ use PersiaCoder\PosV3\Communications\Sms\SmsHttpClient;
 use PersiaCoder\PosV3\Communications\Sms\SmsHttpResponse;
 use PersiaCoder\PosV3\Communications\Sms\SmsProviderException;
 
-final class FakeSharedNumberHttpClient implements SmsHttpClient
+final class FakeSharedNumberHttpClient implements SmsFormHttpClient
 {
     /** @var list<array{url:string,payload:array,timeout:int}> */
     public array $calls = [];
     public ?Throwable $failure = null;
     public function __construct(public SmsHttpResponse $response) {}
     public function postJson(string $url, array $payload, int $timeoutSeconds): SmsHttpResponse
+    {
+        return $this->postForm($url, $payload, $timeoutSeconds);
+    }
+    public function postForm(string $url, array $payload, int $timeoutSeconds): SmsHttpResponse
     {
         $this->calls[] = ['url' => $url, 'payload' => $payload, 'timeout' => $timeoutSeconds];
         if ($this->failure !== null) throw $this->failure;

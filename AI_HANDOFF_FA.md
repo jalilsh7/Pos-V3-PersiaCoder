@@ -795,3 +795,13 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - نمایش شماره و متن پیام ممنوع نگه داشته شده؛ وضعیت unknown فقط اطلاع‌رسانی می‌شود.
 - تست/build فرانت‌اند اجرا نشده است؛ در phase gate تجمیعی اجرا شود.
 - گام بعد: طراحی تنظیمات provider با ذخیره‌سازی امن server-side و عدم بازگرداندن secret؛ سپس consent/opt-out و template/event policy.
+
+
+## ادامه SMS بر اساس فایل‌های مرجع مالک — 2026-11-21
+
+- PDFهای Smart و SharedNumber و ZIP نمونه REST بررسی شدند؛ RAR نیز استخراج و نمونه‌های PHP آن بازبینی شدند.
+- SmartSMS REST از HTTPS/JSON برای SendMultiple و GetDeliveries استفاده می‌کند؛ SharedNumber BaseServiceNumber طبق نمونه REST با form-urlencoded ارسال می‌شود.
+- برای SharedNumber، interface مجزای `SmsFormHttpClient` اضافه و Curl transport با TLS verify، بدون redirect و timeout محدود تکمیل شد؛ adapter به فرم-urlencoded منتقل شد.
+- RAR حاوی SOAP/WSDL legacy با HTTP و متدهای SendSimpleSMS2، SendSms، SendByBaseNumber2، AddSchedule و APIهای inbox/contact است. این‌ها به‌عنوان reference ثبت شدند، نه کپی مستقیم به V3.
+- تست‌های fake مربوط به SharedNumber به transport جدید تطبیق داده شدند؛ تست/build اجرا نشده و ارسال واقعی انجام نشده است.
+- گام بعد: اتصال امن SharedNumber template به outbox با registry قالب‌های تأییدشده و persistence شناسه‌های گزارش؛ قبل از آن باید schema و policy چند-provider کامل شود. ارسال marketing همچنان مسدود تا consent/evidence/opt-out سمت سرور.

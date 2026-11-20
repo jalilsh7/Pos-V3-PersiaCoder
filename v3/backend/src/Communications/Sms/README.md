@@ -94,3 +94,12 @@ php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
 - Recipient numbers, message bodies, ciphertext, customer identifiers, provider message IDs and raw provider payloads are never returned.
 - `unknown` is informational only. No retry/resend action is exposed.
 - Permission is granted to the manager role; owner wildcard access follows existing RBAC.
+
+
+## Source archive compatibility note — REST transport formats
+
+- The supplied `Rest-Sample.zip` demonstrates `application/x-www-form-urlencoded` for legacy `SendSMS/SendSMS`, `GetDeliveries2`, `GetMessages`, and `BaseServiceNumber` requests.
+- The supplied SmartSMS REST PDF explicitly specifies `application/json` for `SmartSMS/SendMultiple`; its REST examples also define the SmartSMS `Send` and `GetDeliveries` contracts and response IDs/statuses.
+- Shared-number `BaseServiceNumber` therefore uses a dedicated HTTPS form-encoded transport, matching the supplied REST sample rather than sending JSON. TLS verification, no redirects and bounded timeouts remain enabled.
+- The supplied `SamplePHP.rar` contains legacy SOAP examples (`SendSimpleSMS2`, `SendSms`, `SendByBaseNumber2`, schedules, inbox and contacts). These examples use HTTP WSDL URLs and placeholder/demo credentials. They are treated as compatibility references only; V3 does not copy insecure HTTP endpoints, SOAP credentials or legacy PECL/SoapClient runtime dependencies.
+- No provider call or real SMS was made during this change.

@@ -1275,3 +1275,13 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - شماره مقصد، متن پیام و شناسه provider در UI نمایش داده نمی‌شوند. برای وضعیت unknown هیچ دکمه retry/resend وجود ندارد.
 - مجوز سمت Backend همچنان مرجع نهایی دسترسی است؛ کاربران فاقد `communications.read` پاسخ مجاز دریافت نمی‌کنند.
 - تست/build فرانت‌اند در این بسته اجرا نشده است؛ در phase gate تجمیعی بررسی شود.
+
+
+## SMS-SOURCE-2026-001 — تطبیق transport با نمونه‌های رسمی ارسالی (2026-11-21)
+
+- فایل‌های مرجع بررسی شدند: `webservice-Smart.pdf`، `webservice-SharedNumber.pdf`، `Rest-Sample.zip` و نمونه‌های PHP در `SamplePHP.rar`.
+- REST SmartSMS شامل Send، SendMultiple (آرایه متناظر گیرنده/متن تا 100 مورد)، GetDeliveries/GetDeliveries2 و شناسه‌های پیگیری است.
+- REST خط خدماتی اشتراکی BaseServiceNumber برای یک شماره در هر درخواست، bodyId تأییدشده و مقادیر متنی مرتب‌شده با جداکننده ; مستند شده است.
+- نمونه REST ارسالی برای BaseServiceNumber از application/x-www-form-urlencoded استفاده می‌کند؛ adapter قبلی JSON می‌فرستاد. transport فرم‌کدگذاری‌شده HTTPS اضافه و adapter SharedNumber به آن متصل شد.
+- نمونه‌های RAR، SOAP قدیمی با WSDL روی HTTP و متدهایی مانند SendSimpleSMS2 و SendByBaseNumber2 هستند؛ به‌عنوان مرجع legacy حفظ شدند و عیناً به V3 منتقل نشدند.
+- تست‌های provider در این بسته به fake form transport به‌روزرسانی شدند؛ اجرای تست در این بسته انجام نشد و برای phase gate باقی است. ارسال واقعی انجام نشده است.

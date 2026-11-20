@@ -11,7 +11,7 @@ final readonly class NationalPayamakSharedNumberProvider implements SmsTemplateP
 
     public function __construct(
         private SharedNumberConfig $config,
-        private SmsHttpClient $http,
+        private SmsFormHttpClient $http,
     ) {}
 
     /**
@@ -41,7 +41,7 @@ final readonly class NationalPayamakSharedNumberProvider implements SmsTemplateP
             'bodyId' => $bodyId,
         ];
         try {
-            $response = $this->http->postJson(self::SEND_URL, $payload, $this->config->timeoutSeconds);
+            $response = $this->http->postForm(self::SEND_URL, $payload, $this->config->timeoutSeconds);
         } catch (SmsProviderException $exception) {
             throw $exception;
         } catch (\Throwable) {
