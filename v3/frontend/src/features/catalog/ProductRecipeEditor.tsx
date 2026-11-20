@@ -37,16 +37,16 @@ export function ProductRecipeEditor({ productId, variants }: {
 
   useEffect(() => {
     let current = true;
-    // Draft ingredient rows belong to one product/variant scope only.
-    setLines([]);
-    setMessage(null);
-    setError(null);
     Promise.all([
       getProductRecipe(productId, variantId || undefined),
       getInventoryStockItems("", true),
       getInventoryUnits(),
     ]).then(([nextRecipe, nextItems, nextUnits]) => {
       if (!current) return;
+      // Draft ingredient rows belong to one product/variant scope only.
+      setLines([]);
+      setMessage(null);
+      setError(null);
       setRecipe(nextRecipe);
       setStockItems(nextItems.filter((item) => item.is_active));
       setUnits(nextUnits);
