@@ -7,6 +7,11 @@ import {
 import { Button, StatusBadge } from "../../shared/ui";
 
 const money = (value: number) => new Intl.NumberFormat("fa-IR").format(value);
+const parseSignedInteger = (value: string) => {
+  const normalized = value.replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit))).replace(/[،,٬\\s]/g, "");
+  return /^-?\\d+$/.test(normalized) ? Number(normalized) : Number.NaN;
+};
 
 export function CatalogOptionsEditor({ productId, detail, onSaved }: {
   productId: string; detail: PosCatalogProductDetail; onSaved: () => Promise<void>;
@@ -26,7 +31,7 @@ export function CatalogOptionsEditor({ productId, detail, onSaved }: {
 
   async function saveVariant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const delta = Number(variantDelta);
+    const delta = parseSignedInteger(variantDelta);
     if (!variantName.trim() || !Number.isSafeInteger(delta)) { setMessage("نام تنوع و اختلاف قیمت معتبر وارد کنید."); return; }
     setBusy(true); setMessage(null);
     try {
@@ -37,7 +42,7 @@ export function CatalogOptionsEditor({ productId, detail, onSaved }: {
   }
   async function saveGroup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const clean = options.map((item) => ({ name: item.name.trim(), price_delta_amount: Number(item.price) })).filter((item) => item.name);
+    const clean = options.map((item) => ({ name: item.name.trim(), price_delta_amount: parseSignedInteger(item.price) })).filter((item) => item.name);
     const min = Number(minSelect), max = Number(maxSelect);
     if (!groupName.trim() || clean.length < 1 || clean.some((item) => !Number.isSafeInteger(item.price_delta_amount))
       || !Number.isInteger(min) || !Number.isInteger(max) || min < 0 || max < 1 || max < min
@@ -48,7 +53,12 @@ export function CatalogOptionsEditor({ productId, detail, onSaved }: {
     try {
       const group = await createCatalogOptionGroup({ name: groupName.trim(), selection_type: selectionType,
         min_select: min, max_select: max, is_required_default: required, options: clean });
-      await attachCatalogOptionGroup(productId, { option_group_id: group.id, sort_order: detail.option_groups.length, is_required: attachRequired });
+      try {
+        await attachCatalogOptionGroup(productId, { option_group_id: group.id, sort_order: detail.option_groups.length, is_required: attachRequired });
+      } catch (error) {
+        setMessage(`گروه «${groupName.trim()}» ساخته شد اما اتصال آن ناموفق بود. شناسه گروه: ${group.id}؛ برای جلوگیری از گروه تکراری، دوباره فرم ساخت را ارسال نکنید.`);
+        return;
+      }
       setGroupName(""); setOptions([{ name: "", price: "0" }, { name: "", price: "0" }]);
       setMinSelect("0"); setMaxSelect("1"); setRequired(false); setAttachRequired(false);
       await onSaved(); setMessage("گروه گزینه ساخته و به همین محصول متصل شد.");
