@@ -412,3 +412,11 @@
 - SmsOutboxService و زیرساخت queue/worker/poller باقی‌اند اما enqueue باید از application event و template registry داخلی فراخوانی شود؛ API ارسال دلخواه وجود ندارد.
 - Marketing تا consent معتبر، evidence و opt-out/suppression سمت سرور پیاده‌سازی نشود، ممنوع است.
 
+
+## POS-CUST-02 — صفحه‌بندی CRM (2026-11-20)
+
+- Customer list API با keyset cursor بر اساس updated_at و id به‌روزرسانی شد.
+- Migration 014 شاخص pagination را اضافه می‌کند.
+- UI مشتریان load more با صفحه 50تایی و stale-response guard دارد.
+- Integration test برای صفحات متوالی، عدم تکرار و cursor نامعتبر اضافه شد؛ هنوز در phase gate اجرا نشده است.
+
