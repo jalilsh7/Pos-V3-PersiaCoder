@@ -7,14 +7,14 @@ on:
       - 'database/v3/**'
       - 'v3/backend/src/Finance/**'
       - 'v3/backend/src/Orders/OrderService.php'
-      - 'scripts/check-v3-order-payment-integration.php'
+      - 'scripts/check-v3-*.php'
       - '.github/workflows/v3-database-validation.yml'
   pull_request:
     paths:
       - 'database/v3/**'
       - 'v3/backend/src/Finance/**'
       - 'v3/backend/src/Orders/OrderService.php'
-      - 'scripts/check-v3-order-payment-integration.php'
+      - 'scripts/check-v3-*.php'
       - '.github/workflows/v3-database-validation.yml'
   workflow_dispatch:
 
