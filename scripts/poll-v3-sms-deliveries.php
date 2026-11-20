@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-$root = dirname(__DIR__);
-$configuration = require $root . '/v3/backend/bootstrap.php';
-require_once $root . '/database/v3/bin/bootstrap.php';
-
 use PersiaCoder\PosV3\Communications\Sms\CurlSmsHttpClient;
 use PersiaCoder\PosV3\Communications\Sms\NationalPayamakSmartSmsProvider;
 use PersiaCoder\PosV3\Communications\Sms\SmartSmsConfig;
 use PersiaCoder\PosV3\Communications\Sms\SmsOutboxDeliveryPoller;
+
+$root = dirname(__DIR__);
+$configuration = require $root . '/v3/backend/bootstrap.php';
+require_once $root . '/database/v3/bin/bootstrap.php';
 
 $providerConfig = SmartSmsConfig::fromEnvironment();
 if ($providerConfig === null) {
