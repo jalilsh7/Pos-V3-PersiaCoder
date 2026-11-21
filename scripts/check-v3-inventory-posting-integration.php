@@ -279,7 +279,7 @@ $adjustmentOut = $createDocument([
     'document_type' => 'adjustment_out', 'location_id' => $sourceLocationPublicId,
     'reason' => 'CI outbound adjustment valuation',
 ], 'adjustment-out');
-$addLine($adjustmentOut, '1', null, 'adjustment-out');
+$adjustmentOutLine = $addLine($adjustmentOut, '1', null, 'adjustment-out');
 $postDocument($adjustmentOut, 'adjustment-out');
 $afterAdjustmentOut = $balance($sourceLocationId);
 $assert($afterAdjustmentOut['quantity_on_hand'] === '2.000000', 'Outbound adjustment did not reduce stock.');
@@ -317,18 +317,59 @@ $pdo->prepare(
 ]);
 
 $returnDocument = $createDocument([
-    'document_type' => 'return', 'location_id' => $sourceLocationPublicId,
-], 'return-deferred');
-$addLine($returnDocument, '1', null, 'return-deferred');
-$ledgerBeforeReturn = $ledgerCount();
-$returnBlocked = false;
-try {
-    $postDocument($returnDocument, 'return-deferred');
-} catch (HttpException $error) {
-    $returnBlocked = str_contains($error->getMessage(), 'source-linked return valuation policy');
+    'document_type' => 'return', 'source_document_id' => $adjustmentOut,
+    'reason' => 'CI partial return from outbound adjustment',
+], 'return-partial-one');
+$returnLineResult = $documents->addLine(
+    $actor, $scope, $returnDocument,
+    ['source_document_line_id' => $adjustmentOutLine, 'quantity' => '0.4'],
+    $prefix . '-line-return-partial-one-key', $requestId, $ip,
+);
+$assert($returnLineResult['status'] === 201, 'Source-linked partial return line could not be created.');
+$returnPost = $postDocument($returnDocument, 'return-partial-one');
+$assert($returnPost['body']['data']['stock_document']['status'] === 'posted', 'Source-linked return did not post.');
+$returnedBalance = $balance($sourceLocationId);
+$assert($returnedBalance['quantity_on_hand'] === '2.400000', 'Partial return did not increase stock by the requested base quantity.');
+$assert($returnedBalance['average_unit_cost'] === '1666.66666667', 'Return did not restore the source historical unit cost.');
+$returnLedger = $pdo->prepare(
+    "SELECT quantity_delta, unit_cost_snapshot, total_cost_amount
+     FROM pos_stock_ledger WHERE document_line_id = (
+       SELECT id FROM pos_stock_document_lines WHERE public_id = :line_public_id
+     ) AND movement_type = 'return_in'"
+);
+$returnLedger->execute(['line_public_id' => $returnLineResult['body']['data']['stock_document_line']['id']]);
+$returnLedgerRow = $returnLedger->fetch(PDO::FETCH_ASSOC);
+$assert($returnLedgerRow !== false && $returnLedgerRow['quantity_delta'] === '0.400000'
+    && $returnLedgerRow['unit_cost_snapshot'] === '1666.66666667'
+    && $returnLedgerRow['total_cost_amount'] === '667',
+    'Return ledger did not preserve source-line cost valuation.');
+
+$returnDraftOne = $createDocument([
+    'document_type' => 'return', 'source_document_id' => $adjustmentOut,
+    'reason' => 'CI competing partial return one',
+], 'return-race-one');
+$returnDraftTwo = $createDocument([
+    'document_type' => 'return', 'source_document_id' => $adjustmentOut,
+    'reason' => 'CI competing partial return two',
+], 'return-race-two');
+foreach ([[$returnDraftOne, 'return-race-one'], [$returnDraftTwo, 'return-race-two']] as [$returnDraft, $suffix]) {
+    $documents->addLine(
+        $actor, $scope, $returnDraft,
+        ['source_document_line_id' => $adjustmentOutLine, 'quantity' => '0.4'],
+        $prefix . '-line-' . $suffix . '-key', $requestId, $ip,
+    );
 }
-$assert($returnBlocked, 'Unlinked return document was posted without historical cost source.');
-$assert($ledgerCount() === $ledgerBeforeReturn, 'Deferred return posting appended a ledger entry.');
+$postDocument($returnDraftOne, 'return-race-one');
+$ledgerBeforeOverReturn = $ledgerCount();
+$overReturnBlocked = false;
+try {
+    $postDocument($returnDraftTwo, 'return-race-two');
+} catch (HttpException $error) {
+    $overReturnBlocked = str_contains($error->getMessage(), 'exceed the original outbound quantity');
+}
+$assert($overReturnBlocked, 'Concurrent draft returns were allowed to exceed the original source quantity.');
+$assert($ledgerCount() === $ledgerBeforeOverReturn, 'Rejected over-return appended a ledger event.');
+$assert($balance($sourceLocationId)['quantity_on_hand'] === '2.800000', 'Rejected over-return changed the stock balance.');
 
 $ledgerBeforeRollback = $ledgerCount();
 $sourceBeforeRollback = $balance($sourceLocationId);
