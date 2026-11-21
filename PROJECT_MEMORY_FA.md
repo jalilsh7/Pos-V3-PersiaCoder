@@ -565,3 +565,7 @@ Migration 022 و clean-install schema جدول `pos_customer_consent_events` ر�
 - سند مبدأ مانده قابل برگشت را بعد از کسر برگشت‌های posted و تبدیل به واحد اصلی نمایش می‌دهد؛ UI ردیف صفر را غیرفعال می‌کند. draftهای دیگر در این عدد کسر نمی‌شوند و posting مرجع قطعی رقابت است.
 
 - Integration script اکنون سناریوی دو process/connection برای posting هم‌زمان دو برگشت منبع‌محور دارد؛ تست نوشته شده اما اجرا نشده و concurrency هنوز تأیید runtime ندارد.
+
+
+### SMS-TEMPLATE-RECIPIENT-2026-001 — جداسازی شماره مشتری و پیامک تراکنشی (2026-11-22)
+در SmsServiceTemplateOutbox اگر customer_id متصل باشد، فقط مشتری فعال همان business با موبایل معتبر پذیرفته می‌شود؛ گیرنده از شماره پروفایل مشتری انتخاب می‌شود و recipient_phone override فقط در صورت تطابق نرمال‌شده مجاز است. customer_id نامعتبر/غیرفعال دیگر به شماره guest fallback نمی‌کند. پیامک رویداد سفارش تراکنشی است و مستقل از consent تبلیغاتی باقی می‌ماند. مسیر marketing campaign/outbox مستقل هنوز ساخته نشده و ارسال آن مسدود است تا suppression در enqueue و dispatch، بررسی شماره/رضایت در لحظه ارسال و opt-out پیاده شود. اسکریپت قراردادی scripts/check-v3-sms-template-recipient-isolation.php اضافه شد. commits: 13e8eb3, 516d582. تست/اجرای واقعی در این بسته انجام نشده است.
