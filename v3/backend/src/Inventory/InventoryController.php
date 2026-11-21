@@ -138,7 +138,7 @@ final readonly class InventoryController
             (int) $limitValue,
         );
         return Response::success(
-            ['entries' => $result['items']],
+            ['entries' => $result['items'], 'next_cursor' => $result['next_cursor']],
             ['limit' => (int) $limitValue, 'next_cursor' => $result['next_cursor']],
         );
     }
