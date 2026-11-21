@@ -377,7 +377,7 @@ export async function activateRecipeVersion(versionId: string): Promise<void> {
 
 export type InventoryUnit = { code: string; name: string; dimension: string };
 export type InventoryDocumentType =
-  | "purchase_receipt" | "consumption" | "transfer" | "adjustment_in" | "adjustment_out" | "waste";
+  | "purchase_receipt" | "consumption" | "transfer" | "adjustment_in" | "adjustment_out" | "waste" | "return";
 export type InventoryDocumentSummary = {
   id: string;
   document_no: string;
@@ -387,6 +387,7 @@ export type InventoryDocumentSummary = {
   location: { id: string; name: string };
   destination: { id: string; name: string } | null;
   supplier: { id: string; name: string } | null;
+  source_document: { id: string; document_no: string } | null;
   created_at: string;
   posted_at: string | null;
 };
@@ -408,6 +409,7 @@ export async function createInventoryDocument(payload: {
   destination_location_id?: string;
   reason?: string;
   supplier_id?: string;
+  source_document_id?: string;
 }): Promise<{ id: string; document_no: string; document_type: string; status: string }> {
   const data = await request<{ stock_document: { id: string; document_no: string; document_type: string; status: string } }>(
     "/inventory/documents",
@@ -422,6 +424,7 @@ export async function addInventoryDocumentLine(documentId: string, payload: {
   unit_code: string;
   total_cost_amount?: string;
   note?: string;
+  source_document_line_id?: string;
 }): Promise<void> {
   await request<{ stock_document_line: { id: string } }>(
     `/inventory/documents/${encodeURIComponent(documentId)}/lines`,
@@ -439,6 +442,7 @@ export async function postInventoryDocument(documentId: string): Promise<void> {
 
 export type InventoryDocumentLine = {
   id: string;
+  source_document_line_id: string | null;
   stock_item_id: string;
   stock_item_name: string;
   quantity: string;
