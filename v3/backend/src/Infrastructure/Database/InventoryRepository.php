@@ -278,7 +278,9 @@ final readonly class InventoryRepository
         int $businessId, int $branchId, ?int $stockItemId, ?int $locationId,
         ?int $beforeId, int $limit,
     ): array {
-        $sql = 'SELECT l.id AS ledger_id, l.movement_type, l.quantity_delta,
+        $sql = 'SELECT l.id AS ledger_id, l.source_order_id,
+                       o.public_id AS source_order_public_id, o.order_number AS source_order_number,
+                       l.movement_type, l.quantity_delta,
                        u.code AS base_unit_code, si.public_id AS stock_item_id,
                        si.code AS stock_item_code, si.name AS stock_item_name,
                        sl.public_id AS location_id, sl.code AS location_code,
@@ -294,6 +296,8 @@ final readonly class InventoryRepository
                   ON dl.id = l.document_line_id AND dl.business_id = l.business_id AND dl.branch_id = l.branch_id
                 LEFT JOIN pos_stock_documents d
                   ON d.id = dl.document_id AND d.business_id = l.business_id AND d.branch_id = l.branch_id
+                LEFT JOIN pos_orders o
+                  ON o.id = l.source_order_id AND o.business_id = l.business_id AND o.branch_id = l.branch_id
                 WHERE l.business_id = :business_id AND l.branch_id = :branch_id';
         $params = ['business_id' => $businessId, 'branch_id' => $branchId];
         if ($stockItemId !== null) {
@@ -318,6 +322,8 @@ final readonly class InventoryRepository
 
         return array_map(static fn (array $row): array => [
             'ledger_id' => (int) $row['ledger_id'],
+            'source_order_id' => $row['source_order_public_id'] === null ? null : (string) $row['source_order_public_id'],
+            'source_order_number' => $row['source_order_number'] === null ? null : (int) $row['source_order_number'],
             'movement_type' => (string) $row['movement_type'],
             'quantity_delta' => (string) $row['quantity_delta'],
             'base_unit_code' => (string) $row['base_unit_code'],
