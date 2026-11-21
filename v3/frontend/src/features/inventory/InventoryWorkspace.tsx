@@ -71,6 +71,7 @@ export function InventoryWorkspace() {
   const [ledger, setLedger] = useState<InventoryLedgerEntry[]>([]);
   const [ledgerCursor, setLedgerCursor] = useState<string | null>(null);
   const [ledgerLoadingMore, setLedgerLoadingMore] = useState(false);
+  const [ledgerError, setLedgerError] = useState<string | null>(null);
   const [units, setUnits] = useState<InventoryUnit[]>([]);
   const [documents, setDocuments] = useState<InventoryDocumentSummary[]>([]);
   const [suppliers, setSuppliers] = useState<InventorySupplier[]>([]);
@@ -160,13 +161,13 @@ export function InventoryWorkspace() {
   async function loadMoreLedger() {
     if (!ledgerCursor || ledgerLoadingMore) return;
     setLedgerLoadingMore(true);
-    setDocumentMessage(null);
+    setLedgerError(null);
     try {
       const page = await getInventoryLedger({ limit: 50, beforeId: ledgerCursor });
       setLedger((current) => [...current, ...page.items]);
       setLedgerCursor(page.nextCursor);
     } catch (cause) {
-      setDocumentMessage(cause instanceof ApiError ? cause.message : "دریافت گردش‌های قدیمی‌تر انجام نشد.");
+      setLedgerError(cause instanceof ApiError ? cause.message : "دریافت گردش‌های قدیمی‌تر انجام نشد.");
     } finally {
       setLedgerLoadingMore(false);
     }
@@ -663,6 +664,7 @@ export function InventoryWorkspace() {
                 ))}
                 {!selectedLedger.length ? <div className="inventory-empty">برای این قلم در بازه اخیر گردش ثبت‌شده‌ای وجود ندارد.</div> : null}
               </div>
+              {ledgerError ? <Notice variant="warning">{ledgerError}</Notice> : null}
               {ledgerCursor ? <div className="inventory-ledger-more"><Button variant="secondary" onClick={() => void loadMoreLedger()} disabled={ledgerLoadingMore}>{ledgerLoadingMore ? "در حال دریافت..." : "بارگذاری گردش‌های قدیمی‌تر"}</Button></div> : null}
             </>
           ) : <div className="inventory-empty">{loading ? "در حال بارگذاری..." : "یک قلم را از فهرست انتخاب کنید."}</div>}
