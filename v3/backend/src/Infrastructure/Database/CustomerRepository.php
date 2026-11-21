@@ -303,8 +303,9 @@ final readonly class CustomerRepository
                 'channel' => 'sms',
                 'decision' => $currentConsent === null
                     ? 'unknown'
-                    : (($currentConsent['decision'] === 'granted'
-                        && !hash_equals((string) ($currentConsent['recipient_phone_normalized'] ?? ''), (string) ($customer['phone_normalized'] ?? '')))
+                    : (($currentConsent['decision'] === 'invalidated'
+                        || ($currentConsent['decision'] === 'granted'
+                            && !hash_equals((string) ($currentConsent['recipient_phone_normalized'] ?? ''), (string) ($customer['phone_normalized'] ?? ''))))
                         ? 'stale'
                         : (string) $currentConsent['decision']),
                 'source' => $currentConsent['source'] ?? null,
