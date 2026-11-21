@@ -357,7 +357,7 @@ export function InventoryWorkspace() {
     if (!documentLocation) return;
     if (documentType === "purchase_receipt" && !documentSupplier) { setDocumentMessage("برای رسید خرید، ابتدا تأمین‌کننده فعال انتخاب کنید."); return; }
     if (needsReason && !documentReason.trim()) {
-      setDocumentMessage("برای تعدیل و ضایعات، ثبت دلیل الزامی است.");
+      setDocumentMessage("برای تعدیل، ضایعات و برگشت، ثبت دلیل الزامی است.");
       return;
     }
     setDocumentBusy(true);
@@ -579,12 +579,12 @@ export function InventoryWorkspace() {
         <div className="inventory-panel-heading"><div><h2><ClipboardList size={17} /> اسناد اخیر انبار</h2><p>آخرین اسناد همین شعبه</p></div></div>
         <div className="inventory-documents-list">
           {documents.map((document) => <div className="inventory-document-row" key={document.id}>
-            <div><strong>{documentLabel[document.document_type] ?? document.document_type} · {document.document_no}</strong><small>{document.location.name}{document.destination ? ` ← ${document.destination.name}` : ""}{document.supplier ? ` · تأمین‌کننده: ${document.supplier.name}` : ""} · {dateTime(document.created_at)}</small>{document.reason ? <small>{document.reason}</small> : null}</div>
+            <div><strong>{documentLabel[document.document_type] ?? document.document_type} · {document.document_no}</strong><small>{document.location.name}{document.destination ? ` ← ${document.destination.name}` : ""}{document.supplier ? ` · تأمین‌کننده: ${document.supplier.name}` : ""} · {dateTime(document.created_at)}</small>{document.source_document ? <small>مبدأ: {document.source_document.document_no}</small> : null}{document.reason ? <small>{document.reason}</small> : null}</div>
             <div className="inventory-document-row-actions"><span className={`inventory-document-status is-${document.status}`}>{documentStatus[document.status] ?? document.status}</span><button type="button" onClick={() => void openDocument(document.id)} disabled={documentDetailBusy}>جزئیات</button></div>
           </div>)}
           {!documents.length ? <div className="inventory-empty">هنوز سندی برای این شعبه ثبت نشده است.</div> : null}
           {activeDocument ? <div className="inventory-document-detail">
-            <div className="inventory-document-detail-heading"><strong>سند {activeDocument.document_no}</strong>{activeDocument.supplier ? <small>تأمین‌کننده: {activeDocument.supplier.name}</small> : null}<div>{activeDocument.status === "draft" ? <><button type="button" disabled={documentDetailBusy || !documentItem} onClick={() => void addLineToActiveDraft()}>افزودن قلم انتخاب‌شده</button><button type="button" disabled={documentDetailBusy || !activeDocument.lines.length} onClick={() => void finalizeActiveDraft()}>ثبت نهایی</button></> : null}<button type="button" onClick={() => setActiveDocument(null)}>بستن</button></div></div>
+            <div className="inventory-document-detail-heading"><strong>سند {activeDocument.document_no}</strong>{activeDocument.source_document ? <small>مبدأ: {activeDocument.source_document.document_no}</small> : null}{activeDocument.supplier ? <small>تأمین‌کننده: {activeDocument.supplier.name}</small> : null}<div>{activeDocument.status === "draft" ? <><button type="button" disabled={documentDetailBusy || !documentItem} onClick={() => void addLineToActiveDraft()}>افزودن قلم انتخاب‌شده</button><button type="button" disabled={documentDetailBusy || !activeDocument.lines.length} onClick={() => void finalizeActiveDraft()}>ثبت نهایی</button></> : null}<button type="button" onClick={() => setActiveDocument(null)}>بستن</button></div></div>
             <div className="inventory-document-lines">
               {activeDocument.lines.map((line) => <div className="inventory-document-line-detail" key={line.id}>
                 {editingLineId === line.id ? <>
@@ -594,8 +594,8 @@ export function InventoryWorkspace() {
                   {["purchase_receipt", "adjustment_in"].includes(activeDocument.document_type) ? <label><span>مبلغ کل (تومان)</span><input required inputMode="numeric" pattern="^[0-9]+$" value={editingCost} onChange={(event) => setEditingCost(event.target.value)} /></label> : null}
                   <div className="inventory-line-actions"><button type="button" disabled={documentDetailBusy} onClick={() => void saveDocumentLine()}>ذخیره</button><button type="button" onClick={() => setEditingLineId(null)}>انصراف</button></div>
                 </> : <>
-                  <span>{line.stock_item_name}</span><b>{quantity(line.quantity)} {line.unit_name}</b><small>مقدار پایه: {quantity(line.base_quantity)}</small>
-                  {activeDocument.status === "draft" ? <div className="inventory-line-actions"><button type="button" disabled={documentDetailBusy} onClick={() => beginEditLine(line)}>ویرایش</button><button type="button" disabled={documentDetailBusy} onClick={() => void removeDocumentLine(line.id)}>حذف</button></div> : null}
+                  <span>{line.stock_item_name}</span><b>{quantity(line.quantity)} {line.unit_name}</b><small>مقدار پایه: {quantity(line.base_quantity)}</small>{line.source_document_line_id ? <small>ردیف مبدأ: {line.source_document_line_id.slice(0, 8)}</small> : null}
+                  {activeDocument.status === "draft" ? <div className="inventory-line-actions">{activeDocument.document_type !== "return" ? <button type="button" disabled={documentDetailBusy} onClick={() => beginEditLine(line)}>ویرایش</button> : null}<button type="button" disabled={documentDetailBusy} onClick={() => void removeDocumentLine(line.id)}>حذف</button></div> : null}
                 </>}
               </div>)}
               {!activeDocument.lines.length ? <p>این سند هنوز ردیفی ندارد.</p> : null}
