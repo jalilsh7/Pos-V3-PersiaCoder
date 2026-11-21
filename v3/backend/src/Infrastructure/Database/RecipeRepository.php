@@ -174,6 +174,16 @@ final readonly class RecipeRepository
         $s->execute(['business_id' => $businessId, 'version_id' => $versionId]);
     }
 
+    public function countRecipeVersionLines(int $businessId, int $versionId): int
+    {
+        $s = $this->connection->prepare(
+            'SELECT COUNT(*) FROM pos_recipe_lines
+             WHERE business_id = :business_id AND recipe_version_id = :version_id'
+        );
+        $s->execute(['business_id' => $businessId, 'version_id' => $versionId]);
+        return (int) $s->fetchColumn();
+    }
+
     public function findVersion(int $businessId, string $publicId): ?array
     {
         $s = $this->connection->prepare(
