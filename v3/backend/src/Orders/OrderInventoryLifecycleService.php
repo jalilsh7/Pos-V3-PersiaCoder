@@ -168,10 +168,10 @@ final readonly class OrderInventoryLifecycleService
 
                 $lineInsert = $this->db->prepare(
                     'INSERT INTO pos_stock_reservation_lines
-                     (business_id,branch_id,reservation_id,stock_item_id,location_id,base_quantity)
-                     VALUES (:business,:branch,:reservation,:item,:location,:qty)'
+                     (business_id,branch_id,reservation_id,stock_item_id,location_id,base_quantity,unit_cost_snapshot)
+                     VALUES (:business,:branch,:reservation,:item,:location,:qty,:unit_cost)'
                 );
-                $lineInsert->execute(['business'=>$businessId,'branch'=>$branchId,'reservation'=>$reservationId,'item'=>$stockId,'location'=>$locationId,'qty'=>$take]);
+                $lineInsert->execute(['business'=>$businessId,'branch'=>$branchId,'reservation'=>$reservationId,'item'=>$stockId,'location'=>$locationId,'qty'=>$take,'unit_cost'=>(string)$row['average_unit_cost']]);
                 $snapshot = $this->db->prepare(
                     'INSERT INTO pos_order_item_recipe_lines
                      (business_id,branch_id,order_item_id,recipe_version_id,stock_item_id,location_id,
@@ -219,7 +219,7 @@ final readonly class OrderInventoryLifecycleService
             throw new HttpException(409, 'stock_reservation_not_active', 'رزرو موجودی سفارش فعال نیست و امکان مصرف آن وجود ندارد.');
         }
         $lines = $this->db->prepare(
-            'SELECT rl.*, si.base_unit_id, b.average_unit_cost
+            'SELECT rl.*, si.base_unit_id
              FROM pos_stock_reservation_lines rl
              INNER JOIN pos_stock_items si ON si.id=rl.stock_item_id AND si.business_id=rl.business_id
              INNER JOIN pos_stock_balances b ON b.business_id=rl.business_id AND b.branch_id=rl.branch_id
@@ -251,7 +251,7 @@ final readonly class OrderInventoryLifecycleService
             );
             $ledger->execute([
                 'business'=>$businessId,'branch'=>$branchId,'item'=>(int)$line['stock_item_id'],'location'=>(int)$line['location_id'],
-                'delta'=>'-'.$qty,'unit'=>(int)$line['base_unit_id'],'cost'=>(string)$line['average_unit_cost'],
+                'delta'=>'-'.$qty,'unit'=>(int)$line['base_unit_id'],'cost'=>(string)$line['unit_cost_snapshot'],
                 'total'=>'-'.$totalCost,'event'=>$eventKey,
             ]);
             $lineUpdate = $this->db->prepare(
@@ -265,7 +265,7 @@ final readonly class OrderInventoryLifecycleService
                  WHERE business_id=:business AND branch_id=:branch AND stock_item_id=:item AND location_id=:location
                    AND order_item_id IN (SELECT id FROM pos_order_items WHERE business_id=:business2 AND branch_id=:branch2 AND order_id=:order)'
             );
-            $snapshot->execute(['cost'=>(string)$line['average_unit_cost'],'business'=>$businessId,'branch'=>$branchId,'item'=>(int)$line['stock_item_id'],'location'=>(int)$line['location_id'],'business2'=>$businessId,'branch2'=>$branchId,'order'=>$orderId]);
+            $snapshot->execute(['cost'=>(string)$line['unit_cost_snapshot'],'business'=>$businessId,'branch'=>$branchId,'item'=>(int)$line['stock_item_id'],'location'=>(int)$line['location_id'],'business2'=>$businessId,'branch2'=>$branchId,'order'=>$orderId]);
         }
         $this->db->prepare("UPDATE pos_stock_reservations SET status='consumed' WHERE business_id=:business AND branch_id=:branch AND id=:id")
             ->execute(['business'=>$businessId,'branch'=>$branchId,'id'=>(int)$reservation['id']]);
