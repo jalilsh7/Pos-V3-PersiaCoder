@@ -129,6 +129,7 @@ final readonly class CatalogController
     }
 
     public function productDetails(Request $r, array $p): Response { return Response::success(['product'=>$this->catalog->productDetails($this->scope($r),(string)($p['productPublicId']??''))]); }
+    public function productManagementDetails(Request $r, array $p): Response { return Response::success(['product'=>$this->catalog->productManagementDetails($this->scope($r),(string)($p['productPublicId']??''))]); }
     public function createVariant(Request $r, array $p): Response { return $this->idempotentResponse($this->catalog->createVariant($this->principal($r),$this->scope($r),(string)($p['productPublicId']??''),$this->jsonPayload($r),$r->header('idempotency-key')??'',$r->requestId,(string)($r->attribute('remote_ip')??''))); }
     public function createOptionGroup(Request $r): Response { return $this->idempotentResponse($this->catalog->createOptionGroup($this->principal($r),$this->scope($r),$this->jsonPayload($r),$r->header('idempotency-key')??'',$r->requestId,(string)($r->attribute('remote_ip')??''))); }
     public function attachOptionGroup(Request $r, array $p): Response { return $this->idempotentResponse($this->catalog->attachOptionGroup($this->principal($r),$this->scope($r),(string)($p['productPublicId']??''),$this->jsonPayload($r),$r->header('idempotency-key')??'',$r->requestId,(string)($r->attribute('remote_ip')??''))); }
