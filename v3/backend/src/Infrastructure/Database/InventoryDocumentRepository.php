@@ -65,20 +65,20 @@ final readonly class InventoryDocumentRepository
     public function create(
         int $businessId, int $branchId, string $publicId, string $documentNo,
         string $type, int $locationId, ?int $destinationId, ?int $supplierId,
-        ?string $reason, int $actorUserId,
+        ?string $reason, int $actorUserId, ?int $sourceDocumentId = null,
     ): void {
         $s = $this->connection->prepare(
             "INSERT INTO pos_stock_documents
              (business_id, branch_id, public_id, document_no, document_type, location_id,
-              destination_location_id, supplier_id, status, reason, actor_user_id)
+              destination_location_id, supplier_id, source_document_id, status, reason, actor_user_id)
              VALUES
              (:business_id, :branch_id, :public_id, :document_no, :document_type, :location_id,
-              :destination_location_id, :supplier_id, 'draft', :reason, :actor_user_id)"
+              :destination_location_id, :supplier_id, :source_document_id, 'draft', :reason, :actor_user_id)"
         );
         $s->execute([
             'business_id' => $businessId, 'branch_id' => $branchId, 'public_id' => $publicId,
             'document_no' => $documentNo, 'document_type' => $type, 'location_id' => $locationId,
-            'destination_location_id' => $destinationId, 'supplier_id' => $supplierId,
+            'destination_location_id' => $destinationId, 'supplier_id' => $supplierId, 'source_document_id' => $sourceDocumentId,
             'reason' => $reason, 'actor_user_id' => $actorUserId,
         ]);
     }
@@ -204,6 +204,82 @@ final readonly class InventoryDocumentRepository
         ], $s->fetchAll(PDO::FETCH_ASSOC));
     }
 
+    public function findPostedReturnSourceForUpdate(int $businessId, int $branchId, string $publicId): ?array
+    {
+        $s = $this->connection->prepare(
+            "SELECT id, public_id, document_no, document_type, location_id, status
+             FROM pos_stock_documents
+             WHERE business_id = :business_id AND branch_id = :branch_id
+               AND public_id = :public_id AND status = 'posted'
+               AND document_type IN ('adjustment_out','consumption','waste')
+             LIMIT 1 FOR UPDATE"
+        );
+        $s->execute(['business_id' => $businessId, 'branch_id' => $branchId, 'public_id' => $publicId]);
+        $row = $s->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    public function findReturnSourceLineForUpdate(
+        int $businessId, int $branchId, int $sourceDocumentId, string $linePublicId,
+    ): ?array {
+        $s = $this->connection->prepare(
+            "SELECT l.id, l.public_id, l.stock_item_id, l.quantity, l.unit_id,
+                    l.conversion_factor_snapshot, l.base_quantity,
+                    si.public_id AS stock_item_public_id, si.name AS stock_item_name,
+                    u.code AS unit_code, u.name AS unit_name,
+                    led.unit_cost_snapshot, led.total_cost_amount
+             FROM pos_stock_document_lines l
+             INNER JOIN pos_stock_items si ON si.id = l.stock_item_id AND si.business_id = l.business_id
+             INNER JOIN pos_units u ON u.id = l.unit_id
+             INNER JOIN pos_stock_ledger led ON led.document_line_id = l.id
+               AND led.business_id = l.business_id AND led.branch_id = l.branch_id
+               AND led.movement_type IN ('adjustment_out','consumption_out','waste_out')
+             WHERE l.business_id = :business_id AND l.branch_id = :branch_id
+               AND l.document_id = :source_document_id AND l.public_id = :line_public_id
+             LIMIT 1 FOR UPDATE"
+        );
+        $s->execute([
+            'business_id' => $businessId, 'branch_id' => $branchId,
+            'source_document_id' => $sourceDocumentId, 'line_public_id' => $linePublicId,
+        ]);
+        $row = $s->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    public function returnedBaseQuantity(int $businessId, int $branchId, int $sourceLineId): string
+    {
+        $s = $this->connection->prepare(
+            "SELECT COALESCE(SUM(return_line.base_quantity), 0)
+             FROM pos_stock_document_lines return_line
+             INNER JOIN pos_stock_documents return_doc
+               ON return_doc.id = return_line.document_id
+              AND return_doc.business_id = return_line.business_id
+              AND return_doc.branch_id = return_line.branch_id
+             WHERE return_line.business_id = :business_id AND return_line.branch_id = :branch_id
+               AND return_line.source_document_line_id = :source_line_id
+               AND return_doc.document_type = 'return' AND return_doc.status = 'posted'"
+        );
+        $s->execute([
+            'business_id' => $businessId, 'branch_id' => $branchId, 'source_line_id' => $sourceLineId,
+        ]);
+        return (string) $s->fetchColumn();
+    }
+
+    public function draftReturnedBaseQuantity(
+        int $businessId, int $branchId, int $returnDocumentId, int $sourceLineId,
+    ): string {
+        $s = $this->connection->prepare(
+            'SELECT COALESCE(SUM(base_quantity), 0) FROM pos_stock_document_lines
+             WHERE business_id = :business_id AND branch_id = :branch_id
+               AND document_id = :document_id AND source_document_line_id = :source_line_id'
+        );
+        $s->execute([
+            'business_id' => $businessId, 'branch_id' => $branchId,
+            'document_id' => $returnDocumentId, 'source_line_id' => $sourceLineId,
+        ]);
+        return (string) $s->fetchColumn();
+    }
+
     public function findDraftForUpdate(int $businessId, int $branchId, string $publicId): ?array
     {
         $s = $this->connection->prepare(
@@ -309,13 +385,14 @@ final readonly class InventoryDocumentRepository
     public function addLine(
         int $businessId, int $branchId, int $documentId, string $linePublicId, int $stockItemId,
         string $quantity, int $unitId, string $conversionFactor, string $totalCostAmount, ?string $note,
+        ?int $sourceDocumentLineId = null,
     ): void {
         $s = $this->connection->prepare(
             'INSERT INTO pos_stock_document_lines
-             (business_id, branch_id, document_id, public_id, stock_item_id, quantity, unit_id,
+             (business_id, branch_id, document_id, public_id, source_document_line_id, stock_item_id, quantity, unit_id,
               conversion_factor_snapshot, base_quantity, unit_cost_snapshot, total_cost_amount, note)
              VALUES
-             (:business_id, :branch_id, :document_id, :public_id, :stock_item_id, :quantity_value, :unit_id,
+             (:business_id, :branch_id, :document_id, :public_id, :source_document_line_id, :stock_item_id, :quantity_value, :unit_id,
               :factor_value, CAST(:quantity_calc AS DECIMAL(18,6)) * CAST(:factor_calc AS DECIMAL(18,8)),
               CASE WHEN CAST(:total_cost_calc AS DECIMAL(20,0)) = 0 THEN 0
                    ELSE ROUND(CAST(:total_cost_unit AS DECIMAL(20,0)) /
@@ -324,7 +401,7 @@ final readonly class InventoryDocumentRepository
         );
         $s->execute([
             'business_id' => $businessId, 'branch_id' => $branchId, 'document_id' => $documentId,
-            'public_id' => $linePublicId, 'stock_item_id' => $stockItemId,
+            'public_id' => $linePublicId, 'source_document_line_id' => $sourceDocumentLineId, 'stock_item_id' => $stockItemId,
             'quantity_value' => $quantity, 'unit_id' => $unitId,
             'factor_value' => $conversionFactor, 'quantity_calc' => $quantity,
             'factor_calc' => $conversionFactor, 'total_cost_calc' => $totalCostAmount,
