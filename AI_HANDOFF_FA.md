@@ -957,3 +957,11 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - سرویس چرخه موجودی اکنون branch context را صریحاً الزامی می‌کند. تست قراردادی به migration 008، constraintهای 011، تخصیص دقیق و snapshot بها گسترش یافت.
 - Commitهای اصلاح: `b0c54c5`, `af422b9`, `3f5e525`, `f096f45`, `3f7a9b6`, `e6eec63`, `71be591`.
 - هنوز هیچ PHP lint، contract execution یا DB integration اجرا نشده است؛ فاز ۵ باز می‌ماند.
+
+## ادامه فاز ۵ — اصلاح valuation و ایمن‌سازی نوع سند برگشت (2026-11-21)
+- در `OrderInventoryLifecycleService::consume` محاسبه بهای کل خروج به `unit_cost_snapshot` اصلاح شد؛ این همان بهای ذخیره‌شده در زمان رزرو است. استفاده قبلی از `average_unit_cost` روی reservation line اشتباه بود و می‌توانست باعث مقدار خالی/خطای runtime یا valuation نادرست شود.
+- `scripts/check-v3-order-inventory-lifecycle.php` برای جلوگیری از بازگشت این خطا گسترش یافت.
+- API ایجاد سند انبار دیگر سند `return` جدید نمی‌پذیرد؛ posting برگشت هنوز به source-linked valuation نیاز دارد. برای برگشت فیزیکی فعلاً از `adjustment_in` با دلیل و audit استفاده شود. `return`های قبلی در فهرست قابل مشاهده می‌مانند و posting آن‌ها رد می‌شود.
+- `scripts/check-v3-backend-inventory-documents.php` این قرارداد را بررسی می‌کند.
+- commits: `7c934cbfc93c47e0bbd130cebd999ee895aa5ced`, `1f242adf54daf24db1c635c3b528eb909b103c9e`, `ad79a74393c64608afb02dd6cd635d65b9ce8105`, `6e8a153bf74b224761ad36281227de90263a4dd9`.
+- هنوز هیچ lint، اجرای contract scripts، MySQL/MariaDB integration یا concurrency test اجرا نشده است. ادامه: ممیزی سایر mismatchهای SQL/schema و سپس افزودن تست یکپارچگی واقعی برای چرخه order reserve/consume/release.
