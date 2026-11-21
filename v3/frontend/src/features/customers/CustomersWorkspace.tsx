@@ -345,7 +345,7 @@ export function CustomersWorkspace() {
                   <div className="customers-history">
                     {detail.marketing_consent.history.map((event, index) => (
                       <div className="customers-order" key={`${event.recorded_at}-${index}`}>
-                        <div><strong>{event.decision === "granted" ? "رضایت ثبت شد" : "انصراف ثبت شد"}</strong><small>{dateTime(event.recorded_at)} · {event.source}</small></div>
+                        <div><strong>{event.decision === "granted" ? "رضایت ثبت شد" : event.decision === "invalidated" ? "رضایت قبلی به‌دلیل تغییر شماره نامعتبر شد" : "انصراف ثبت شد"}</strong><small>{dateTime(event.recorded_at)} · {event.source}</small></div>
                         <div className="customers-order-total"><small>{event.notice_version || "بدون نسخه متن"}{event.evidence_ref ? ` · ${event.evidence_ref}` : ""}</small></div>
                       </div>
                     ))}
