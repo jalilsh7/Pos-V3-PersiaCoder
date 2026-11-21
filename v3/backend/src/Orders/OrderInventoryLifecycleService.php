@@ -37,12 +37,14 @@ final readonly class OrderInventoryLifecycleService
 
     private function reserve(int $businessId, int $branchId, int $orderId, string $key): void
     {
+        // A reservation is a one-time lifecycle record per order, not per request key.
+        // This also makes an accepted-order replay safe when a caller accidentally changes its key.
         $existing = $this->db->prepare(
             "SELECT id, status FROM pos_stock_reservations
              WHERE business_id = :business_id AND branch_id = :branch_id AND order_id = :order_id
-               AND idempotency_key = :idempotency_key LIMIT 1 FOR UPDATE"
+             LIMIT 1 FOR UPDATE"
         );
-        $existing->execute(['business_id'=>$businessId,'branch_id'=>$branchId,'order_id'=>$orderId,'idempotency_key'=>$key]);
+        $existing->execute(['business_id'=>$businessId,'branch_id'=>$branchId,'order_id'=>$orderId]);
         $found = $existing->fetch(PDO::FETCH_ASSOC);
         if ($found) {
             if ((string)$found['status'] === 'active') return;
