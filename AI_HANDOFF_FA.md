@@ -971,3 +971,7 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - workflow `.github/workflows/v3-database-validation.yml` برای lint و اجرای این تست بعد از inventory posting integration به‌روزرسانی شد. trigger همچنان manual-only است.
 - commits: `2f7341e7e9e10fb82636871829163783c84e46c5`, `1d934f5406d1a55dd008648981dce426f454454c`, `ed8d5080d20f2cddb41cc34824438d601577ab56`, `b4e2e5a0b01ee73fc66c75e77ba9459a550cb997`.
 - هنوز workflow اجرا نشده؛ PASS اعلام نشود. قبل از بسته‌شدن فاز، اجرای MySQL/MariaDB و اصلاح هر شکست لازم است.
+
+## اتصال تست قراردادی چرخه موجودی سفارش به workflow بک‌اند — 2026-11-21
+- `scripts/check-v3-order-inventory-lifecycle.php` به `.github/workflows/v3-backend-validation.yml` افزوده شد. workflow فقط دستی است و trigger آن تغییر نکرده است.
+- commit: `c9154a7c4c60188c02358d8a76146fca5e44e1bc`. نتیجه اجرا موجود نیست؛ contract check هنوز PASS اعلام نمی‌شود.
