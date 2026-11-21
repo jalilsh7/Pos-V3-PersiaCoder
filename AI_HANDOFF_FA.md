@@ -1042,3 +1042,6 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - Migration `021_stock-document-source-links.sql` اضافه شد؛ FKها ارجاع سند/ردیف را در محدوده business و branch enforce می‌کنند. سوابق قبلی بدون backfill باقی می‌مانند.
 - کارهای مانده همین بسته: repository/service validation و locking، posting نوع return، route/permission، UI انتخاب سند و ردیف مبدأ، integration coverage برای partial/over-return/concurrency/cross-branch/idempotency/rollback، سپس به‌روزرسانی مستندات و اجرای دروازه تست.
 - Migration اجرا نشده و هیچ تست/build/runtime اجرا نشده است؛ تا زمان اجرای واقعی ادعای موفقیت نداریم.
+
+- ادامه این نشست: `scripts/check-v3-backend-inventory-documents.php` با قراردادهای migration 021 به‌روزرسانی شد؛ ارجاع سند و ردیف باید در همان business/branch باشد، حذف منبع ممنوع و سوابق قبلی NULL می‌مانند. Commit: `a3ab23447a74019b4e1977eceedcfe127770f66c`.
+- نکته ایمنی: `return` در create/post هنوز عمداً فعال نیست. قبل از فعال‌سازی باید ایجاد سند منبع‌دار، انتخاب ردیف خروجی، سقف برگشت جزئی با lock تراکنشی، ارزش‌گذاری تاریخی، موجودی و ledger append-only، API و UI کامل شوند. هیچ تستی اجرا نشده است.
