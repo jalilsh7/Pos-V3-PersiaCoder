@@ -94,14 +94,20 @@ final readonly class OrderInventoryLifecycleService
         }
         if ($requirements === []) return;
 
+        $channelQuery = $this->db->prepare(
+            'SELECT source_channel FROM pos_orders
+             WHERE business_id=:business_id AND branch_id=:branch_id AND id=:order_id LIMIT 1'
+        );
+        $channelQuery->execute(['business_id'=>$businessId,'branch_id'=>$branchId,'order_id'=>$orderId]);
+        $sourceType = (string)$channelQuery->fetchColumn() === 'storefront' ? 'storefront' : 'pos';
         $reservation = $this->db->prepare(
             "INSERT INTO pos_stock_reservations
              (business_id, branch_id, public_id, order_id, status, source_type, idempotency_key)
-             VALUES (:business_id, :branch_id, :public_id, :order_id, 'active', 'pos', :idempotency_key)"
+             VALUES (:business_id, :branch_id, :public_id, :order_id, 'active', :source_type, :idempotency_key)"
         );
         $reservation->execute([
             'business_id'=>$businessId,'branch_id'=>$branchId,'public_id'=>self::uuid(),
-            'order_id'=>$orderId,'idempotency_key'=>$key,
+            'order_id'=>$orderId,'source_type'=>$sourceType,'idempotency_key'=>$key,
         ]);
         $reservationId = (int)$this->db->lastInsertId();
 
@@ -300,7 +306,7 @@ final readonly class OrderInventoryLifecycleService
                  INNER JOIN pos_recipe_versions rv ON rv.recipe_id=r.id AND rv.business_id=r.business_id
                  WHERE r.business_id=:business AND r.product_id=:product AND r.variant_scope_id=:variant_scope
                    AND r.is_active=1 AND rv.status='active'
-                 ORDER BY rv.effective_from DESC,rv.id DESC LIMIT 1"
+                 ORDER BY rv.effective_from DESC,rv.id DESC LIMIT 1 FOR UPDATE"
             );
             $s->execute(['business'=>$businessId,'product'=>$productId,'variant_scope'=>$variant ?? 0]);
             $row = $s->fetch(PDO::FETCH_ASSOC);
