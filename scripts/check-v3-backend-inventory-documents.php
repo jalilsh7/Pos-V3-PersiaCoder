@@ -48,6 +48,10 @@ $assert(str_contains($postingService, 'stock_location_inactive'), 'Posting must 
 $assert(str_contains($postingService, 'weightedAverageFromTotalCost'), 'Purchase receipts must use moving weighted average valuation.');
 $assert(str_contains($postingService, 'transfer_out'), 'Transfers must create a paired outbound ledger event.');
 $assert(str_contains($postingService, 'stock_document_type_not_postable'), 'Unsupported return valuation must be rejected explicitly.');
+$createStart = strpos($service, 'public function create(');
+$createEnd = strpos($service, 'public function addLine(', $createStart === false ? 0 : $createStart);
+$createMethod = $createStart === false || $createEnd === false ? '' : substr($service, $createStart, $createEnd - $createStart);
+$assert(str_contains($createMethod, "'waste']") && !str_contains($createMethod, "'return'"), 'New return documents must be blocked until source-linked return valuation is implemented; use audited inbound adjustment meanwhile.');
 $assert(str_contains($service, 'total_cost_amount'), 'Purchase receipt draft lines must capture total TOMAN cost.');
 $assert(str_contains($postingRepository, 'FOR UPDATE'), 'Posting must lock balance rows.');
 $assert(str_contains($postingRepository, 'INSERT INTO pos_stock_ledger'), 'Posting must append ledger entries.');
