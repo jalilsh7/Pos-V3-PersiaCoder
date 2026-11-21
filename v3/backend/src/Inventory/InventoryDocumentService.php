@@ -77,7 +77,8 @@ final readonly class InventoryDocumentService
     ): array {
         $branchId = self::branch($scope);
         $type = $payload['document_type'] ?? null;
-        $types = ['purchase_receipt', 'consumption', 'transfer', 'adjustment_in', 'adjustment_out', 'waste', 'return'];
+        // Returns are recorded as audited inbound adjustments until source-linked return valuation is implemented.
+        $types = ['purchase_receipt', 'consumption', 'transfer', 'adjustment_in', 'adjustment_out', 'waste'];
         if (!is_string($type) || !in_array($type, $types, true)) {
             throw new HttpException(422, 'stock_document_type_invalid', 'The stock document type is invalid.');
         }
