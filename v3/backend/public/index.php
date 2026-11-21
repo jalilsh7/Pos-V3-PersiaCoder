@@ -479,6 +479,11 @@ try {
         [$sessionMiddleware, $makePermissionMiddleware('customers.manage'), $csrfMiddleware, $originMiddleware],
     );
 
+    $router->add('POST', '/api/v1/customers/{customerPublicId}/marketing-sms-consent',
+        static fn (Request $request, array $parameters): Response => $getCustomerController()->recordMarketingSmsConsent($request, $parameters),
+        [$sessionMiddleware, $makePermissionMiddleware('customers.consent.manage'), $csrfMiddleware, $originMiddleware],
+    );
+
     $router->add('GET', '/api/v1/orders/{orderPublicId}',
         static fn (Request $request, array $parameters): Response => $getOrderController()->show($request, $parameters),
         [$sessionMiddleware, $makePermissionMiddleware('orders.read', true)],
