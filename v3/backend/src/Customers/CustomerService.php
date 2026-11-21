@@ -132,6 +132,105 @@ final readonly class CustomerService
         );
     }
 
+    public function recordMarketingSmsConsent(
+        AuthenticatedPrincipal $actor,
+        BusinessScope $scope,
+        string $publicId,
+        array $payload,
+        string $idempotencyKey,
+        string $requestId,
+        string $ipAddress,
+    ): array {
+        if (!$this->permissions->allows($actor, 'customers.consent.manage', $scope)) {
+            throw new HttpException(403, 'permission_denied', 'Customer consent management permission is required.');
+        }
+        if (!self::isUuid($publicId)) {
+            throw new HttpException(400, 'customer_id_invalid', 'The customer identifier is invalid.');
+        }
+        foreach (array_keys($payload) as $key) {
+            if (!is_string($key) || !in_array($key, ['decision', 'notice_version', 'evidence_ref'], true)) {
+                throw new HttpException(422, 'customer_consent_field_invalid', 'The consent payload contains an unsupported field.');
+            }
+        }
+        $decision = $payload['decision'] ?? null;
+        if (!is_string($decision) || !in_array($decision, ['granted', 'withdrawn'], true)) {
+            throw new HttpException(422, 'customer_consent_decision_invalid', 'Consent decision must be granted or withdrawn.');
+        }
+        $noticeVersion = $payload['notice_version'] ?? null;
+        $evidenceRef = $payload['evidence_ref'] ?? null;
+        if ($noticeVersion !== null && (!is_string($noticeVersion) || trim($noticeVersion) === '' || self::unicodeLength(trim($noticeVersion)) > 80)) {
+            throw new HttpException(422, 'customer_consent_notice_invalid', 'Notice version must be a non-empty string up to 80 characters.');
+        }
+        if ($evidenceRef !== null && (!is_string($evidenceRef) || trim($evidenceRef) === '' || self::unicodeLength(trim($evidenceRef)) > 190)) {
+            throw new HttpException(422, 'customer_consent_evidence_invalid', 'Evidence reference must be a non-empty string up to 190 characters.');
+        }
+        if ($decision === 'granted' && $noticeVersion === null) {
+            throw new HttpException(422, 'customer_consent_evidence_required', 'A notice version is required to record marketing consent.');
+        }
+        $noticeVersion = $noticeVersion === null ? null : trim($noticeVersion);
+        $evidenceRef = $evidenceRef === null ? null : trim($evidenceRef);
+        $fingerprint = hash('sha256', json_encode([
+            'customer_id' => $publicId,
+            'decision' => $decision,
+            'notice_version' => $noticeVersion,
+            'evidence_ref' => $evidenceRef,
+        ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+
+        return $this->idempotency->execute(
+            $actor->userId,
+            $scope,
+            'customers.consent.record',
+            $idempotencyKey,
+            $fingerprint,
+            function (PDO $connection) use ($actor, $scope, $publicId, $decision, $noticeVersion, $evidenceRef, $requestId, $ipAddress): array {
+                $this->customers->lockBusiness($scope->businessId);
+                $customer = $this->customers->findByPublicId($scope->businessId, $publicId, true);
+                if ($customer === null) {
+                    throw new HttpException(404, 'customer_not_found', 'The customer was not found in this business.');
+                }
+                if ($decision === 'granted' && $customer['phone_normalized'] === null) {
+                    throw new HttpException(409, 'customer_phone_required_for_consent', 'A valid mobile number is required before granting SMS marketing consent.');
+                }
+                $before = $this->customers->latestConsent($scope->businessId, (int) $customer['id']);
+                $eventKey = self::uuidV4();
+                $this->customers->appendConsentEvent(
+                    $scope->businessId,
+                    (int) $customer['id'],
+                    $eventKey,
+                    $decision,
+                    'pos',
+                    $noticeVersion,
+                    $evidenceRef,
+                    $actor->userId,
+                );
+                $this->audit->record(
+                    $actor->userId,
+                    $decision === 'granted' ? 'customer.marketing_consent.granted' : 'customer.marketing_consent.withdrawn',
+                    'customer',
+                    $publicId,
+                    ['decision' => $before['decision'] ?? 'unknown'],
+                    ['decision' => $decision, 'channel' => 'sms', 'purpose' => 'marketing'],
+                    null,
+                    $requestId,
+                    $ipAddress,
+                    $scope->businessId,
+                    $scope->branchId,
+                );
+                return ['status' => 201, 'body' => ['data' => [
+                    'consent' => [
+                        'purpose' => 'marketing',
+                        'channel' => 'sms',
+                        'decision' => $decision,
+                        'source' => 'pos',
+                        'notice_version' => $noticeVersion,
+                        'evidence_ref' => $evidenceRef,
+                        'recorded_at' => gmdate('Y-m-d H:i:s'),
+                    ],
+                ], 'meta' => (object) []]];
+            },
+        );
+    }
+
     public function update(
         AuthenticatedPrincipal $actor,
         BusinessScope $scope,
