@@ -288,16 +288,13 @@ CREATE TABLE pos_customer_consent_events (
   CONSTRAINT fk_customer_consent_actor FOREIGN KEY (actor_user_id) REFERENCES app_users(id) ON DELETE SET NULL,
   CONSTRAINT chk_customer_consent_purpose CHECK (purpose IN ('marketing')),
   CONSTRAINT chk_customer_consent_channel CHECK (channel IN ('sms')),
-  CONSTRAINT chk_customer_consent_decision CHECK (decision IN ('granted','withdrawn')),
+  CONSTRAINT chk_customer_consent_decision CHECK (decision IN ('granted','withdrawn','invalidated')),
   CONSTRAINT chk_customer_consent_source CHECK (source IN ('checkout','pos','web','api','import')),
   CONSTRAINT chk_customer_consent_grant_evidence CHECK (
     decision <> 'granted' OR
     (notice_version IS NOT NULL AND CHAR_LENGTH(TRIM(notice_version)) > 0
      AND evidence_ref IS NOT NULL AND CHAR_LENGTH(TRIM(evidence_ref)) > 0
      AND recipient_phone_normalized IS NOT NULL AND recipient_phone_normalized REGEXP '^09[0-9]{9}$'
-     AND source <> 'import')
-  )
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
      AND source <> 'import')
   )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
