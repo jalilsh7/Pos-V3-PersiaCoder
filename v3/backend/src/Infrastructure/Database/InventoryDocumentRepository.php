@@ -86,6 +86,7 @@ final readonly class InventoryDocumentRepository
     public function list(int $businessId, int $branchId, ?string $type, ?string $status, int $limit): array
     {
         $sql = 'SELECT d.public_id, d.document_no, d.document_type, d.status, d.reason,
+                       source_doc.public_id AS source_document_public_id, source_doc.document_no AS source_document_no,
                        src.public_id AS location_id, src.name AS location_name,
                        dst.public_id AS destination_location_id, dst.name AS destination_location_name,
                        sup.public_id AS supplier_public_id, sup.name AS supplier_name,
@@ -97,6 +98,8 @@ final readonly class InventoryDocumentRepository
                   ON dst.id = d.destination_location_id AND dst.business_id = d.business_id AND dst.branch_id = d.branch_id
                 LEFT JOIN pos_suppliers sup
                   ON sup.id = d.supplier_id AND sup.business_id = d.business_id
+                LEFT JOIN pos_stock_documents source_doc
+                  ON source_doc.id = d.source_document_id AND source_doc.business_id = d.business_id AND source_doc.branch_id = d.branch_id
                 WHERE d.business_id = :business_id AND d.branch_id = :branch_id';
         $params = ['business_id' => $businessId, 'branch_id' => $branchId];
         if ($type !== null) { $sql .= ' AND d.document_type = :type'; $params['type'] = $type; }
