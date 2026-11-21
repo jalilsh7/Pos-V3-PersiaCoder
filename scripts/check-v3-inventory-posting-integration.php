@@ -316,10 +316,47 @@ $pdo->prepare(
     'stock_item_id' => $stockItemId, 'location_id' => $sourceLocationId,
 ]);
 
+$returnFieldOverrideBlocked = false;
+try {
+    $documents->create(
+        $actor, $scope,
+        ['document_type' => 'return', 'source_document_id' => $adjustmentOut,
+         'location_id' => $sourceLocationPublicId, 'reason' => 'CI reject location override'],
+        $prefix . '-return-location-override-key', $requestId, $ip,
+    );
+} catch (HttpException $error) {
+    $returnFieldOverrideBlocked = $error->status === 422 && $error->errorCode === 'stock_return_source_fields_locked';
+}
+$assert($returnFieldOverrideBlocked, 'Return document accepted a client-supplied location override.');
+
+$invalidReturnSourceBlocked = false;
+try {
+    $documents->create(
+        $actor, $scope,
+        ['document_type' => 'return', 'source_document_id' => $receiptTwo, 'reason' => 'CI invalid return source'],
+        $prefix . '-return-invalid-source-key', $requestId, $ip,
+    );
+} catch (HttpException $error) {
+    $invalidReturnSourceBlocked = $error->status === 409 && $error->errorCode === 'stock_return_source_invalid';
+}
+$assert($invalidReturnSourceBlocked, 'A non-outbound source document was accepted for return.');
+
 $returnDocument = $createDocument([
     'document_type' => 'return', 'source_document_id' => $adjustmentOut,
     'reason' => 'CI partial return from outbound adjustment',
 ], 'return-partial-one');
+$returnLineOverrideBlocked = false;
+try {
+    $documents->addLine(
+        $actor, $scope, $returnDocument,
+        ['source_document_line_id' => $adjustmentOutLine, 'stock_item_id' => $stockItemPublicId,
+         'unit_code' => 'kg', 'quantity' => '0.4'],
+        $prefix . '-line-return-override-key', $requestId, $ip,
+    );
+} catch (HttpException $error) {
+    $returnLineOverrideBlocked = $error->status === 422 && $error->errorCode === 'stock_return_cost_or_item_override_not_allowed';
+}
+$assert($returnLineOverrideBlocked, 'Return line accepted an item or unit override.');
 $returnLineResult = $documents->addLine(
     $actor, $scope, $returnDocument,
     ['source_document_line_id' => $adjustmentOutLine, 'quantity' => '0.4'],
