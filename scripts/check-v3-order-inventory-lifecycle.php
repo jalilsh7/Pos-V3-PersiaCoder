@@ -7,6 +7,7 @@ $schema = file_get_contents(__DIR__ . '/../database/v3/schema.sql');
 $migration = file_get_contents(__DIR__ . '/../database/v3/migrations/011_scope-inventory-and-recipes.sql');
 $orderLedgerMigration = file_get_contents(__DIR__ . '/../database/v3/migrations/019_stock-ledger-order-reference.sql');
 $orderScopeMigration = file_get_contents(__DIR__ . '/../database/v3/migrations/008_scope-orders-and-service-areas.sql');
+$reservationMigration = file_get_contents(__DIR__ . '/../database/v3/migrations/020_one-stock-reservation-per-order.sql');
 
 $assert = static function (bool $condition, string $message): void {
     if (!$condition) {
@@ -55,5 +56,8 @@ $integration = file_get_contents(__DIR__ . '/check-v3-order-inventory-integratio
 $assert(str_contains($integration, '$otherBranchOrderId') && str_contains($integration, 'source_order') && str_contains($integration, 'crossBranchRejected'), 'Database integration test must reject cross-branch source order references.');
 
 $assert(str_contains($lifecycle, 'stock_reservation_missing') && str_contains($lifecycle, 'recipe_version_id IS NOT NULL'), 'Recipe-tracked orders must not complete without their stock reservation.');
+$assert(str_contains($lifecycle, 'one-time lifecycle record per order') && !str_contains($lifecycle, 'AND idempotency_key = :idempotency_key'), 'Reservation replay must be guarded by order identity, not only the request key.');
+$assert(str_contains($reservationMigration, 'DROP INDEX uq_stock_reservations_order_key') && str_contains($reservationMigration, 'uq_stock_reservations_order_once (business_id, branch_id, order_id)'), 'Database must enforce exactly one reservation per business/branch/order.');
+$assert(str_contains($integration, 'ci-reserve-different-key-') && str_contains($integration, 'created a duplicate reservation'), 'Integration test must cover reservation replay with a changed idempotency key.');
 
 fwrite(STDOUT, "V3 order-to-recipe inventory lifecycle contract checks passed.\n");
