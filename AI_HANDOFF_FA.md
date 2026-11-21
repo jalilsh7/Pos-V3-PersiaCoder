@@ -1045,3 +1045,12 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 
 - ادامه این نشست: `scripts/check-v3-backend-inventory-documents.php` با قراردادهای migration 021 به‌روزرسانی شد؛ ارجاع سند و ردیف باید در همان business/branch باشد، حذف منبع ممنوع و سوابق قبلی NULL می‌مانند. Commit: `a3ab23447a74019b4e1977eceedcfe127770f66c`.
 - نکته ایمنی: `return` در create/post هنوز عمداً فعال نیست. قبل از فعال‌سازی باید ایجاد سند منبع‌دار، انتخاب ردیف خروجی، سقف برگشت جزئی با lock تراکنشی، ارزش‌گذاری تاریخی، موجودی و ledger append-only، API و UI کامل شوند. هیچ تستی اجرا نشده است.
+
+
+## آخرین بسته CRM — نمایش read-only دفتر وفاداری (2026-11-21)
+- آخرین کد: CustomerRepository پروفایل مشتری را با جمع points/credit/visits از `pos_customer_ledger` و ۲۰ رویداد آخر تکمیل می‌کند؛ join شماره سفارش به business جاری محدود است.
+- API client type و CustomersWorkspace برای نمایش موجودی امتیاز، اعتبار، مراجعه و تاریخچه رویدادها گسترش یافتند.
+- Contract script: `scripts/check-v3-customer-loyalty-contract.php`.
+- نکته ایمنی: هیچ امتیاز/اعتباری از سفارش‌ها به‌صورت حدسی ایجاد نمی‌شود؛ تا تعیین policy کسب/مصرف، فقط ledger موجود خوانده می‌شود.
+- commits: `c264a0e3cd86c7fac110085b5ceafffd44ea419b`, `145aecd12095f3f8a944080e9626d560fa6d6a3d`, `935fa25a695626e0a5581dcffff47c71b359976c`, `e7e365e14fe032b1c8f47f88645f68126c755cba`.
+- اجرا نشده: PHP lint، contract script، TypeScript/build و DB integration. گام بعدی: طراحی/پیاده‌سازی policy کنترل‌شده کسب امتیاز و مصرف اعتبار، سپس consent/opt-out و اتصال امن به رویدادهای سفارش.
