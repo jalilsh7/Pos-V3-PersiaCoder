@@ -354,6 +354,9 @@ final readonly class InventoryDocumentService
                 if ((string) $document['status'] !== 'draft') {
                     throw new HttpException(409, 'stock_document_not_draft', 'Only draft document lines can be updated.');
                 }
+                if ((string) $document['document_type'] === 'return') {
+                    throw new HttpException(409, 'stock_return_line_inherited', 'Return line item, unit, source and valuation are inherited from the source and cannot be edited; delete and recreate the draft line if needed.');
+                }
                 $line = $this->documents->findLineForUpdate(
                     $scope->businessId, $branchId, (int) $document['id'], $linePublicId,
                 );
