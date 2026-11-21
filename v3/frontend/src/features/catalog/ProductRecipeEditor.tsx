@@ -5,6 +5,7 @@ import {
   getInventoryStockItems,
   getInventoryUnits,
   getProductRecipe,
+  updateRecipeDraftVersion,
   type InventoryStockItem,
   type InventoryUnit,
   type ProductRecipe,
@@ -26,6 +27,7 @@ export function ProductRecipeEditor({ productId, variants }: {
   const [units, setUnits] = useState<InventoryUnit[]>([]);
   const [recipeName, setRecipeName] = useState("");
   const [lines, setLines] = useState<RecipeLineDraft[]>([]);
+  const [editingVersionId, setEditingVersionId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
@@ -48,6 +50,7 @@ export function ProductRecipeEditor({ productId, variants }: {
       if (!current) return;
       // Draft ingredient rows belong to one product/variant scope only.
       setLines([]);
+      setEditingVersionId(null);
       setMessage(null);
       setError(null);
       setRecipe(nextRecipe);
@@ -75,21 +78,38 @@ export function ProductRecipeEditor({ productId, variants }: {
     setLines((current) => current.map((line, lineIndex) => lineIndex === index ? { ...line, ...patch } : line));
   }
 
-  async function createDraft() {
+  function editDraft(version: ProductRecipe["versions"][number]) {
+    if (version.status !== "draft") return;
+    setEditingVersionId(version.id);
+    setRecipeName(recipe?.name ?? "");
+    setLines(version.lines.map((line) => ({
+      stock_item_id: line.stock_item_id, quantity: line.quantity,
+      unit_code: line.unit_code, waste_percent: line.waste_percent,
+    })));
+    setError(null);
+    setMessage("پیش‌نویس برای ویرایش بارگذاری شد؛ نسخه فعال یا بازنشسته قابل تغییر نیست.");
+  }
+
+  async function saveDraft() {
     if (!recipeName.trim() || !lines.length) {
       setError("نام رسپی و حداقل یک ردیف ماده اولیه لازم است.");
       return;
     }
     setBusy(true); setError(null); setMessage(null);
     try {
-      await createRecipeDraftVersion(productId, {
-        name: recipeName.trim(),
-        ...(variantId ? { variant_id: variantId } : {}),
-        lines,
-      });
+      if (editingVersionId) {
+        await updateRecipeDraftVersion(editingVersionId, { name: recipeName.trim(), lines });
+      } else {
+        await createRecipeDraftVersion(productId, {
+          name: recipeName.trim(),
+          ...(variantId ? { variant_id: variantId } : {}),
+          lines,
+        });
+      }
       await refreshRecipe();
       setLines([]);
-      setMessage("نسخه پیش‌نویس رسپی ساخته شد. پس از بررسی می‌توانید آن را فعال کنید.");
+      setEditingVersionId(null);
+      setMessage(editingVersionId ? "تغییرات پیش‌نویس ذخیره شد." : "نسخه پیش‌نویس رسپی ساخته شد. پس از بررسی می‌توانید آن را فعال کنید.");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "ساخت نسخه رسپی انجام نشد.");
     } finally { setBusy(false); }
@@ -122,7 +142,7 @@ export function ProductRecipeEditor({ productId, variants }: {
           <div className="recipe-version-heading">
             <b>نسخه {version.version_no}</b>
             <StatusBadge variant={version.status === "active" ? "success" : "neutral"}>{statusLabel[version.status] ?? version.status}</StatusBadge>
-            {version.status === "draft" ? <Button size="sm" variant="primary" disabled={busy} onClick={() => void activate(version.id)}>فعال‌سازی نسخه</Button> : null}
+            {version.status === "draft" ? <><Button size="sm" variant="secondary" disabled={busy} onClick={() => editDraft(version)}>ویرایش پیش‌نویس</Button><Button size="sm" variant="primary" disabled={busy} onClick={() => void activate(version.id)}>فعال‌سازی نسخه</Button></> : null}
           </div>
           <div className="recipe-version-lines">
             {version.lines.map((line, index) => <div key={index}><span>{line.stock_item_name}</span><b>{line.quantity} {line.unit_name}</b><small>ضایعات: {line.waste_percent}٪</small></div>)}
@@ -130,8 +150,8 @@ export function ProductRecipeEditor({ productId, variants }: {
         </article>) : <p className="catalog-editor-hint">برای این محدوده هنوز رسپی ثبت نشده است.</p>}
       </div>
       <div className="recipe-draft-form">
-        <strong>ساخت نسخه جدید</strong>
-        <p className="catalog-editor-hint">نسخه فعال و نسخه‌های قبلی تغییر نمی‌کنند؛ برای اصلاح رسپی، نسخه draft جدید بسازید.</p>
+        <strong>{editingVersionId ? "ویرایش نسخه پیش‌نویس" : "ساخت نسخه جدید"}</strong>
+        <p className="catalog-editor-hint">فقط نسخه‌های پیش‌نویس قابل ویرایش‌اند؛ نسخه فعال و بازنشسته تغییرناپذیر هستند.</p>
         <TextField label="نام رسپی" value={recipeName} onChange={(event) => setRecipeName(event.target.value)} placeholder="مثلاً رسپی استاندارد برگر" />
         {lines.map((line, index) => {
           const selectedItem = stockItems.find((item) => item.id === line.stock_item_id);
@@ -151,7 +171,8 @@ export function ProductRecipeEditor({ productId, variants }: {
         {!stockItems.length ? <p className="catalog-editor-hint">ابتدا در انبار حداقل یک ماده اولیه فعال تعریف کنید.</p> : null}
         <div className="recipe-form-actions">
           <Button size="sm" variant="secondary" disabled={busy || !stockItems.length} onClick={addLine}>افزودن ماده</Button>
-          <Button size="sm" variant="primary" disabled={busy || !lines.length || !recipeName.trim()} onClick={() => void createDraft()}>{busy ? "در حال ذخیره..." : "ساخت نسخه پیش‌نویس"}</Button>
+          <Button size="sm" variant="primary" disabled={busy || !lines.length || !recipeName.trim()} onClick={() => void saveDraft()}>{busy ? "در حال ذخیره..." : editingVersionId ? "ذخیره تغییرات پیش‌نویس" : "ساخت نسخه پیش‌نویس"}</Button>
+          {editingVersionId ? <Button size="sm" variant="ghost" disabled={busy} onClick={() => { setEditingVersionId(null); setLines([]); setRecipeName(recipe?.name ?? ""); }}>انصراف از ویرایش</Button> : null}
         </div>
       </div>
     </>}
