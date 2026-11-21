@@ -51,6 +51,9 @@ $assert(!str_contains($lifecycle, "'unit_cost'=>(string)$line['average_unit_cost
 $assert(str_contains($lifecycle, 'branch_context_required'), 'Stock lifecycle must reject missing branch context.');
 $assert(str_contains($lifecycle, 'takeRemaining'), 'Snapshot allocation must preserve exact quantities without rounding loss.');
 
+$integration = file_get_contents(__DIR__ . '/check-v3-order-inventory-integration.php');
+$assert(str_contains($integration, '$otherBranchOrderId') && str_contains($integration, 'source_order') && str_contains($integration, 'crossBranchRejected'), 'Database integration test must reject cross-branch source order references.');
+
 $assert(str_contains($lifecycle, 'stock_reservation_missing') && str_contains($lifecycle, 'recipe_version_id IS NOT NULL'), 'Recipe-tracked orders must not complete without their stock reservation.');
 
 fwrite(STDOUT, "V3 order-to-recipe inventory lifecycle contract checks passed.\n");
