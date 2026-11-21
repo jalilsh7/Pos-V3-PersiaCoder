@@ -484,3 +484,6 @@ Variant recipe در اولویت و در نبود آن product recipe fallback �
 
 ## Order inventory lock ordering — 2026-11-21
 برای کاهش deadlock، مکان‌ها و موجودی‌ها در رزرو سفارش با ترتیب صعودی ID قفل می‌شوند، اما allocation همچنان kitchen-first است. integration test storage را قبل از kitchen seed می‌کند تا جدایی lock order از allocation priority را اثبات کند. contract check هم lock order را کنترل می‌کند. commits: `4194e4d`, `c0294b7`, `b9a7fad`. تست هنوز اجرا نشده.
+
+## بازیابی draft اسناد انبار — 2026-11-21
+در صورت شکست مرحله‌ای quick-submit، UI سند ایجادشده را از سرور بازیابی و باز می‌کند، وضعیت واقعی draft/posted را نمایش می‌دهد و از ایجاد سند تکراری جلوگیری می‌کند. contract check اضافه شد. commits: `ee23fb0`, `8fce65a`. تست‌ها اجرا نشده‌اند.
