@@ -498,3 +498,6 @@ API client و UI اکنون cursor-based هستند: صفحه ۵۰تایی او�
 
 ## Variant recipe precedence integration — 2026-11-21
 تست DB چرخه سفارش اکنون fallback از Variant بدون رسپی به رسپی محصول و اولویت رسپی اختصاصی Variant را پوشش می‌دهد. commit `5dc69e9`. تست اجرا نشده.
+
+## Reservation lock contention correction — 2026-11-21
+قفل مکان‌های فعال از `FOR UPDATE` انحصاری به `LOCK IN SHARE MODE` مرتب‌شده تغییر کرد تا رزروهای هم‌زمان شعبه serialize نشوند؛ update مکان همچنان تا پایان رزرو منتظر می‌ماند. balanceها با `FOR UPDATE` و ترتیب ثابت قفل می‌شوند. commits: `bd3c25a`, `9ae2196`. تست اجرا نشده.
