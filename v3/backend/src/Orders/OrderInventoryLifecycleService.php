@@ -238,7 +238,7 @@ final readonly class OrderInventoryLifecycleService
             $update->execute(['qty'=>$qty,'reserved'=>$qty,'business'=>$businessId,'branch'=>$branchId,'item'=>(int)$line['stock_item_id'],'location'=>(int)$line['location_id'],'on_hand'=>$qty,'reserved_check'=>$qty]);
             if ($update->rowCount() !== 1) throw new HttpException(409, 'stock_balance_inconsistent', 'موجودی رزروشده با مانده انبار سازگار نیست.');
             $cost = $this->db->prepare('SELECT CAST(ROUND(CAST(:qty AS DECIMAL(18,6))*CAST(:unit_cost AS DECIMAL(24,8)),0) AS DECIMAL(20,0))');
-            $cost->execute(['qty'=>$qty,'unit_cost'=>(string)$line['average_unit_cost']]);
+            $cost->execute(['qty'=>$qty,'unit_cost'=>(string)$line['unit_cost_snapshot']]);
             $totalCost = (string)$cost->fetchColumn();
             $eventKey = 'order-consume:' . $orderId . ':' . (int)$line['stock_item_id'] . ':' . (int)$line['location_id'];
             $ledger = $this->db->prepare(
