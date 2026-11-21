@@ -219,7 +219,6 @@ export type InventoryBalance = {
 };
 
 export type InventoryLedgerEntry = {
-  ledger_id: number;
   movement_type: string;
   quantity_delta: string;
   base_unit_code: string;
