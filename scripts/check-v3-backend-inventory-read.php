@@ -63,12 +63,17 @@ $assert(($ledger->bindings[':limit']['value'] ?? null) === 26, 'Ledger limit bin
 
 $controller = file_get_contents($root . '/v3/backend/src/Inventory/InventoryController.php');
 $service = file_get_contents($root . '/v3/backend/src/Inventory/InventoryService.php');
+$repositorySource = file_get_contents($root . '/v3/backend/src/Infrastructure/Database/InventoryRepository.php');
+$assert(str_contains($repositorySource, 'LEFT JOIN pos_orders o')
+    && str_contains($repositorySource, 'o.business_id = l.business_id AND o.branch_id = l.branch_id')
+    && str_contains($repositorySource, "'source_order_number'"), 'Inventory ledger must expose only a business/branch-scoped source order reference.');
 $client = file_get_contents($root . '/v3/frontend/src/shared/api/client.ts');
 $workspace = file_get_contents($root . '/v3/frontend/src/features/inventory/InventoryWorkspace.tsx');
 $assert(str_contains($controller, "'entries' => $result['items'], 'next_cursor' => $result['next_cursor']"), 'Inventory ledger cursor must be included in response data for API clients.');
 $assert(str_contains($service, "'next_cursor' => $nextCursor"), 'Inventory service must return the next cursor for paged ledger reads.');
 $assert(str_contains($client, 'beforeId?: string') && str_contains($client, 'query.set("before_id", filters.beforeId)') && str_contains($client, 'nextCursor: data.next_cursor'), 'Inventory frontend API client must support cursor pagination.');
 $assert(str_contains($workspace, 'ledgerCursor') && str_contains($workspace, 'loadMoreLedger') && str_contains($workspace, 'بارگذاری گردش‌های قدیمی‌تر'), 'Inventory workspace must expose older ledger pages.');
+$assert(str_contains($client, 'source_order_number: number | null') && str_contains($workspace, 'entry.source_order_number'), 'Inventory movement UI must display the originating order number when available.');
 $assert(!str_contains($client, 'ledger_id: number;'), 'Internal ledger row IDs must not be exposed in the public frontend model.');
 
 echo "V3 inventory read scope and ledger pagination checks passed.\n";
