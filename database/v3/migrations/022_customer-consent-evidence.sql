@@ -23,7 +23,7 @@ CREATE TABLE pos_customer_consent_events (
   CONSTRAINT fk_customer_consent_actor FOREIGN KEY (actor_user_id) REFERENCES app_users(id) ON DELETE SET NULL,
   CONSTRAINT chk_customer_consent_purpose CHECK (purpose IN ('marketing')),
   CONSTRAINT chk_customer_consent_channel CHECK (channel IN ('sms')),
-  CONSTRAINT chk_customer_consent_decision CHECK (decision IN ('granted','withdrawn')),
+  CONSTRAINT chk_customer_consent_decision CHECK (decision IN ('granted','withdrawn','invalidated')),
   CONSTRAINT chk_customer_consent_source CHECK (source IN ('checkout','pos','web','api','import')),
   CONSTRAINT chk_customer_consent_grant_evidence CHECK (
     decision <> 'granted' OR
