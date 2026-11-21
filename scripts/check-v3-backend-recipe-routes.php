@@ -24,6 +24,11 @@ $routes = [
         "catalog.manage",
     ],
     [
+        "'PATCH', '/api/v1/catalog/recipe-versions/{versionPublicId}'",
+        "updateDraftVersion",
+        "catalog.manage",
+    ],
+    [
         "'POST', '/api/v1/catalog/recipe-versions/{versionPublicId}/activate'",
         "activateVersion",
         "catalog.manage",
@@ -38,6 +43,10 @@ $assert(str_contains($entrypoint, '$csrfMiddleware, $originMiddleware'), 'Recipe
 $assert(is_string($controller) && str_contains($controller, "header('idempotency-key')"), 'Recipe writes must forward idempotency keys.');
 $assert(is_string($service) && str_contains($service, 'catalog.recipe.version.create'), 'Recipe draft creation must be idempotent.');
 $assert(str_contains($service, 'catalog.recipe.version.activate'), 'Recipe activation must be idempotent.');
+$assert(str_contains($service, 'catalog.recipe.version.update'), 'Recipe draft updates must be idempotent.');
+$assert(str_contains($service, 'Only a draft recipe version can be edited.'), 'Only draft versions may be edited.');
+$assert(str_contains($service, 'deleteRecipeLinesForVersion'), 'Draft line replacement must be persisted.');
+$assert(str_contains($service, 'countRecipeVersionLines'), 'Audit snapshot must include the prior draft line count.');
 $assert(str_contains($service, 'findConversionFactor') && str_contains($service, 'createRecipeLine'), 'Recipe lines must resolve and persist unit conversion snapshots.');
 $assert(str_contains($service, 'retireActiveVersions'), 'Activating a recipe must retire the previous active version.');
 
