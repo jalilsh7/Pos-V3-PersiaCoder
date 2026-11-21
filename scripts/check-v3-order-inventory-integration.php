@@ -217,7 +217,9 @@ try {
         'source_order'=>$otherBranchOrderId,'unit'=>$unitId,'event'=>'ci-cross-branch-ledger-'.$prefix,
     ]);
 } catch (PDOException $error) {
-    $crossBranchRejected = (string)$error->getCode() === '23000';
+    $crossBranchRejected = (string)$error->getCode() === '23000'
+        && (int)($error->errorInfo[1] ?? 0) === 1452
+        && str_contains($error->getMessage(), 'fk_v3_stock_ledger_source_order_scope');
 }
 $assert($crossBranchRejected, 'The stock ledger accepted a source order from another branch; composite scope FK is not enforced.');
 
