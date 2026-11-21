@@ -89,6 +89,9 @@ export function InventoryWorkspace() {
   const [editingUnit, setEditingUnit] = useState("");
   const [editingCost, setEditingCost] = useState("");
   const [documentType, setDocumentType] = useState<InventoryDocumentType>("consumption");
+  const [returnSourceDocumentId, setReturnSourceDocumentId] = useState("");
+  const [returnSourceDocument, setReturnSourceDocument] = useState<InventoryDocumentDetail | null>(null);
+  const [returnSourceLineId, setReturnSourceLineId] = useState("");
   const [documentLocation, setDocumentLocation] = useState("");
   const [destinationLocation, setDestinationLocation] = useState("");
   const [documentItem, setDocumentItem] = useState("");
@@ -250,7 +253,7 @@ export function InventoryWorkspace() {
     }
   }
 
-  const needsReason = ["adjustment_in", "adjustment_out", "waste"].includes(documentType);
+  const needsReason = ["adjustment_in", "adjustment_out", "waste", "return"].includes(documentType);
   const needsCost = ["adjustment_in", "purchase_receipt"].includes(documentType);
   const selectedDocumentItem = activeItems.find((item) => item.id === documentItem) ?? null;
 
@@ -378,15 +381,20 @@ export function InventoryWorkspace() {
   }
 
   async function addLineToActiveDraft() {
-    if (!activeDocument || activeDocument.status !== "draft" || !documentItem || !documentUnit || !documentQuantity.trim()) return;
-    if (["adjustment_in", "purchase_receipt"].includes(activeDocument.document_type) && !documentCost.trim()) {
+    if (!activeDocument || activeDocument.status !== "draft" || !documentQuantity.trim()) return;
+    const isReturn = activeDocument.document_type === "return";
+    if (isReturn ? !returnSourceLineId : (!documentItem || !documentUnit)) return;
+    if (!isReturn && ["adjustment_in", "purchase_receipt"].includes(activeDocument.document_type) && !documentCost.trim()) {
       setDocumentMessage("برای این سند، مبلغ کل خرید/ورودی به تومان الزامی است.");
       return;
     }
     setDocumentDetailBusy(true);
     setDocumentMessage(null);
     try {
-      await addInventoryDocumentLine(activeDocument.id, {
+      await addInventoryDocumentLine(activeDocument.id, isReturn ? {
+        source_document_line_id: returnSourceLineId,
+        quantity: documentQuantity,
+      } : {
         stock_item_id: documentItem,
         quantity: documentQuantity,
         unit_code: documentUnit,
@@ -421,7 +429,9 @@ export function InventoryWorkspace() {
 
   async function submitStockDocument(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!documentLocation || !documentItem || !documentUnit || !documentQuantity.trim()) return;
+    const isReturn = documentType === "return";
+    if (!documentQuantity.trim()) return;
+    if (isReturn ? (!returnSourceDocumentId || !returnSourceLineId) : (!documentLocation || !documentItem || !documentUnit)) return;
     if (documentType === "purchase_receipt" && !documentSupplier) { setDocumentMessage("برای رسید خرید، انتخاب تأمین‌کننده الزامی است."); return; }
     if (documentType === "transfer" && (!destinationLocation || destinationLocation === documentLocation)) {
       setDocumentMessage("انبارک مقصد باید با انبارک مبدأ متفاوت باشد.");
@@ -441,12 +451,15 @@ export function InventoryWorkspace() {
     try {
       createdDocument = await createInventoryDocument({
         document_type: documentType,
-        location_id: documentLocation,
+        ...(isReturn ? { source_document_id: returnSourceDocumentId } : { location_id: documentLocation }),
         ...(documentType === "purchase_receipt" ? { supplier_id: documentSupplier } : {}),
         ...(documentType === "transfer" ? { destination_location_id: destinationLocation } : {}),
         ...(documentReason.trim() ? { reason: documentReason.trim() } : {}),
       });
-      await addInventoryDocumentLine(createdDocument.id, {
+      await addInventoryDocumentLine(createdDocument.id, isReturn ? {
+        source_document_line_id: returnSourceLineId,
+        quantity: documentQuantity,
+      } : {
         stock_item_id: documentItem,
         quantity: documentQuantity,
         unit_code: documentUnit,
@@ -538,19 +551,27 @@ export function InventoryWorkspace() {
         <form className="inventory-document-form" onSubmit={submitStockDocument}>
           <div className="inventory-document-fields">
             <label>نوع سند<select value={documentType} onChange={(event) => setDocumentType(event.target.value as InventoryDocumentType)}>
-              <option value="consumption">مصرف مواد</option><option value="purchase_receipt">رسید خرید</option><option value="waste">ضایعات</option><option value="adjustment_in">تعدیل افزایشی</option><option value="adjustment_out">تعدیل کاهشی</option><option value="transfer">انتقال بین انبارک‌ها</option>
+              <option value="consumption">مصرف مواد</option><option value="purchase_receipt">رسید خرید</option><option value="waste">ضایعات</option><option value="adjustment_in">تعدیل افزایشی</option><option value="adjustment_out">تعدیل کاهشی</option><option value="transfer">انتقال بین انبارک‌ها</option><option value="return">برگشت از سند خروجی</option>
             </select></label>
             {documentType === "purchase_receipt" ? <label>تأمین‌کننده<select required value={documentSupplier} onChange={(event) => setDocumentSupplier(event.target.value)}><option value="">انتخاب تأمین‌کننده</option>{suppliers.filter((supplier) => supplier.is_active).map((supplier) => <option key={supplier.id} value={supplier.id}>{supplier.name}{supplier.phone ? ` · ${supplier.phone}` : ""}</option>)}</select></label> : null}
-            <label>انبارک مبدأ<select required value={documentLocation} onChange={(event) => setDocumentLocation(event.target.value)}>{activeLocations.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}</select></label>
-            {documentType === "transfer" ? <label>انبارک مقصد<select required value={destinationLocation} onChange={(event) => setDestinationLocation(event.target.value)}>{activeLocations.filter((location) => location.id !== documentLocation).map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}</select></label> : null}
-            <label>قلم انبار<select required value={documentItem} onChange={(event) => { const item = items.find((entry) => entry.id === event.target.value); setDocumentItem(event.target.value); if (item) setDocumentUnit(item.base_unit.code); }}>{activeItems.map((item) => <option key={item.id} value={item.id}>{item.name} ({item.code})</option>)}</select></label>
-            <label>واحد<select required value={documentUnit} onChange={(event) => setDocumentUnit(event.target.value)}>{units.filter((unit) => !selectedDocumentItem || unit.dimension === selectedDocumentItem.base_unit.dimension).map((unit) => <option key={unit.code} value={unit.code}>{unit.name} ({unit.code})</option>)}</select></label>
+            {documentType === "return" ? <>
+              <label>سند خروجی مبدأ<select required value={returnSourceDocumentId} onChange={async (event) => {
+                const sourceId = event.target.value; setReturnSourceDocumentId(sourceId); setReturnSourceDocument(null); setReturnSourceLineId("");
+                if (sourceId) { try { setReturnSourceDocument(await getInventoryDocument(sourceId)); } catch (cause) { setDocumentMessage(cause instanceof ApiError ? cause.message : "دریافت سند مبدأ انجام نشد."); } }
+              }}><option value="">انتخاب سند خروجی ثبت‌شده</option>{documents.filter((doc) => doc.status === "posted" && ["adjustment_out", "consumption", "waste"].includes(doc.document_type)).map((doc) => <option key={doc.id} value={doc.id}>{doc.document_no} · {documentLabel[doc.document_type]}</option>)}</select></label>
+              <label>ردیف مبدأ<select required disabled={!returnSourceDocument} value={returnSourceLineId} onChange={(event) => setReturnSourceLineId(event.target.value)}><option value="">انتخاب ردیف خروجی</option>{returnSourceDocument?.lines.map((line) => <option key={line.id} value={line.id}>{line.stock_item_name} · {quantity(line.quantity)} {line.unit_name}</option>)}</select></label>
+            </> : <>
+              <label>انبارک مبدأ<select required value={documentLocation} onChange={(event) => setDocumentLocation(event.target.value)}>{activeLocations.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}</select></label>
+              {documentType === "transfer" ? <label>انبارک مقصد<select required value={destinationLocation} onChange={(event) => setDestinationLocation(event.target.value)}>{activeLocations.filter((location) => location.id !== documentLocation).map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}</select></label> : null}
+              <label>قلم انبار<select required value={documentItem} onChange={(event) => { const item = items.find((entry) => entry.id === event.target.value); setDocumentItem(event.target.value); if (item) setDocumentUnit(item.base_unit.code); }}>{activeItems.map((item) => <option key={item.id} value={item.id}>{item.name} ({item.code})</option>)}</select></label>
+              <label>واحد<select required value={documentUnit} onChange={(event) => setDocumentUnit(event.target.value)}>{units.filter((unit) => !selectedDocumentItem || unit.dimension === selectedDocumentItem.base_unit.dimension).map((unit) => <option key={unit.code} value={unit.code}>{unit.name} ({unit.code})</option>)}</select></label>
+            </>}
             <label>مقدار<input required inputMode="decimal" pattern="^[0-9]+([.][0-9]{1,6})?$" value={documentQuantity} onChange={(event) => setDocumentQuantity(event.target.value)} /></label>
             {needsCost ? <label>مبلغ کل خرید/ورودی (تومان)<input required inputMode="numeric" pattern="^[0-9]+$" value={documentCost} onChange={(event) => setDocumentCost(event.target.value)} /></label> : null}
             {needsReason ? <label className="inventory-document-reason">دلیل ثبت<input required maxLength={500} value={documentReason} onChange={(event) => setDocumentReason(event.target.value)} placeholder="شرح دلیل تعدیل یا ضایعات" /></label> : null}
           </div>
           {documentMessage ? <p className="inventory-document-message" role="status">{documentMessage}</p> : null}
-          <div className="inventory-document-actions"><span>می‌توانید پیش‌نویس چندردیفی بسازید یا یک سند تک‌ردیفی را مستقیم ثبت نهایی کنید.</span><div><Button variant="secondary" type="button" disabled={documentBusy || loading || !activeLocations.length} onClick={() => void createDraftOnly()}>ایجاد پیش‌نویس</Button><Button type="submit" disabled={documentBusy || loading || !activeLocations.length || !activeItems.length || !units.length}>{documentBusy ? "در حال ثبت..." : "ثبت سریع سند"}</Button></div></div>
+          <div className="inventory-document-actions"><span>می‌توانید پیش‌نویس چندردیفی بسازید یا یک سند تک‌ردیفی را مستقیم ثبت نهایی کنید.</span><div><Button variant="secondary" type="button" disabled={documentBusy || loading || !activeLocations.length || documentType === "return"} onClick={() => void createDraftOnly()}>ایجاد پیش‌نویس</Button><Button type="submit" disabled={documentBusy || loading || (documentType === "return" ? (!returnSourceDocumentId || !returnSourceLineId) : (!activeLocations.length || !activeItems.length || !units.length))}>{documentBusy ? "در حال ثبت..." : "ثبت سریع سند"}</Button></div></div>
         </form>
       </Surface>
 
