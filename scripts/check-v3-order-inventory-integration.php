@@ -141,6 +141,9 @@ $assert($readBalance($locationIds['storage'])['quantity_reserved']==='0.000000',
 $s=$pdo->prepare("SELECT COUNT(*) FROM pos_stock_ledger WHERE business_id=:business AND branch_id=:branch AND movement_type='consumption_out'");
 $s->execute(['business'=>$businessId,'branch'=>$branchId]);
 $assert((int)$s->fetchColumn()===2,'Consumption ledger entries were not written for both locations.');
+$s=$pdo->prepare('SELECT COUNT(*) FROM pos_stock_ledger WHERE business_id=:business AND branch_id=:branch AND source_order_id=:order');
+$s->execute(['business'=>$businessId,'branch'=>$branchId,'order'=>$orderId]);
+$assert((int)$s->fetchColumn()===2,'Order-driven consumption ledger entries must retain their originating order reference.');
 $s=$pdo->prepare("SELECT CAST(SUM(total_cost_amount) AS CHAR) FROM pos_stock_ledger WHERE business_id=:business AND branch_id=:branch AND movement_type='consumption_out'");
 $s->execute(['business'=>$businessId,'branch'=>$branchId]);
 $assert((string)$s->fetchColumn()==='-1050','Consumption valuation did not use reservation-time unit cost snapshots.');
