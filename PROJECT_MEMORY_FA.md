@@ -551,3 +551,5 @@ Migration 022 و clean-install schema جدول `pos_customer_consent_events` ر�
 - باز: suppression و eligibility در marketing enqueue/dispatch، اتصال رضایت به شماره فعلی و تست race/opt-out. تا آن زمان marketing dispatch غیرفعال؛ transactional SMS جداست.
 
 - رضایت grant به شماره موبایل نرمال‌شده زمان ثبت bind شده است (`recipient_phone_normalized`). تغییر شماره باعث `stale` شدن رضایت در پروفایل می‌شود و انتقال خودکار رضایت به شماره جدید ممنوع است؛ تست integration افزوده شد.
+
+- تغییر شماره پس از grant یک رخداد `invalidated` مستقل و audit‌شده ایجاد می‌کند؛ بازگرداندن شماره قبلی رضایت را احیا نمی‌کند. انصراف مشتری همچنان event جداگانه `withdrawn` است.
