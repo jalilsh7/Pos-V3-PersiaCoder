@@ -265,6 +265,48 @@ final readonly class InventoryDocumentRepository
         return (string) $s->fetchColumn();
     }
 
+    public function canAddReturnQuantity(
+        int $businessId, int $branchId, int $sourceLineId, int $returnDocumentId,
+        string $quantity, string $conversionFactor,
+    ): bool {
+        $s = $this->connection->prepare(
+            "SELECT (
+                source_line.base_quantity
+                - COALESCE((
+                    SELECT SUM(return_line.base_quantity)
+                    FROM pos_stock_document_lines return_line
+                    INNER JOIN pos_stock_documents return_doc
+                      ON return_doc.id = return_line.document_id
+                     AND return_doc.business_id = return_line.business_id
+                     AND return_doc.branch_id = return_line.branch_id
+                    WHERE return_line.business_id = source_line.business_id
+                      AND return_line.branch_id = source_line.branch_id
+                      AND return_line.source_document_line_id = source_line.id
+                      AND return_doc.document_type = 'return'
+                      AND return_doc.status = 'posted'
+                ), 0)
+                - COALESCE((
+                    SELECT SUM(draft_line.base_quantity)
+                    FROM pos_stock_document_lines draft_line
+                    WHERE draft_line.business_id = source_line.business_id
+                      AND draft_line.branch_id = source_line.branch_id
+                      AND draft_line.document_id = :return_document_id
+                      AND draft_line.source_document_line_id = source_line.id
+                ), 0)
+                - (CAST(:quantity_value AS DECIMAL(18,6)) * CAST(:factor_value AS DECIMAL(18,8)))
+             ) >= 0
+             FROM pos_stock_document_lines source_line
+             WHERE source_line.business_id = :business_id
+               AND source_line.branch_id = :branch_id AND source_line.id = :source_line_id"
+        );
+        $s->execute([
+            'return_document_id' => $returnDocumentId, 'quantity_value' => $quantity,
+            'factor_value' => $conversionFactor, 'business_id' => $businessId,
+            'branch_id' => $branchId, 'source_line_id' => $sourceLineId,
+        ]);
+        return (int) $s->fetchColumn() === 1;
+    }
+
     public function draftReturnedBaseQuantity(
         int $businessId, int $branchId, int $returnDocumentId, int $sourceLineId,
     ): string {
