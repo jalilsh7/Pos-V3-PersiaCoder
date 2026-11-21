@@ -1086,3 +1086,5 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 2. طراحی اتصال consent به شماره موبایل مقصد و جلوگیری از استفاده رضایت قدیمی پس از تغییر شماره.
 3. افزودن تست‌های concurrency و suppression در enqueue و لحظه dispatch؛ marketing فقط پس از اثبات این کنترل‌ها قابل فعال‌سازی است.
 4. سپس تکمیل بخش‌های مستقل CRM و انبار بر اساس وابستگی و ارزش محصول.
+
+- هر grant به `recipient_phone_normalized` زمان ثبت متصل است. اگر شماره مشتری عوض شود، read model وضعیت را `stale` برمی‌گرداند؛ شماره جدید رضایت قبلی را به ارث نمی‌برد. integration script این رفتار را پوشش می‌دهد. هنوز هیچ suppression در worker یا marketing dispatch وجود ندارد.
