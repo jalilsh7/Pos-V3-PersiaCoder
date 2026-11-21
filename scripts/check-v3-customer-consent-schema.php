@@ -21,7 +21,8 @@ $checks = [
     'marketing grant requires a notice version and cannot be imported as consent' =>
         str_contains($migration, "decision <> 'granted'")
         && str_contains($migration, "source <> 'import'")
-        && str_contains($migration, 'notice_version'),
+        && str_contains($migration, 'notice_version')
+        && str_contains($migration, 'evidence_ref IS NOT NULL'),
     'only marketing SMS consent is represented in this first contract' =>
         str_contains($migration, "purpose IN ('marketing')")
         && str_contains($migration, "channel IN ('sms')"),
@@ -33,6 +34,7 @@ $checks = [
     'consent grant requires explicit decision, notice version and evidence reference' =>
         str_contains($service, 'customer_consent_evidence_required')
         && str_contains($service, 'customer_phone_required_for_consent')
+        && str_contains($service, 'evidence_ref === null')
         && str_contains($service, "'decision', 'notice_version', 'evidence_ref'"),
     'consent writes are permissioned, idempotent and audited' =>
         str_contains($service, 'customers.consent.manage')
