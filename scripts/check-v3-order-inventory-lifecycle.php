@@ -30,6 +30,8 @@ $assert(str_contains($lifecycle, "'consumption_out'"), 'Consumption ledger movem
 $assert(str_contains($lifecycle, 'source_event_key'), 'Consumption ledger idempotency key is missing.');
 $assert(str_contains($lifecycle, 'recipe_version_id = :version_id'), 'Accepted order item must pin its recipe version.');
 $assert(str_contains($lifecycle, 'pos_order_item_recipe_lines'), 'Order item recipe snapshot is missing.');
+$assert(str_contains($lifecycle, \"'storefront' : 'pos'\"), 'Reservation source type must reflect the originating sales channel.');
+$assert(str_contains($lifecycle, 'LIMIT 1 FOR UPDATE'), 'Active recipe selection must be locked against concurrent activation changes.');
 $assert(str_contains($lifecycle, 'FOR UPDATE'), 'Inventory lifecycle must lock mutable rows.');
 $assert(str_contains($lifecycle, 'DECIMAL(18,6)'), 'Inventory arithmetic must use database decimal precision.');
 $assert(str_contains($schema, 'CREATE TABLE pos_stock_reservations'), 'Reservation schema is missing.');
