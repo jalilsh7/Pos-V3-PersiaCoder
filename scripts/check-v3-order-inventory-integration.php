@@ -198,4 +198,27 @@ $s=$pdo->prepare('SELECT COUNT(*) FROM pos_stock_reservations WHERE business_id=
 $s->execute(['business'=>$businessId,'branch'=>$branchId,'order'=>$shortOrderId]);
 $assert((int)$s->fetchColumn()===0,'Failed reservation transaction left a reservation record behind.');
 
-fwrite(STDOUT,"V3 order inventory reserve/consume/release/missing-reservation/shortage integration checks passed.\n");
+$otherBranchPublicId = $uuid();
+$s = $pdo->prepare('INSERT INTO pos_branches (public_id,business_id,code,name) VALUES (:public_id,:business_id,:code,:name)');
+$s->execute(['public_id'=>$otherBranchPublicId,'business_id'=>$businessId,'code'=>$prefix.'-other','name'=>'CI Other Branch']);
+$otherBranchId = (int)$pdo->lastInsertId();
+$s = $pdo->prepare("INSERT INTO pos_orders (business_id,branch_id,public_id,order_number,source_channel,order_status,payment_status,total_amount)
+ VALUES (:business,:branch,:public,:number,'pos','draft','unpaid',10000)");
+$s->execute(['business'=>$businessId,'branch'=>$otherBranchId,'public'=>$uuid(),'number'=>random_int(100000,900000)]);
+$otherBranchOrderId = (int)$pdo->lastInsertId();
+$crossBranchRejected = false;
+try {
+    $s = $pdo->prepare("INSERT INTO pos_stock_ledger
+      (business_id,branch_id,stock_item_id,location_id,document_line_id,source_order_id,movement_type,quantity_delta,
+       base_unit_id,unit_cost_snapshot,total_cost_amount,source_event_key)
+      VALUES (:business,:branch,:item,:location,NULL,:source_order,'consumption_out',-0.001,:unit,0,0,:event)");
+    $s->execute([
+        'business'=>$businessId,'branch'=>$branchId,'item'=>$stockId,'location'=>$locationIds['storage'],
+        'source_order'=>$otherBranchOrderId,'unit'=>$unitId,'event'=>'ci-cross-branch-ledger-'.$prefix,
+    ]);
+} catch (PDOException $error) {
+    $crossBranchRejected = (string)$error->getCode() === '23000';
+}
+$assert($crossBranchRejected, 'The stock ledger accepted a source order from another branch; composite scope FK is not enforced.');
+
+fwrite(STDOUT,"V3 order inventory reserve/consume/release/missing-reservation/shortage/cross-branch-scope integration checks passed.\n");
