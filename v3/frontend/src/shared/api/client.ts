@@ -405,7 +405,7 @@ export async function getInventoryDocuments(limit = 50): Promise<InventoryDocume
 
 export async function createInventoryDocument(payload: {
   document_type: InventoryDocumentType;
-  location_id: string;
+  location_id?: string;
   destination_location_id?: string;
   reason?: string;
   supplier_id?: string;
@@ -418,14 +418,10 @@ export async function createInventoryDocument(payload: {
   return data.stock_document;
 }
 
-export async function addInventoryDocumentLine(documentId: string, payload: {
-  stock_item_id: string;
-  quantity: string;
-  unit_code: string;
-  total_cost_amount?: string;
-  note?: string;
-  source_document_line_id?: string;
-}): Promise<void> {
+export async function addInventoryDocumentLine(documentId: string, payload:
+  | { source_document_line_id: string; quantity: string; stock_item_id?: never; unit_code?: never; total_cost_amount?: never; note?: string }
+  | { stock_item_id: string; quantity: string; unit_code: string; total_cost_amount?: string; note?: string; source_document_line_id?: never }
+): Promise<void> {
   await request<{ stock_document_line: { id: string } }>(
     `/inventory/documents/${encodeURIComponent(documentId)}/lines`,
     { method: "POST", body: JSON.stringify(payload) },
