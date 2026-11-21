@@ -1091,3 +1091,12 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 
 - تغییر شماره پس از grant، رخداد append-only `invalidated` با audit ایجاد می‌کند؛ restore شماره قدیمی نیز رضایت را احیا نمی‌کند. `invalidated` از `withdrawn` جداست و UI علت را نشان می‌دهد. قبل از dispatch، suppression و eligibility لحظه ارسال همچنان باید ساخته شود.
 - grant فقط برای مشتری فعال دارای شماره معتبر پذیرفته می‌شود؛ مشتری غیرفعال یا بدون موبایل نمی‌تواند رضایت SMS marketing جدید ثبت کند.
+
+## آخرین بسته گروهی — برگشت منبع‌محور انبار (2026-11-22)
+- `InventoryDocumentRepository` ایجاد سند و ردیف را با source_document_id و source_document_line_id پشتیبانی می‌کند؛ detail/list نیز مرجع سند و ردیف مبدأ را نشان می‌دهند.
+- `InventoryDocumentService::create` فقط سند خروجی posted در همان branch از نوع `adjustment_out|consumption|waste` را برای برگشت می‌پذیرد. `addLine` منبع دقیق را قفل می‌کند، قلم/واحد/ضریب را از ردیف مبدأ می‌گیرد و مقدار باقی‌مانده را با DECIMAL کنترل می‌کند. `updateLine` برای return رد می‌شود.
+- `InventoryPostingService::post` سند مبدأ را `FOR UPDATE` قفل می‌کند، source line و ledger خروجی را دوباره بررسی می‌کند، مجموع posted returns + current draft را کنترل می‌کند، بهای برگشت را از unit_cost_snapshot ledger مبدأ می‌گیرد، موجودی را در محل مبدأ افزایش می‌دهد، moving weighted average را با بهای تاریخی محاسبه و `return_in` append-only ثبت می‌کند.
+- UI و client API انتخاب سند خروجی، ردیف دقیق، مقدار جزئی و دلیل را اضافه کردند. API از مسیرهای موجود inventory.manage/CSRF/session استفاده می‌کند.
+- Integration script شامل partial return و دو draft رقابتی برای اثبات رد over-return است؛ static inventory contract هم گسترش یافته است.
+- دامنه فعلی منبع برگشت فقط adjustment_out، consumption و waste است؛ transfer، رسید خرید، refund مالی و اصلاح سند posted در این قابلیت نیستند.
+- هیچ تست، PHP lint، TypeScript/build یا migration در این نشست اجرا نشده است. پیش از پذیرش باید روی MySQL و MariaDB، به‌خصوص رقابت دو posting مستقل و migration 021، اجرا شود. فاز ۵ باز است.
