@@ -164,8 +164,8 @@ final readonly class CustomerService
         if ($evidenceRef !== null && (!is_string($evidenceRef) || trim($evidenceRef) === '' || self::unicodeLength(trim($evidenceRef)) > 190)) {
             throw new HttpException(422, 'customer_consent_evidence_invalid', 'Evidence reference must be a non-empty string up to 190 characters.');
         }
-        if ($decision === 'granted' && $noticeVersion === null) {
-            throw new HttpException(422, 'customer_consent_evidence_required', 'A notice version is required to record marketing consent.');
+        if ($decision === 'granted' && ($noticeVersion === null || $evidenceRef === null)) {
+            throw new HttpException(422, 'customer_consent_evidence_required', 'A notice version and evidence reference are required to record marketing consent.');
         }
         $noticeVersion = $noticeVersion === null ? null : trim($noticeVersion);
         $evidenceRef = $evidenceRef === null ? null : trim($evidenceRef);
