@@ -546,4 +546,110 @@ $assert($ledgerCount() === $ledgerBeforeRace + 1, 'Concurrent posting race appen
 $raceBalance = $balance($sourceLocationId);
 $assert($raceBalance['quantity_on_hand'] === '0.000000', 'Concurrent posting race produced an incorrect final quantity.');
 
-echo "V3 inventory posting integration checks passed.\n";
+
+$returnPosting = new InventoryPostingService($pdo, $appKey);
+$returnDocuments = new InventoryDocumentService($pdo, $appKey);
+$returnRaceDrafts = [];
+foreach (['return-parallel-one', 'return-parallel-two'] as $suffix) {
+    $created = $returnDocuments->create(
+        $actor, $scope,
+        ['document_type' => 'return', 'source_document_id' => $adjustmentOut,
+         'reason' => 'CI parallel source return race'],
+        $prefix . '-doc-' . $suffix . '-key', $requestId, $ip,
+    );
+    $assert($created['status'] === 201, 'Parallel return draft creation failed.');
+    $returnId = (string) $created['body']['data']['stock_document']['id'];
+    $returnLine = $returnDocuments->addLine(
+        $actor, $scope, $returnId,
+        ['source_document_line_id' => $adjustmentOutLine, 'quantity' => '0.2'],
+        $prefix . '-line-' . $suffix . '-key', $requestId, $ip,
+    );
+    $assert($returnLine['status'] === 201, 'Parallel return draft line creation failed.');
+    $returnRaceDrafts[] = [$returnId, $suffix];
+}
+$ledgerBeforeReturnRace = $ledgerCount();
+unset($returnPosting, $returnDocuments, $ledgerCount, $balance, $pdo);
+gc_collect_cycles();
+
+$returnRaceChildren = [];
+foreach ($returnRaceDrafts as [$returnDocumentId, $suffix]) {
+    $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, 0);
+    if ($pair === false) throw new RuntimeException('Unable to create the return race barrier.');
+    $resultFile = tempnam(sys_get_temp_dir(), 'pos-v3-return-race-');
+    if ($resultFile === false) throw new RuntimeException('Unable to create return race result file.');
+    $pid = pcntl_fork();
+    if ($pid === -1) throw new RuntimeException('Unable to fork return posting worker.');
+    if ($pid === 0) {
+        fclose($pair[0]);
+        fread($pair[1], 1);
+        fclose($pair[1]);
+        try {
+            $workerPdo = PosV3DatabaseTools::connect();
+            $workerPosting = new InventoryPostingService($workerPdo, $appKey);
+            $result = $workerPosting->post(
+                $actor, $scope, $returnDocumentId,
+                $prefix . '-post-' . $suffix . '-key',
+                'ci-return-race-' . bin2hex(random_bytes(4)), $ip,
+            );
+            file_put_contents($resultFile, json_encode(['status' => 'posted'], JSON_THROW_ON_ERROR));
+        } catch (HttpException $error) {
+            file_put_contents($resultFile, json_encode(['status' => 'http_error', 'message' => $error->getMessage()], JSON_THROW_ON_ERROR));
+        } catch (Throwable $error) {
+            file_put_contents($resultFile, json_encode(['status' => 'error', 'message' => $error->getMessage()], JSON_THROW_ON_ERROR));
+        }
+        exit(0);
+    }
+    fclose($pair[1]);
+    $returnRaceChildren[] = ['pid' => $pid, 'socket' => $pair[0], 'file' => $resultFile];
+}
+foreach ($returnRaceChildren as $child) {
+    fwrite($child['socket'], 'G');
+    fclose($child['socket']);
+}
+foreach ($returnRaceChildren as $child) {
+    pcntl_waitpid($child['pid'], $waitStatus);
+    $assert(pcntl_wifexited($waitStatus) && pcntl_wexitstatus($waitStatus) === 0, 'Concurrent return worker exited unexpectedly.');
+}
+$returnRaceResults = [];
+foreach ($returnRaceChildren as $child) {
+    $raw = file_get_contents($child['file']);
+    @unlink($child['file']);
+    $result = is_string($raw) ? json_decode($raw, true) : null;
+    $assert(is_array($result) && isset($result['status']), 'Concurrent return worker returned no result.');
+    $returnRaceResults[] = $result;
+}
+$returnPostedCount = count(array_filter($returnRaceResults, static fn (array $r): bool => $r['status'] === 'posted'));
+$returnBlockedCount = count(array_filter(
+    $returnRaceResults,
+    static fn (array $r): bool => $r['status'] === 'http_error'
+        && str_contains((string) ($r['message'] ?? ''), 'Posted returns plus this document exceed the original outbound quantity'),
+));
+$assert($returnPostedCount === 1 && $returnBlockedCount === 1,
+    'Concurrent return race must allow exactly one return and reject the competing over-return: ' . json_encode($returnRaceResults, JSON_UNESCAPED_UNICODE));
+
+$pdo = PosV3DatabaseTools::connect();
+$ledgerCount = static function () use ($pdo, $businessId, $branchId): int {
+    $s = $pdo->prepare('SELECT COUNT(*) FROM pos_stock_ledger WHERE business_id = :business_id AND branch_id = :branch_id');
+    $s->execute(['business_id' => $businessId, 'branch_id' => $branchId]);
+    return (int) $s->fetchColumn();
+};
+$balance = static function (int $locationId) use ($pdo, $businessId, $branchId, $stockItemId): array {
+    $s = $pdo->prepare(
+        'SELECT quantity_on_hand, quantity_reserved, average_unit_cost
+         FROM pos_stock_balances
+         WHERE business_id = :business_id AND branch_id = :branch_id
+           AND stock_item_id = :stock_item_id AND location_id = :location_id'
+    );
+    $s->execute([
+        'business_id' => $businessId, 'branch_id' => $branchId,
+        'stock_item_id' => $stockItemId, 'location_id' => $locationId,
+    ]);
+    $row = $s->fetch(PDO::FETCH_ASSOC);
+    if (!$row) throw new RuntimeException('Expected stock balance row is missing after return race.');
+    return $row;
+};
+$assert($ledgerCount() === $ledgerBeforeReturnRace + 1, 'Concurrent return race appended an unexpected number of ledger entries.');
+$returnRaceBalance = $balance($sourceLocationId);
+$assert($returnRaceBalance['quantity_on_hand'] === '0.200000', 'Concurrent return race produced an incorrect final stock balance.');
+
+echo "V3 inventory posting and source-linked return integration checks passed.\\n";
