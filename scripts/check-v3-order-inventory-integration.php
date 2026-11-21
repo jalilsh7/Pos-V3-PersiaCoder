@@ -198,4 +198,4 @@ $s=$pdo->prepare('SELECT COUNT(*) FROM pos_stock_reservations WHERE business_id=
 $s->execute(['business'=>$businessId,'branch'=>$branchId,'order'=>$shortOrderId]);
 $assert((int)$s->fetchColumn()===0,'Failed reservation transaction left a reservation record behind.');
 
-fwrite(STDOUT,"V3 order inventory reserve/consume/release/shortage integration checks passed.\n");
+fwrite(STDOUT,"V3 order inventory reserve/consume/release/missing-reservation/shortage integration checks passed.\n");
