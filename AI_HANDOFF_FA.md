@@ -1104,3 +1104,5 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - `InventoryDocumentRepository::listLines` مانده قابل برگشت را با DECIMAL و تبدیل به واحد اصلی محاسبه می‌کند؛ UI مقدار مانده را نشان داده و ردیف صفر را غیرفعال می‌کند. این فقط read model است؛ draftهای موازی کسر نمی‌شوند و کنترل نهایی زیر قفل source document در posting است.
 
 - دقت وضعیت تست: Integration جدید دو پیش‌نویس مستقل را می‌سازد و با posting ترتیبی اثبات می‌کند پس از ثبت اول، دومی در صورت عبور تجمعی رد می‌شود؛ این هنوز تست واقعی fork/connection هم‌زمان برای دو برگشت نیست. اجرای race هم‌زمان برگشت روی MySQL و MariaDB باید پیش از پذیرش اضافه/اجرا شود.
+
+- تکمیل تست رقابت: `scripts/check-v3-inventory-posting-integration.php` اکنون دو return draft مستقل برای همان 0.2 مانده می‌سازد و با دو process/connection جدا (`pcntl_fork`) هم‌زمان post می‌کند؛ انتظار دقیقاً یک posting موفق و یک رد over-return است. تست نوشته شده اما اجرا نشده؛ بنابراین رفتار concurrency هنوز runtime-verified نیست.
