@@ -652,4 +652,4 @@ $assert($ledgerCount() === $ledgerBeforeReturnRace + 1, 'Concurrent return race 
 $returnRaceBalance = $balance($sourceLocationId);
 $assert($returnRaceBalance['quantity_on_hand'] === '0.200000', 'Concurrent return race produced an incorrect final stock balance.');
 
-echo "V3 inventory posting and source-linked return integration checks passed.\\n";
+echo "V3 inventory posting and source-linked return integration checks passed.\n";
