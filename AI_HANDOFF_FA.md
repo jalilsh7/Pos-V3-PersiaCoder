@@ -991,3 +991,10 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 ## گسترش سناریوهای replay چرخه انبار سفارش — 2026-11-21
 - integration test اکنون replay پذیرش با همان کلید، replay مصرف پس از وضعیت consumed و replay آزادسازی پس از وضعیت released را نیز اجرا می‌کند؛ انتظار عدم درج ledger تکراری و عدم کاهش مجدد رزرو حفظ شده است.
 - commit: `a0083d4010e796221050f5f6e8614955ea25ad63`. اجرا نشده.
+
+## صفحه‌بندی cursor-based گردش انبار — 2026-11-21
+- `InventoryController::ledger` مقدار `next_cursor` را علاوه بر meta در data هم برمی‌گرداند تا API client بتواند آن را مصرف کند.
+- client تابع `getInventoryLedger` را به `{items,nextCursor}` تبدیل کرده و `before_id` می‌فرستد. `InventoryWorkspace` صفحه اول ۵۰ مورد را می‌گیرد و با دکمه «بارگذاری گردش‌های قدیمی‌تر» صفحات بعدی را append می‌کند؛ شناسه داخلی ledger در خروجی عمومی نمایش داده نمی‌شود.
+- تست `check-v3-backend-inventory-read.php` اکنون قرارداد pagination UI/API را هم بررسی می‌کند.
+- commits: `143147831566932016826facc93bb54bf0414379`, `a7dd0f173b712120ec6d6a6c8779d185384764c6`, `8cda2b4fa283d2857645aa8803335073eef8e33b`, `9b98c1c59e2ecd7e39a1417727a3c2c976d00120`, `d1a7f075bfcdf26dfb58fe60aae76c884de85c36`, `c79dd6a11596ab0a496c8bd5da6d103c07723ab1`, `7647b99ec82de3fb9ffd5ba30584279ca2eb6609`.
+- هنوز build/typecheck و تست contract اجرا نشده‌اند.
