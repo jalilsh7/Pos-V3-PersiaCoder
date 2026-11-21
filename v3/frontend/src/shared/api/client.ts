@@ -487,6 +487,7 @@ export type PosCatalogProductDetail = Omit<PosCatalogProduct, "category"> & {
     min_select: number;
     max_select: number;
     is_required_default: boolean;
+    is_active: boolean;
     is_required: boolean;
     sort_order: number;
     options: { id: string; name: string; price_delta_amount: number; is_active: boolean }[];
