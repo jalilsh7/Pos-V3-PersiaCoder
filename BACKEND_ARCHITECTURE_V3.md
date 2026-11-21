@@ -473,3 +473,5 @@ v3/backend/
 - Posting locks the source document and source line, rechecks cumulative posted returns plus the entire current draft, restores stock at source location using the source ledger `unit_cost_snapshot`, updates moving weighted average, and appends `return_in` ledger events.
 - `InventoryWorkspace` displays returnable quantity and disables exhausted source lines. Refund/payment processing is not part of inventory return.
 - Integration and static checks have been authored but not executed in this working session. A true parallel return-posting race test remains outstanding; sequential stale-draft over-return rejection is covered by the added integration scenario.
+
+- A two-process/two-connection return-posting race scenario is now authored in `scripts/check-v3-inventory-posting-integration.php`; it expects exactly one return to post and the competing over-return to fail. The scenario has not been executed, so concurrency behavior remains unverified.
