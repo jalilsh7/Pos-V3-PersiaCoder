@@ -23,7 +23,8 @@ $checks = [
         && str_contains($migration, "source <> 'import'")
         && str_contains($migration, 'notice_version')
         && str_contains($migration, 'evidence_ref IS NOT NULL')
-        && str_contains($migration, 'recipient_phone_normalized IS NOT NULL'),
+        && str_contains($migration, 'recipient_phone_normalized IS NOT NULL')
+        && str_contains($migration, "'invalidated'"),
     'only marketing SMS consent is represented in this first contract' =>
         str_contains($migration, "purpose IN ('marketing')")
         && str_contains($migration, "channel IN ('sms')"),
@@ -31,7 +32,8 @@ $checks = [
         str_contains($migration, "customers.consent.manage")
         && str_contains($migration, "r.code = 'manager'"),
     'clean-install schema contains the consent event table' =>
-        str_contains($schema, 'CREATE TABLE pos_customer_consent_events'),
+        str_contains($schema, 'CREATE TABLE pos_customer_consent_events')
+        && str_contains($schema, 'recipient_phone_normalized'),
     'consent grant requires explicit decision, notice version and evidence reference' =>
         str_contains($service, 'customer_consent_evidence_required')
         && str_contains($service, 'customer_phone_required_for_consent')
@@ -46,7 +48,8 @@ $checks = [
         str_contains($repository, 'latestConsent')
         && str_contains($repository, 'consentHistory')
         && str_contains($repository, 'ORDER BY id DESC')
-        && str_contains($repository, "? 'stale'"),
+        && str_contains($repository, "? 'stale'")
+        && str_contains($service, 'customer.marketing_consent.invalidated_by_phone_change'),
     'customer API route has session, consent permission, CSRF and same-origin protection' =>
         str_contains($routes, '/customers/{customerPublicId}/marketing-sms-consent')
         && str_contains($routes, "makePermissionMiddleware('customers.consent.manage')")
@@ -61,6 +64,7 @@ $checks = [
         && str_contains($integration, 'consentReplay')
         && str_contains($integration, 'consentWithdrawn')
         && str_contains($integration, "['marketing_consent']['decision'] === 'stale'")
+        && str_contains($integration, 'incorrectly revived previously invalidated marketing consent')
 ];
 $failed = false;
 foreach ($checks as $label => $passed) {
