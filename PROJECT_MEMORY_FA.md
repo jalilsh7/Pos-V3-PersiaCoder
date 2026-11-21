@@ -563,3 +563,5 @@ Migration 022 و clean-install schema جدول `pos_customer_consent_events` ر�
 - UI و API client برای انتخاب منبع/ردیف و ثبت مقدار و دلیل اضافه شده‌اند. تست‌های Integration و static نوشته شده اما اجرا نشده‌اند؛ lint/build/migration هم اجرا نشده‌اند.
 
 - سند مبدأ مانده قابل برگشت را بعد از کسر برگشت‌های posted و تبدیل به واحد اصلی نمایش می‌دهد؛ UI ردیف صفر را غیرفعال می‌کند. draftهای دیگر در این عدد کسر نمی‌شوند و posting مرجع قطعی رقابت است.
+
+- Integration script اکنون سناریوی دو process/connection برای posting هم‌زمان دو برگشت منبع‌محور دارد؛ تست نوشته شده اما اجرا نشده و concurrency هنوز تأیید runtime ندارد.
