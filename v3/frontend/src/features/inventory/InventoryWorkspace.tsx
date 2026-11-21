@@ -69,6 +69,8 @@ export function InventoryWorkspace() {
   const [locations, setLocations] = useState<InventoryLocation[]>([]);
   const [balances, setBalances] = useState<InventoryBalance[]>([]);
   const [ledger, setLedger] = useState<InventoryLedgerEntry[]>([]);
+  const [ledgerCursor, setLedgerCursor] = useState<string | null>(null);
+  const [ledgerLoadingMore, setLedgerLoadingMore] = useState(false);
   const [units, setUnits] = useState<InventoryUnit[]>([]);
   const [documents, setDocuments] = useState<InventoryDocumentSummary[]>([]);
   const [suppliers, setSuppliers] = useState<InventorySupplier[]>([]);
@@ -116,7 +118,7 @@ export function InventoryWorkspace() {
 
   async function loadData() {
     try {
-      const [stockItems, stockLocations, stockBalances, entries, stockUnits, stockDocuments, stockSuppliers] = await Promise.all([
+      const [stockItems, stockLocations, stockBalances, ledgerPage, stockUnits, stockDocuments, stockSuppliers] = await Promise.all([
         getInventoryStockItems("", true),
         getInventoryLocations(true),
         getInventoryBalances({ limit: 200 }),
@@ -128,7 +130,8 @@ export function InventoryWorkspace() {
       setItems(stockItems);
       setLocations(stockLocations);
       setBalances(stockBalances);
-      setLedger(entries);
+      setLedger(ledgerPage.items);
+      setLedgerCursor(ledgerPage.nextCursor);
       setUnits(stockUnits);
       setDocuments(stockDocuments);
       setSuppliers(stockSuppliers);
@@ -152,6 +155,21 @@ export function InventoryWorkspace() {
     setRefreshing(true);
     setError(null);
     await loadData();
+  }
+
+  async function loadMoreLedger() {
+    if (!ledgerCursor || ledgerLoadingMore) return;
+    setLedgerLoadingMore(true);
+    setDocumentMessage(null);
+    try {
+      const page = await getInventoryLedger({ limit: 50, beforeId: ledgerCursor });
+      setLedger((current) => [...current, ...page.items]);
+      setLedgerCursor(page.nextCursor);
+    } catch (cause) {
+      setDocumentMessage(cause instanceof ApiError ? cause.message : "دریافت گردش‌های قدیمی‌تر انجام نشد.");
+    } finally {
+      setLedgerLoadingMore(false);
+    }
   }
 
   // This effect starts an asynchronous API request; state updates happen after the request settles.
@@ -637,7 +655,7 @@ export function InventoryWorkspace() {
               <div className="inventory-history-heading"><strong><Activity size={15} /> گردش‌های ثبت‌شده</strong><span>{quantity(selectedLedger.length)} مورد اخیر</span></div>
               <div className="inventory-history">
                 {selectedLedger.map((entry, index) => (
-                  <div className="inventory-movement-row" key={`${entry.document_id ?? "ledger"}-${entry.created_at}-${index}`}>
+                  <div className="inventory-movement-row" key={entry.ledger_id}>
                     <span className={Number(entry.quantity_delta) >= 0 ? "inventory-movement-icon is-in" : "inventory-movement-icon is-out"}><Activity size={15} /></span>
                     <div><strong>{movementLabel[entry.movement_type] ?? entry.movement_type}</strong><small>{entry.location_name} · {dateTime(entry.created_at)}{entry.document_no ? ` · سند ${entry.document_no}` : ""}</small>{entry.note ? <small>{entry.note}</small> : null}</div>
                     <b>{Number(entry.quantity_delta) > 0 ? "+" : ""}{quantity(entry.quantity_delta)} {entry.base_unit_code}</b>
@@ -645,6 +663,7 @@ export function InventoryWorkspace() {
                 ))}
                 {!selectedLedger.length ? <div className="inventory-empty">برای این قلم در بازه اخیر گردش ثبت‌شده‌ای وجود ندارد.</div> : null}
               </div>
+              {ledgerCursor ? <div className="inventory-ledger-more"><Button variant="secondary" onClick={() => void loadMoreLedger()} disabled={ledgerLoadingMore}>{ledgerLoadingMore ? "در حال دریافت..." : "بارگذاری گردش‌های قدیمی‌تر"}</Button></div> : null}
             </>
           ) : <div className="inventory-empty">{loading ? "در حال بارگذاری..." : "یک قلم را از فهرست انتخاب کنید."}</div>}
           {selectedBalances.length > 1 ? <div className="inventory-location-breakdown"><strong><MapPin size={14} /> موجودی به تفکیک انبارک</strong>{selectedBalances.map((balance) => <div key={balance.location_id}><span>{balance.location_name}</span><b>{quantity(balance.quantity_on_hand)} {balance.base_unit_code}</b></div>)}</div> : null}
