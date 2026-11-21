@@ -505,6 +505,11 @@ export async function getPosCatalogProductDetails(productId: string): Promise<Po
   return data.product;
 }
 
+export async function getPosCatalogProductManagementDetails(productId: string): Promise<PosCatalogProductDetail> {
+  const data = await request<{ product: PosCatalogProductDetail }>(`/catalog/products/${encodeURIComponent(productId)}/management-details`);
+  return data.product;
+}
+
 export type CatalogCategory = {
   id: string;
   name: string;
