@@ -539,3 +539,6 @@ Migration 021 به contract check اسناد انبار متصل شد: ارجا�
 - تست، build، lint و migration فقط پس از اجرای واقعی موفق گزارش می‌شوند؛ نوشتن تست یا افزودن workflow به معنی PASS نیست. workflowهای موجود manual-only باقی می‌مانند مگر تصمیم صریح جداگانه‌ای ثبت شود.
 - مستندات تصمیمات، roadmap، handoff و project memory همراه پیشرفت به‌روز می‌شوند. فازها بدون تأیید صریح کاربر بسته نمی‌شوند.
 - این قانون برآورد زمانی یا تضمین تحویل هفت‌روزه ایجاد نمی‌کند؛ هدف، بیشینه‌کردن پیشرفت قابل اثبات در هر بازه کاری است.
+
+## CRM-CONSENT-2026-001 — زیرساخت append-only رضایت بازاریابی (2026-11-22)
+Migration 022 و clean-install schema جدول `pos_customer_consent_events` را اضافه کردند؛ event-key یکتا، business/customer composite FK، source، notice_version، evidence_ref و actor دارد. نسخه اول فقط marketing/SMS است؛ grant بدون notice_version و grant از import رد می‌شود. permission `customers.consent.manage` برای manager seed شده و static contract guard افزوده شده است. API/UI/current-state/suppression هنوز پیاده‌سازی نشده و marketing dispatch باید غیرفعال بماند. migration و تست‌ها اجرا نشده‌اند.
