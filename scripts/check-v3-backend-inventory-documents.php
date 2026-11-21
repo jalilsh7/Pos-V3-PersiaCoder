@@ -65,6 +65,10 @@ $assert(str_contains($service, 'findSupplierId'), 'Supplier references must be r
 $assert(!preg_match('/(?:UPDATE|INSERT INTO)\s+pos_stock_balances/i', $repository), 'Draft document operations must not mutate stock balances.');
 $assert(!preg_match('/INSERT INTO\s+pos_stock_ledger/i', $repository), 'Draft document operations must not append stock ledger entries.');
 $assert(str_contains($frontController, "'/api/v1/inventory/documents'"), 'Document routes must be registered.');
+$inventoryWorkspace = $read('v3/frontend/src/features/inventory/InventoryWorkspace.tsx');
+$assert(str_contains($inventoryWorkspace, 'getInventoryDocument(createdDocument.id)')
+    && str_contains($inventoryWorkspace, 'recovered.status === "posted"')
+    && str_contains($inventoryWorkspace, 'بدون ایجاد سند تکراری'), 'Partial inventory document submission must recover and reopen the existing document instead of inviting duplicate creation.');
 $assert(str_contains($controller, 'public function createDocument'), 'Document create handler must be present.');
 $assert(str_contains($controller, 'public function createDocumentLine'), 'Document line handler must be present.');
 $assert(str_contains($controller, 'public function updateDocumentLine'), 'Document line update handler must be present.');
