@@ -151,3 +151,9 @@
 
 .inventory-management-form textarea { width: 100%; min-height: 54px; resize: vertical; padding: 8px 9px; border: 1px solid var(--pc-line); border-radius: 7px; background: #fff; color: var(--pc-ink); font: inherit; font-size: 10px; }
 .inventory-management-form textarea:focus { outline: 0; border-color: var(--pc-brand); box-shadow: var(--pc-focus-ring); }
+
+.inventory-ledger-more {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0 4px;
+}
