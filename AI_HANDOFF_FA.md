@@ -1027,6 +1027,6 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - commits: `4153aa43f10b62ee283a22d0b938c6d476431603`, `e4f195682d5f964eec12a06590bea69f35c3f80b`, `a07595b68d36fbf26727664e4524cfda1b6922f5`.
 - تست اجرا نشده است.
 ## آزمون مرجع سفارش بین شعب — 2026-11-21
-- `scripts/check-v3-order-inventory-integration.php` اکنون درج گردش انبار با order متعلق به شعبه دیگر همان business را امتحان می‌کند؛ انتظار می‌رود FK مرکب migration 019 آن را با SQLSTATE integrity violation رد کند.
+- `scripts/check-v3-order-inventory-integration.php` اکنون درج گردش انبار با order متعلق به شعبه دیگر همان business را امتحان می‌کند؛ فقط ردشدن توسط constraint مشخص `fk_v3_stock_ledger_source_order_scope` با driver error 1452 قبولی محسوب می‌شود؛ خطاهای integrity دیگر false positive نیستند.
 - `scripts/check-v3-order-inventory-lifecycle.php` وجود این سناریو را در قرارداد static guard می‌کند.
 - هنوز هیچ تستی اجرا نشده؛ در gate دیتابیس هر دو موتور MySQL 8.4 و MariaDB 10.6 باید اجرا شوند.
