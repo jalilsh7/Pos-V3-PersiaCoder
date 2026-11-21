@@ -160,7 +160,7 @@ final readonly class InventoryDocumentService
                 );
                 $after = [
                     'document_no' => $documentNo, 'document_type' => $type, 'status' => 'draft',
-                    'location_id' => $locationPublicId, 'destination_location_id' => $destinationPublicId,
+                    'location_id' => $type === 'return' ? (string) $sourceDocument['location_public_id'] : $locationPublicId, 'destination_location_id' => $destinationPublicId,
                     'supplier_id' => $supplierPublicId, 'source_document_id' => $sourceDocumentPublicId, 'reason' => $reason,
                 ];
                 $this->audit->record(
