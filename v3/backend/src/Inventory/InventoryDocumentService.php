@@ -77,13 +77,20 @@ final readonly class InventoryDocumentService
     ): array {
         $branchId = self::branch($scope);
         $type = $payload['document_type'] ?? null;
-        // Returns are recorded as audited inbound adjustments until source-linked return valuation is implemented.
-        $types = ['purchase_receipt', 'consumption', 'transfer', 'adjustment_in', 'adjustment_out', 'waste'];
+        $types = ['purchase_receipt', 'consumption', 'transfer', 'adjustment_in', 'adjustment_out', 'waste', 'return'];
         if (!is_string($type) || !in_array($type, $types, true)) {
             throw new HttpException(422, 'stock_document_type_invalid', 'The stock document type is invalid.');
         }
+        $sourceDocumentPublicId = $payload['source_document_id'] ?? null;
+        if ($type === 'return') {
+            if (!is_string($sourceDocumentPublicId) || !self::isUuid($sourceDocumentPublicId)) {
+                throw new HttpException(422, 'stock_return_source_required', 'A valid posted source document is required for a return.');
+            }
+        } elseif ($sourceDocumentPublicId !== null) {
+            throw new HttpException(422, 'stock_return_source_not_allowed', 'Only return documents can reference a source document.');
+        }
         $locationPublicId = $payload['location_id'] ?? null;
-        if (!is_string($locationPublicId) || !self::isUuid($locationPublicId)) {
+        if ($type !== 'return' && (!is_string($locationPublicId) || !self::isUuid($locationPublicId))) {
             throw new HttpException(422, 'stock_document_location_invalid', 'A valid location_id is required.');
         }
         $destinationPublicId = $payload['destination_location_id'] ?? null;
@@ -105,14 +112,14 @@ final readonly class InventoryDocumentService
         $reasonValue = $payload['reason'] ?? '';
         if (!is_string($reasonValue)) throw new HttpException(422, 'stock_document_reason_invalid', 'The reason must be text.');
         $reason = trim($reasonValue);
-        if (in_array($type, ['adjustment_in', 'adjustment_out', 'waste'], true) && $reason === '') {
+        if (in_array($type, ['adjustment_in', 'adjustment_out', 'waste', 'return'], true) && $reason === '') {
             throw new HttpException(422, 'stock_document_reason_required', 'A reason is required for adjustments and waste.');
         }
         if (self::unicodeLength($reason) > 500) throw new HttpException(422, 'stock_document_reason_invalid', 'The reason must not exceed 500 characters.');
         $reason = $reason === '' ? null : $reason;
 
         $fingerprint = hash('sha256', json_encode(
-            [$type, $locationPublicId, $destinationPublicId, $supplierPublicId, $reason],
+            [$type, $locationPublicId, $destinationPublicId, $supplierPublicId, $sourceDocumentPublicId, $reason],
             JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE,
         ));
         $publicId = self::uuidV4();
@@ -120,10 +127,22 @@ final readonly class InventoryDocumentService
             $actor->userId, $scope, 'inventory.stock-document.create', $key, $fingerprint,
             function (PDO $db) use (
                 $actor, $scope, $branchId, $type, $locationPublicId, $destinationPublicId,
-                $supplierPublicId, $reason, $publicId, $requestId, $ip,
+                $supplierPublicId, $sourceDocumentPublicId, $reason, $publicId, $requestId, $ip,
             ): array {
-                $locationId = $this->documents->findLocationId($scope->businessId, $branchId, $locationPublicId);
-                if ($locationId === null) throw new HttpException(404, 'stock_document_location_not_found', 'The active location was not found in this branch.');
+                $sourceDocumentId = null;
+                if ($type === 'return') {
+                    $sourceDocument = $this->documents->findPostedReturnSourceForUpdate(
+                        $scope->businessId, $branchId, (string) $sourceDocumentPublicId,
+                    );
+                    if ($sourceDocument === null) {
+                        throw new HttpException(409, 'stock_return_source_invalid', 'The source must be a posted outbound document in this branch with supported historical valuation.');
+                    }
+                    $sourceDocumentId = (int) $sourceDocument['id'];
+                    $locationId = (int) $sourceDocument['location_id'];
+                } else {
+                    $locationId = $this->documents->findLocationId($scope->businessId, $branchId, (string) $locationPublicId);
+                    if ($locationId === null) throw new HttpException(404, 'stock_document_location_not_found', 'The active location was not found in this branch.');
+                }
                 $destinationId = null;
                 if ($destinationPublicId !== null) {
                     $destinationId = $this->documents->findLocationId($scope->businessId, $branchId, $destinationPublicId);
@@ -137,12 +156,12 @@ final readonly class InventoryDocumentService
                 $documentNo = $this->documents->nextDocumentNumber($scope->businessId, $branchId);
                 $this->documents->create(
                     $scope->businessId, $branchId, $publicId, $documentNo, $type,
-                    $locationId, $destinationId, $supplierId, $reason, $actor->userId,
+                    $locationId, $destinationId, $supplierId, $reason, $actor->userId, $sourceDocumentId,
                 );
                 $after = [
                     'document_no' => $documentNo, 'document_type' => $type, 'status' => 'draft',
-                    'location_id' => $locationPublicId, 'destination_location_id' => $destinationPublicId,
-                    'supplier_id' => $supplierPublicId, 'reason' => $reason,
+                    'location_id' => $type === 'return' ? (string) $sourceDocumentPublicId : $locationPublicId, 'destination_location_id' => $destinationPublicId,
+                    'supplier_id' => $supplierPublicId, 'source_document_id' => $sourceDocumentPublicId, 'reason' => $reason,
                 ];
                 $this->audit->record(
                     $actor->userId, 'inventory.stock_document.created', 'stock_document',
