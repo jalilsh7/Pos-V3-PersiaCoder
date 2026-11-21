@@ -965,3 +965,9 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - `scripts/check-v3-backend-inventory-documents.php` این قرارداد را بررسی می‌کند.
 - commits: `7c934cbfc93c47e0bbd130cebd999ee895aa5ced`, `1f242adf54daf24db1c635c3b528eb909b103c9e`, `ad79a74393c64608afb02dd6cd635d65b9ce8105`, `6e8a153bf74b224761ad36281227de90263a4dd9`.
 - هنوز هیچ lint، اجرای contract scripts، MySQL/MariaDB integration یا concurrency test اجرا نشده است. ادامه: ممیزی سایر mismatchهای SQL/schema و سپس افزودن تست یکپارچگی واقعی برای چرخه order reserve/consume/release.
+
+## تست دیتابیسی جدید چرخه سفارش و انبار — 2026-11-21
+- `scripts/check-v3-order-inventory-integration.php` افزوده شد؛ با داده مستقل CI، سرویس چرخه موجودی را روی DB واقعی فراخوانی می‌کند و reserve با اولویت آشپزخانه و fallback انبار، snapshot و pin رسپی، consume/ledger و valuation، release در لغو و rollback کامل کمبود موجودی را assert می‌کند.
+- workflow `.github/workflows/v3-database-validation.yml` برای lint و اجرای این تست بعد از inventory posting integration به‌روزرسانی شد. trigger همچنان manual-only است.
+- commits: `2f7341e7e9e10fb82636871829163783c84e46c5`, `1d934f5406d1a55dd008648981dce426f454454c`, `ed8d5080d20f2cddb41cc34824438d601577ab56`, `b4e2e5a0b01ee73fc66c75e77ba9459a550cb997`.
+- هنوز workflow اجرا نشده؛ PASS اعلام نشود. قبل از بسته‌شدن فاز، اجرای MySQL/MariaDB و اصلاح هر شکست لازم است.
