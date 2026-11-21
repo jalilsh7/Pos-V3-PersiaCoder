@@ -1071,3 +1071,18 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - permission `customers.consent.manage` برای manager seed شده است. Contract guard: `scripts/check-v3-customer-consent-schema.php`.
 - مهم: هنوز API/Repository/UI و اتصال suppression به تمام مسیرهای ارسال بازاریابی وجود ندارد؛ بنابراین هیچ مسیر ارسال marketing نباید فعال/قابل فراخوانی شود. گام بعدی: پیاده‌سازی ثبت grant/withdraw با idempotency و audit، خواندن آخرین وضعیت و history، سپس enforce کردن eligibility در نقطه enqueue/dispatch.
 - هیچ migration، تست، lint یا build در runtime اجرا نشده است؛ فقط فایل‌ها در GitHub ثبت شده‌اند.
+
+## آخرین بسته اجراشده — CRM رضایت پیامکی (2026-11-22)
+- Migration `022_customer-consent-evidence.sql` و clean-install schema جدول append-only را دارند؛ grant در دیتابیس به notice_version و evidence_ref نیاز دارد و source=import نمی‌تواند grant بسازد.
+- `CustomerRepository` عملیات latest/history/append را اضافه کرد و CustomerService ثبت grant/withdraw را با permission مستقل، قفل مشتری، idempotency و audit انجام می‌دهد. grant بدون موبایل معتبر یا مدرک کامل رد می‌شود.
+- route محافظت‌شده `POST /api/v1/customers/{customerPublicId}/marketing-sms-consent` با session، `customers.consent.manage`، CSRF و same-origin ثبت شد.
+- جزئیات مشتری اکنون وضعیت جاری و تاریخچه را برمی‌گرداند؛ CustomersWorkspace و API client کنترل ثبت رضایت اعلام‌شده و انصراف را دارند. وجود شماره موبایل رضایت تلقی نمی‌شود.
+- تست integration CRM برای unknown/grant/replay/missing evidence/withdrawal گسترش یافت؛ `scripts/check-v3-customer-consent-schema.php` نیز API، UI و قراردادها را guard می‌کند.
+- **باز و مسدود:** هیچ مسیر ارسال marketing فعال نشده است. قبل از هر dispatch باید suppression در تمام نقاط enqueue و worker enforce شود، رضایت به شماره مقصد فعلی bind/verify شود و opt-out در لحظه ارسال دوباره بررسی شود. ارسال transactional مستقل است.
+- آخرین بسته هنوز از نظر اجرا تأیید نشده: migration، integration، static script، PHP lint، TypeScript و build اجرا نشده‌اند. فاز ۱۰ بسته نیست.
+
+### گام گروهی بعدی
+1. بررسی کامل outbox/worker/poller و تعریف نقطه واحد eligibility برای marketing بدون دست‌زدن به transactional.
+2. طراحی اتصال consent به شماره موبایل مقصد و جلوگیری از استفاده رضایت قدیمی پس از تغییر شماره.
+3. افزودن تست‌های concurrency و suppression در enqueue و لحظه dispatch؛ marketing فقط پس از اثبات این کنترل‌ها قابل فعال‌سازی است.
+4. سپس تکمیل بخش‌های مستقل CRM و انبار بر اساس وابستگی و ارزش محصول.
