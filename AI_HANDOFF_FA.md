@@ -1100,3 +1100,5 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - Integration script شامل partial return و دو draft رقابتی برای اثبات رد over-return است؛ static inventory contract هم گسترش یافته است.
 - دامنه فعلی منبع برگشت فقط adjustment_out، consumption و waste است؛ transfer، رسید خرید، refund مالی و اصلاح سند posted در این قابلیت نیستند.
 - هیچ تست، PHP lint، TypeScript/build یا migration در این نشست اجرا نشده است. پیش از پذیرش باید روی MySQL و MariaDB، به‌خصوص رقابت دو posting مستقل و migration 021، اجرا شود. فاز ۵ باز است.
+
+- `InventoryDocumentRepository::listLines` مانده قابل برگشت را با DECIMAL و تبدیل به واحد اصلی محاسبه می‌کند؛ UI مقدار مانده را نشان داده و ردیف صفر را غیرفعال می‌کند. این فقط read model است؛ draftهای موازی کسر نمی‌شوند و کنترل نهایی زیر قفل source document در posting است.
