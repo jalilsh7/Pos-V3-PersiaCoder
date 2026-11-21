@@ -123,3 +123,5 @@ MySQL/MariaDB برای بسیاری از دستورات DDL implicit commit ان
 - API ثبت grant/withdraw در CRM به جدول رخدادها متصل شده است؛ grant به شماره معتبر، notice_version و evidence_ref نیاز دارد و هر تغییر با actor، idempotency و audit ثبت می‌شود.
 - Customer detail آخرین وضعیت و تاریخچه رخدادها را نمایش می‌دهد؛ نبود رخداد برابر `unknown` است.
 - این migration هنوز در محیط MySQL/MariaDB اجرا نشده است. وجود API ثبت رضایت، marketing dispatch را فعال نمی‌کند؛ suppression در مسیر ارسال هنوز لازم است.
+
+- هر grant علاوه بر notice_version و evidence_ref، شماره موبایل نرمال‌شده زمان ثبت را در `recipient_phone_normalized` نگهداری می‌کند؛ تغییر شماره مشتری باعث stale شدن رضایت قبلی در read model می‌شود. این migration هنوز اجرا نشده است.
