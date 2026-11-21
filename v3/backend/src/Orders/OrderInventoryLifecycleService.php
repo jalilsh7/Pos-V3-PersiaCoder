@@ -161,10 +161,21 @@ final readonly class OrderInventoryLifecycleService
                      VALUES (:business,:branch,:order_item,:version,:item,:location,:qty,0,:cost)'
                 );
                 foreach ($requirement['items'] as $source) {
+                    $share = $this->db->prepare(
+                        'SELECT CAST(ROUND(
+                           CAST(:allocated AS DECIMAL(18,6)) * CAST(:source_qty AS DECIMAL(18,6))
+                           / CAST(:total_qty AS DECIMAL(18,6)), 6
+                         ) AS DECIMAL(18,6))'
+                    );
+                    $share->execute([
+                        'allocated'=>$take, 'source_qty'=>$source['quantity'], 'total_qty'=>$requirement['qty'],
+                    ]);
+                    $sourceAllocation = (string)$share->fetchColumn();
+                    if ($this->decimalCompare($sourceAllocation, '0') <= 0) continue;
                     $snapshot->execute([
                         'business'=>$businessId,'branch'=>$branchId,'order_item'=>$source['order_item_id'],
                         'version'=>$source['version_id'],'item'=>$stockId,'location'=>$locationId,
-                        'qty'=>$take,'cost'=>(string)$row['average_unit_cost'],
+                        'qty'=>$sourceAllocation,'cost'=>(string)$row['average_unit_cost'],
                     ]);
                 }
                 $allocated = $this->decimalAdd($allocated, $take);
