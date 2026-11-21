@@ -1008,3 +1008,5 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 ## اصلاح contention قفل مکان‌ها — 2026-11-21
 - قفل انحصاری روی همه مکان‌های فعال می‌توانست رزرو سفارش‌ها را در یک شعبه سریالی کند. query مکان‌ها اکنون `LOCK IN SHARE MODE` و مرتب‌شده با ID است؛ رزروهای موازی با هم سازگارند ولی update/deactivate مکان تا پایان تراکنش صبر می‌کند. قفل balanceها با `FOR UPDATE` و ترتیب ثابت باقی مانده است.
 - contract check: `9ae2196a922a4ffae74cb3cd7326650c3ca423e3`; code: `bd3c25a39c6e5ca06ee39586ee1b03b495a4467e`. MySQL/MariaDB test هنوز اجرا نشده.
+
+- متن تعداد و حالت خالی در پنل گردش با pagination هماهنگ شد؛ refresh خطای قبلی بارگذاری قدیمی‌تر را پاک می‌کند. commit `2217464fa60301a1bee37c8fdc685b2e061dae9e`. Build pending.
