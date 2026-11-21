@@ -554,3 +554,10 @@ Migration 022 و clean-install schema جدول `pos_customer_consent_events` ر�
 
 - تغییر شماره پس از grant یک رخداد `invalidated` مستقل و audit‌شده ایجاد می‌کند؛ بازگرداندن شماره قبلی رضایت را احیا نمی‌کند. انصراف مشتری همچنان event جداگانه `withdrawn` است.
 - grant فقط برای مشتری فعال دارای شماره معتبر پذیرفته می‌شود؛ مشتری غیرفعال یا بدون موبایل نمی‌تواند رضایت SMS marketing جدید ثبت کند.
+
+## INV-RETURN-2026-001 — پیاده‌سازی چرخه برگشت موجودی (2026-11-22)
+- سند return به سند posted خروجی در همان business/branch وصل است؛ منابع v1: adjustment_out، consumption، waste.
+- هر ردیف برگشت به source_document_line_id متصل است و قلم/واحد/ضریب از مبدأ می‌آید؛ ویرایش/override ردیف برگشت ممنوع است.
+- برگشت جزئی مجاز؛ مقدار برگشتی تجمعی با DECIMAL کنترل می‌شود. posting سند مبدأ را قفل می‌کند و over-return را در برابر draftهای دیگر رد می‌کند.
+- هزینه از unit_cost_snapshot ledger خروجی همان ردیف؛ موجودی همان محل مبدأ زیاد، weighted average با هزینه تاریخی محاسبه و ledger با return_in append می‌شود.
+- UI و API client برای انتخاب منبع/ردیف و ثبت مقدار و دلیل اضافه شده‌اند. تست‌های Integration و static نوشته شده اما اجرا نشده‌اند؛ lint/build/migration هم اجرا نشده‌اند.
