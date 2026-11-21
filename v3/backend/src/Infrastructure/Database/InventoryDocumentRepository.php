@@ -326,7 +326,7 @@ final readonly class InventoryDocumentRepository
     {
         $s = $this->connection->prepare(
             "SELECT id, public_id, document_no, document_type, status,
-                    location_id, destination_location_id, supplier_id
+                    location_id, destination_location_id, supplier_id, source_document_id
              FROM pos_stock_documents
              WHERE business_id = :business_id AND branch_id = :branch_id AND public_id = :public_id
              LIMIT 1 FOR UPDATE"
