@@ -1471,3 +1471,5 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - client از `before_id` و `next_cursor` پشتیبانی می‌کند؛ `InventoryWorkspace` با دکمه «بارگذاری گردش‌های قدیمی‌تر» صفحات بعدی را append می‌کند. شناسه داخلی ledger در مدل عمومی UI افشا نمی‌شود و کلید ردیف‌ها از ترکیب داده‌های نمایشی ساخته می‌شود.
 - contract check scope انبار برای API client و UI pagination گسترش یافت.
 - commits: `1431478`، `a7dd0f1`، `8cda2b4`، `9b98c1c`، `d1a7f07`، `c79dd6a`، `7647b99`. Build/typecheck و تست contract اجرا نشده‌اند.
+
+- بهبود تکمیلی pagination: خطای بارگذاری صفحه قدیمی‌تر اکنون در همان بخش گردش انبار نمایش داده می‌شود و با retry همان cursor قابل تکرار است؛ پیام خطای فرم اسناد با آن تداخل ندارد. commit `bb16935`؛ build هنوز اجرا نشده.
