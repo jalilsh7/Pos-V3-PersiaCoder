@@ -291,8 +291,28 @@ final readonly class CustomerRepository
         );
         $loyaltyEntries->execute(['business_id' => $businessId, 'customer_id' => $customerId]);
 
+        $currentConsent = $this->latestConsent($businessId, $customerId);
+        $consentHistory = $this->consentHistory($businessId, $customerId);
+
         return [
             'customer' => self::mapCustomer($customer),
+            'marketing_consent' => [
+                'purpose' => 'marketing',
+                'channel' => 'sms',
+                'decision' => $currentConsent['decision'] ?? 'unknown',
+                'source' => $currentConsent['source'] ?? null,
+                'notice_version' => $currentConsent['notice_version'] ?? null,
+                'evidence_ref' => $currentConsent['evidence_ref'] ?? null,
+                'recorded_at' => $currentConsent['created_at'] ?? null,
+                'history' => array_map(static fn (array $event): array => [
+                    'decision' => (string) $event['decision'],
+                    'source' => (string) $event['source'],
+                    'notice_version' => $event['notice_version'] === null ? null : (string) $event['notice_version'],
+                    'evidence_ref' => $event['evidence_ref'] === null ? null : (string) $event['evidence_ref'],
+                    'recorded_at' => (string) $event['created_at'],
+                    'actor_user_id' => $event['actor_user_id'] === null ? null : (int) $event['actor_user_id'],
+                ], $consentHistory),
+            ],
             'stats' => [
                 'order_count' => (int) ($summary['order_count'] ?? 0),
                 'total_spent' => (int) ($summary['total_spent'] ?? 0),
