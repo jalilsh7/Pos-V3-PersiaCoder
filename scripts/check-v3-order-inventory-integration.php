@@ -1,16 +1,16 @@
 <?php
 declare(strict_types=1);
 
-use PersiaCoder\\PosV3\\Auth\\BusinessScope;
-use PersiaCoder\\PosV3\\Http\\HttpException;
-use PersiaCoder\\PosV3\\Orders\\OrderInventoryLifecycleService;
+use PersiaCoder\PosV3\Auth\BusinessScope;
+use PersiaCoder\PosV3\Http\HttpException;
+use PersiaCoder\PosV3\Orders\OrderInventoryLifecycleService;
 
 $root = dirname(__DIR__);
 require_once $root . '/database/v3/bin/bootstrap.php';
 spl_autoload_register(static function (string $class) use ($root): void {
-$prefix = 'PersiaCoder\\PosV3\\';
+    $prefix = 'PersiaCoder\\PosV3\\';
     if (!str_starts_with($class, $prefix)) return;
-$file = $root . '/v3/backend/src/' . str_replace('\\', DIRECTORY_SEPARATOR, substr($class, strlen($prefix))) . '.php';
+    $file = $root . '/v3/backend/src/' . str_replace('\\', DIRECTORY_SEPARATOR, substr($class, strlen($prefix))) . '.php';
     if (is_file($file)) require $file;
 });
 
@@ -25,7 +25,7 @@ $uuid = static fn (): string => sprintf(
     random_int(0, 0x0fff) | 0x4000, random_int(0, 0x3fff) | 0x8000,
     random_int(0, 0xffffffffffff),
 );
-$prefix = 'ci-order-stock-' . bin2hex(random_bytes(4));
+    $prefix = 'ci-order-stock-' . bin2hex(random_bytes(4));
 $businessPublicId = $uuid();
 $branchPublicId = $uuid();
 
