@@ -37,6 +37,7 @@ $checks = [
     'consent grant requires explicit decision, notice version and evidence reference' =>
         str_contains($service, 'customer_consent_evidence_required')
         && str_contains($service, 'customer_phone_required_for_consent')
+        && str_contains($service, 'customer_inactive_for_consent')
         && str_contains($service, '$evidenceRef === null')
         && str_contains($service, "'decision', 'notice_version', 'evidence_ref'"),
     'consent writes are permissioned, idempotent and audited' =>
