@@ -275,6 +275,7 @@ CREATE TABLE pos_customer_consent_events (
   source VARCHAR(24) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   notice_version VARCHAR(80) NULL,
   evidence_ref VARCHAR(190) NULL,
+  recipient_phone_normalized VARCHAR(16) NULL,
   actor_user_id BIGINT UNSIGNED NULL,
   created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   PRIMARY KEY (id),
@@ -293,6 +294,9 @@ CREATE TABLE pos_customer_consent_events (
     decision <> 'granted' OR
     (notice_version IS NOT NULL AND CHAR_LENGTH(TRIM(notice_version)) > 0
      AND evidence_ref IS NOT NULL AND CHAR_LENGTH(TRIM(evidence_ref)) > 0
+     AND recipient_phone_normalized IS NOT NULL AND recipient_phone_normalized REGEXP '^09[0-9]{9} <> 'import')
+  )
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
      AND source <> 'import')
   )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
