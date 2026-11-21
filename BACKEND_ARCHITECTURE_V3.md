@@ -466,3 +466,10 @@ v3/backend/
 - Repository predicates are `created_at >= :created_from_utc` and `created_at < :created_to_utc`, retaining business/branch scope and the existing order-number cursor.
 - Date range filters must be repeated unchanged on every cursor page. Changing either date resets the cursor and invalidates in-flight page responses.
 - MySQL 8.4 and MariaDB 10.6 integration coverage is in `scripts/check-v3-auth-integration.php`; pending CI on the current package must pass before calling ORD-01D verified.
+
+### Current implementation — source-linked stock returns (2026-11-22)
+- Return documents reference a posted source document and each return line references an exact source line. Initial supported source document types are `adjustment_out`, `consumption`, and `waste`.
+- Return item/unit/conversion and cost are inherited from source; return-line edits and manual valuation overrides are rejected. Partial quantities are supported with DECIMAL remaining-quantity checks.
+- Posting locks the source document and source line, rechecks cumulative posted returns plus the entire current draft, restores stock at source location using the source ledger `unit_cost_snapshot`, updates moving weighted average, and appends `return_in` ledger events.
+- `InventoryWorkspace` displays returnable quantity and disables exhausted source lines. Refund/payment processing is not part of inventory return.
+- Integration and static checks have been authored but not executed in this working session. A true parallel return-posting race test remains outstanding; sequential stale-draft over-return rejection is covered by the added integration scenario.
