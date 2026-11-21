@@ -160,7 +160,7 @@ final readonly class InventoryDocumentService
                 );
                 $after = [
                     'document_no' => $documentNo, 'document_type' => $type, 'status' => 'draft',
-                    'location_id' => $type === 'return' ? (string) $sourceDocumentPublicId : $locationPublicId, 'destination_location_id' => $destinationPublicId,
+                    'location_id' => $locationPublicId, 'destination_location_id' => $destinationPublicId,
                     'supplier_id' => $supplierPublicId, 'source_document_id' => $sourceDocumentPublicId, 'reason' => $reason,
                 ];
                 $this->audit->record(
@@ -235,6 +235,12 @@ final readonly class InventoryDocumentService
                     }
                     if ($hasCostAmount || $totalCostAmount !== '0' || $stockItemPublicId !== null || $unitCode !== null) {
                         throw new HttpException(422, 'stock_return_cost_or_item_override_not_allowed', 'Return item, unit and cost are inherited from the source line and cannot be overridden.');
+                    }
+                    $sourceDocument = $this->documents->findPostedReturnSourceByIdForUpdate(
+                        $scope->businessId, $branchId, (int) $document['source_document_id'],
+                    );
+                    if ($sourceDocument === null || (int) $sourceDocument['location_id'] !== (int) $document['location_id']) {
+                        throw new HttpException(409, 'stock_return_source_invalid', 'The linked source document is no longer eligible for return.');
                     }
                     $sourceLine = $this->documents->findReturnSourceLineForUpdate(
                         $scope->businessId, $branchId, (int) $document['source_document_id'], $sourceLinePublicId,
