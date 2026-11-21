@@ -118,3 +118,8 @@ MySQL/MariaDB برای بسیاری از دستورات DDL implicit commit ان
 - grant نیازمند `notice_version` است و import مجاز به ایجاد grant نیست. permission `customers.consent.manage` برای manager seed می‌شود.
 - این migration به‌تنهایی مجوز ارسال تبلیغاتی ایجاد نمی‌کند؛ تا تکمیل API و suppression در مسیر dispatch، ارسال marketing باید غیرفعال بماند.
 - اجرای migration روی MySQL/MariaDB هنوز گزارش نشده است.
+
+### وضعیت تکمیلی Migration 022 — ثبت رضایت CRM
+- API ثبت grant/withdraw در CRM به جدول رخدادها متصل شده است؛ grant به شماره معتبر، notice_version و evidence_ref نیاز دارد و هر تغییر با actor، idempotency و audit ثبت می‌شود.
+- Customer detail آخرین وضعیت و تاریخچه رخدادها را نمایش می‌دهد؛ نبود رخداد برابر `unknown` است.
+- این migration هنوز در محیط MySQL/MariaDB اجرا نشده است. وجود API ثبت رضایت، marketing dispatch را فعال نمی‌کند؛ suppression در مسیر ارسال هنوز لازم است.
