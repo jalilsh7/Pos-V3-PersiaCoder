@@ -34,7 +34,7 @@ $assert(str_contains($lifecycle, 'pos_order_item_recipe_lines'), 'Order item rec
 $assert(str_contains($lifecycle, \"'storefront' : 'pos'\"), 'Reservation source type must reflect the originating sales channel.');
 $assert(str_contains($lifecycle, 'LIMIT 1 FOR UPDATE'), 'Active recipe selection must be locked against concurrent activation changes.');
 $assert(str_contains($lifecycle, 'FOR UPDATE'), 'Inventory lifecycle must lock mutable rows.');
-$assert(str_contains($lifecycle, 'ORDER BY id FOR UPDATE') && str_contains($lifecycle, '$lockLocations'), 'Inventory location and balance locks must use a stable primary-key order.');
+$assert(str_contains($lifecycle, 'ORDER BY id LOCK IN SHARE MODE') && str_contains($lifecycle, '$lockLocations'), 'Inventory location and balance locks must use a stable primary-key order.');
 $assert(str_contains($lifecycle, 'usort($allocationRows') && str_contains($lifecycle, "=== 'kitchen'"), 'Stable lock ordering must not change kitchen-first allocation priority.');
 $assert(str_contains($lifecycle, 'DECIMAL(18,6)'), 'Inventory arithmetic must use database decimal precision.');
 $assert(str_contains($schema, 'CREATE TABLE pos_stock_reservations'), 'Reservation schema is missing.');
