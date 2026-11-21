@@ -128,3 +128,8 @@ MySQL/MariaDB برای بسیاری از دستورات DDL implicit commit ان
 
 - مقدار `invalidated` برای بی‌اعتبارکردن grant قبلی پس از تغییر شماره پشتیبانی می‌شود و با `withdrawn` (انصراف مشتری) تفاوت دارد. بازگرداندن شماره قدیمی، grant قبلی را احیا نمی‌کند.
 - grant فقط برای مشتری فعال دارای شماره معتبر پذیرفته می‌شود؛ مشتری غیرفعال یا بدون موبایل نمی‌تواند رضایت SMS marketing جدید ثبت کند.
+
+### وضعیت اجرایی برگشت سند انبار — INV-RETURN-2026-001 (2026-11-22)
+- Migration 021 ستون‌های nullable `source_document_id` و `source_document_line_id` و FK مرکب business/branch را فراهم می‌کند؛ سابقه‌های قدیمی بدون حدس‌زدن NULL می‌مانند.
+- Backend از این مراجع برای برگشت جزئی سندهای خروجی posted (adjustment_out، consumption، waste) استفاده می‌کند. بهای برگشت از ledger تاریخی همان source line است و posting با قفل سند مبدأ از over-return جلوگیری می‌کند.
+- Migration 021 در این نشست اجرا نشده و DB integration نیز اجرا نشده است. migration جدیدی برای این بسته لازم نشد.
