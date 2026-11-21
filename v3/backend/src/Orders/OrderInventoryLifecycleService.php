@@ -115,17 +115,26 @@ final readonly class OrderInventoryLifecycleService
         ]);
         $reservationId = (int)$this->db->lastInsertId();
 
+        // Lock location rows in primary-key order; allocation priority is applied separately.
         $locationQuery = $this->db->prepare(
-            "SELECT id FROM pos_stock_locations
+            "SELECT id, location_type FROM pos_stock_locations
              WHERE business_id = :business_id AND branch_id = :branch_id AND is_active = 1
                AND location_type IN ('kitchen','storage')
-             ORDER BY CASE location_type WHEN 'kitchen' THEN 0 ELSE 1 END, id"
+             ORDER BY id FOR UPDATE"
         );
         $locationQuery->execute(['business_id'=>$businessId,'branch_id'=>$branchId]);
-        $locations = array_map('intval', $locationQuery->fetchAll(PDO::FETCH_COLUMN));
-        if ($locations === []) {
+        $locationRows = $locationQuery->fetchAll(PDO::FETCH_ASSOC);
+        if ($locationRows === []) {
             throw new HttpException(409, 'stock_location_required', 'برای رزرو مواد اولیه، ابتدا یک انبار فعال از نوع آشپزخانه یا انبار تعریف کنید.');
         }
+        $lockLocations = array_map(static fn (array $row): int => (int) $row['id'], $locationRows);
+        $allocationRows = $locationRows;
+        usort($allocationRows, static fn (array $a, array $b): int =>
+            ((string) $a['location_type'] === 'kitchen' ? 0 : 1)
+            <=> ((string) $b['location_type'] === 'kitchen' ? 0 : 1)
+            ?: ((int) $a['id'] <=> (int) $b['id'])
+        );
+        $allocationLocations = array_map(static fn (array $row): int => (int) $row['id'], $allocationRows);
 
         ksort($requirements);
         foreach ($requirements as $stockId => $requirement) {
@@ -137,8 +146,9 @@ final readonly class OrderInventoryLifecycleService
                 throw new HttpException(409, 'recipe_stock_item_inactive', 'یکی از مواد اولیه رسپی غیرفعال شده است.');
             }
 
-            $allocated = '0';
-            foreach ($locations as $locationId) {
+            // Balance rows are created/read/locked in ascending location ID to match stock posting.
+            $balancesByLocation = [];
+            foreach ($lockLocations as $locationId) {
                 $balanceInsert = $this->db->prepare(
                     'INSERT INTO pos_stock_balances
                      (stock_item_id,business_id,branch_id,location_id,quantity_on_hand,quantity_reserved,average_unit_cost)
@@ -152,7 +162,12 @@ final readonly class OrderInventoryLifecycleService
                        AND stock_item_id=:item AND location_id=:location FOR UPDATE'
                 );
                 $balance->execute(['business'=>$businessId,'branch'=>$branchId,'item'=>$stockId,'location'=>$locationId]);
-                $row = $balance->fetch(PDO::FETCH_ASSOC);
+                $balancesByLocation[$locationId] = $balance->fetch(PDO::FETCH_ASSOC);
+            }
+
+            $allocated = '0';
+            foreach ($allocationLocations as $locationId) {
+                $row = $balancesByLocation[$locationId];
                 $available = $this->decimalSubtract((string)$row['quantity_on_hand'], (string)$row['quantity_reserved']);
                 $remaining = $this->decimalSubtract($requirement['qty'], $allocated);
                 $take = $this->decimalMin($available, $remaining);
