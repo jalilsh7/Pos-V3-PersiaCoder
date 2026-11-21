@@ -549,3 +549,5 @@ Migration 022 و clean-install schema جدول `pos_customer_consent_events` ر�
 - route با session/permission/CSRF/same-origin، API client TypeScript و کنترل‌های CustomersWorkspace اضافه شدند. history append-only است.
 - integration test و static contract check گسترش یافتند اما اجرا نشده‌اند؛ lint/build/migration نیز اجرا نشده‌اند.
 - باز: suppression و eligibility در marketing enqueue/dispatch، اتصال رضایت به شماره فعلی و تست race/opt-out. تا آن زمان marketing dispatch غیرفعال؛ transactional SMS جداست.
+
+- رضایت grant به شماره موبایل نرمال‌شده زمان ثبت bind شده است (`recipient_phone_normalized`). تغییر شماره باعث `stale` شدن رضایت در پروفایل می‌شود و انتقال خودکار رضایت به شماره جدید ممنوع است؛ تست integration افزوده شد.
