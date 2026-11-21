@@ -481,3 +481,6 @@ Variant recipe در اولویت و در نبود آن product recipe fallback �
 
 ## Gate تست چرخه سفارش/رسپی/انبار — 2026-11-21
 تست قراردادی `scripts/check-v3-order-inventory-lifecycle.php` به workflow دستی Backend افزوده شد؛ workflow همچنان manual-only است. commit `c9154a7`. اجرای آن هنوز گزارش نشده است.
+
+## Order inventory lock ordering — 2026-11-21
+برای کاهش deadlock، مکان‌ها و موجودی‌ها در رزرو سفارش با ترتیب صعودی ID قفل می‌شوند، اما allocation همچنان kitchen-first است. integration test storage را قبل از kitchen seed می‌کند تا جدایی lock order از allocation priority را اثبات کند. contract check هم lock order را کنترل می‌کند. commits: `4194e4d`, `c0294b7`, `b9a7fad`. تست هنوز اجرا نشده.
