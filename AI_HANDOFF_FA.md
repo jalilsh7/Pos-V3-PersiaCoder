@@ -923,3 +923,13 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - پاسخ endpoint مدیریتی اکنون `is_active` گروه گزینه را نیز برمی‌گرداند؛ UI وضعیت واقعی گروه را نشان می‌دهد و امکان فعال/غیرفعال‌سازی مجدد آن را با همان API مدیریت گروه دارد.
 - گزینه‌های داخل گروه نیز وضعیت مستقل خود را حفظ می‌کنند؛ گروه غیرفعال در جزئیات عمومی کاتالوگ همچنان افشا نمی‌شود.
 - Commitهای تکمیلی: `b42e912dd851c1b1783c5374a0152568280251a7`, `30039b258b5b3fcc7f9a161e90f2d3186f395d8b`, `c8e56955b73f9b66c4f740a5756b3e9f1eff2e03`.
+
+
+## آخرین بسته توسعه — ویرایش امن Draft Recipe (2026-11-21)
+- روی HEAD تازه main، مدیریت گروه‌های غیرفعال کاتالوگ بررسی شد: `CatalogOptionsEditor.tsx` شامل هر دو مسیر «فعال‌سازی گروه» و «غیرفعال‌سازی گروه» است.
+- چرخه نسخه رسپی بررسی شد: GET، ساخت draft و activate وجود داشتند اما ویرایش draft در API/UI وجود نداشت.
+- تکمیل شد: repository scoped delete/count خطوط نسخه؛ service برای update draft با قفل نسخه، کنترل status، validation کامل خطوط، conversion snapshot، جایگزینی تراکنشی خطوط، idempotency و audit؛ controller و PATCH route محافظت‌شده؛ API client و UI edit/save/cancel.
+- فقط draft قابل ویرایش است؛ active/retired immutable. عملیات مصرف/رزرو سفارش به دلیل policyهای محصولی باز اضافه نشد.
+- Commitهای کد: `648adea4f8ecff7c9a251013d485776af2b265d9`, `2dbc0a9d14a6a260c10e964a9868fa54acb03f32`, `e12b445eccf8eebd7cbf2b15e0d4b3e961fb7dc5`, `8a7b792b797336014e67f95ff8bae64b366ebfa9`, `47a6f9aac779b4af8950ab8316ed9bd8c07bc94d`, `bbd20c5306f85f16ac24d22596baf030cfac6556`, `c642d0980f63da530093f62dbdac0eb4485733f5`.
+- وضعیت اعتبارسنجی: فایل‌ها بعد از ثبت دوباره از main خوانده شدند؛ contract check به‌روزرسانی شده اما هنوز اجرا نشده؛ PHP lint، TypeScript، build و DB integration نیز اجرا نشده‌اند.
+- ادامه پیشنهادی: ممیزی end-to-end ماژول انبار و چرخه سند/خطوط/ثبت، سپس یک بسته جامع برای تکمیل مدیریت اسناد و تست‌های یکپارچگی؛ بدون حدس درباره policyهای تجاری.
