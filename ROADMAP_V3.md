@@ -1444,3 +1444,8 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - workflow دیتابیس همچنان فقط `workflow_dispatch` است؛ syntax و اجرای این تست به همان workflow دستی افزوده شد و trigger خودکار جدیدی ایجاد نشده است.
 - commitها: `2f7341e`، `1d934f5`، `ed8d508`، `b4e2e5a`.
 - اجرا نشده: workflow دستی MySQL 8.4/MariaDB 10.6؛ بنابراین تست یکپارچگی نوشته و به gate متصل شده اما PASS نیست.
+
+### اتصال contract check چرخه سفارش به gate بک‌اند — 2026-11-21
+- `scripts/check-v3-order-inventory-lifecycle.php` به workflow دستی Backend اضافه شد تا قرارداد اتصال transition، snapshot رسپی، قفل و تخصیص موجودی، valuation زمان رزرو و scope migration در gate بک‌اند کنترل شود.
+- workflow همچنان `workflow_dispatch` است و اجرای خودکار push/schedule اضافه نشده است.
+- commit: `c9154a7c4c60188c02358d8a76146fca5e44e1bc`. اجرای workflow هنوز انجام نشده است.
