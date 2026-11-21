@@ -1064,3 +1064,10 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - تست، build، lint و migration فقط پس از اجرای واقعی موفق گزارش می‌شوند؛ نوشتن تست یا افزودن workflow به معنی PASS نیست. workflowهای موجود manual-only باقی می‌مانند مگر تصمیم صریح جداگانه‌ای ثبت شود.
 - مستندات تصمیمات، roadmap، handoff و project memory همراه پیشرفت به‌روز می‌شوند. فازها بدون تأیید صریح کاربر بسته نمی‌شوند.
 - این قانون برآورد زمانی یا تضمین تحویل هفت‌روزه ایجاد نمی‌کند؛ هدف، بیشینه‌کردن پیشرفت قابل اثبات در هر بازه کاری است.
+
+## ادامه CRM — زیرساخت رضایت و opt-out (2026-11-22)
+- HEAD پایه پیش از بسته: `756ed318235b6ddb0af0328ea3beb20c7e515edb`.
+- Migration `022_customer-consent-evidence.sql` و `database/v3/schema.sql` جدول append-only `pos_customer_consent_events` را دارند. هر رخداد در business/customer scope ثبت می‌شود؛ event_key در business یکتا است؛ grant به notice_version نیاز دارد و source=import نمی‌تواند grant ایجاد کند.
+- permission `customers.consent.manage` برای manager seed شده است. Contract guard: `scripts/check-v3-customer-consent-schema.php`.
+- مهم: هنوز API/Repository/UI و اتصال suppression به تمام مسیرهای ارسال بازاریابی وجود ندارد؛ بنابراین هیچ مسیر ارسال marketing نباید فعال/قابل فراخوانی شود. گام بعدی: پیاده‌سازی ثبت grant/withdraw با idempotency و audit، خواندن آخرین وضعیت و history، سپس enforce کردن eligibility در نقطه enqueue/dispatch.
+- هیچ migration، تست، lint یا build در runtime اجرا نشده است؛ فقط فایل‌ها در GitHub ثبت شده‌اند.
