@@ -33,20 +33,33 @@ final readonly class SmsServiceTemplateOutbox
         if (!is_array($template)) return false;
 
         $customer = null;
-        if (isset($context['customer_id']) && is_int($context['customer_id']) && $context['customer_id'] > 0) {
+        $hasLinkedCustomer = array_key_exists('customer_id', $context) && $context['customer_id'] !== null;
+        if ($hasLinkedCustomer) {
+            if (!is_int($context['customer_id']) || $context['customer_id'] < 1) return false;
             $lookup = $this->db->prepare(
                 'SELECT name, phone_normalized FROM pos_customers
                  WHERE business_id = ? AND id = ? AND is_active = 1 LIMIT 1'
             );
             $lookup->execute([$scope->businessId, $context['customer_id']]);
             $row = $lookup->fetch(PDO::FETCH_ASSOC);
-            if (is_array($row)) $customer = $row;
+            // A linked customer must never silently fall back to a caller-supplied guest number.
+            if (!is_array($row) || !is_string($row['phone_normalized'] ?? null)) return false;
+            $customer = $row;
         }
 
-        $recipientSource = is_string($context['recipient_phone'] ?? null) && trim($context['recipient_phone']) !== ''
-            ? $context['recipient_phone']
-            : (is_array($customer) ? (string) ($customer['phone_normalized'] ?? '') : '');
-        $recipient = LegacySmsParser::normalizeIranMobile($recipientSource);
+        $providedRecipient = is_string($context['recipient_phone'] ?? null)
+            ? LegacySmsParser::normalizeIranMobile($context['recipient_phone'])
+            : null;
+        if ($hasLinkedCustomer) {
+            $customerRecipient = LegacySmsParser::normalizeIranMobile((string) $customer['phone_normalized']);
+            if ($customerRecipient === null
+                || ($providedRecipient !== null && !hash_equals($customerRecipient, $providedRecipient))) {
+                return false;
+            }
+            $recipient = $customerRecipient;
+        } else {
+            $recipient = $providedRecipient;
+        }
         if ($recipient === null) return false;
 
         $statusLabels = [
