@@ -468,3 +468,10 @@ Variant recipe در اولویت و در نبود آن product recipe fallback �
 - سرویس چرخه موجودی اکنون branch context را صریحاً الزامی می‌کند. تست قراردادی به migration 008، constraintهای 011، تخصیص دقیق و snapshot بها گسترش یافت.
 - Commitهای اصلاح: `b0c54c5`, `af422b9`, `3f5e525`, `f096f45`, `3f7a9b6`, `e6eec63`, `71be591`.
 - هنوز هیچ PHP lint، contract execution یا DB integration اجرا نشده است؛ فاز ۵ باز می‌ماند.
+
+## بازبینی تکمیلی فاز ۵ — valuation سفارش و سند برگشت (2026-11-21)
+- بازرسی `OrderInventoryLifecycleService::consume` نشان داد محاسبه total cost از فیلد ناموجود/نامتناسب `average_unit_cost` روی reservation line استفاده می‌کرد؛ اصلاح شد تا از `unit_cost_snapshot` زمان رزرو استفاده کند.
+- contract check سفارش این رفتار و عدم استفاده از فیلد اشتباه را پوشش می‌دهد.
+- API ایجاد سند جدید `return` تا زمان پیاده‌سازی valuation مبتنی بر مرجع برگشت نمی‌پذیرد. برگشت فیزیکی فعلاً با `adjustment_in` دارای دلیل و audit ثبت می‌شود؛ اسناد return قدیمی فقط قابل مشاهده‌اند و قابل posting نیستند.
+- commits: `7c934cb`, `1f242ad`, `ad79a74`, `6e8a153`.
+- تست‌ها نوشته/گسترش داده شده‌اند اما اجرا نشده‌اند؛ فاز ۵ باز است.
