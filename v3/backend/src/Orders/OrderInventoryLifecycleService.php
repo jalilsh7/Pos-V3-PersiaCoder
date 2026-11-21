@@ -59,6 +59,14 @@ final readonly class OrderInventoryLifecycleService
         foreach ($orderItems as $item) {
             $recipe = $this->activeRecipe($businessId, (int)$item['product_id'], $item['variant_id'] === null ? null : (int)$item['variant_id']);
             if ($recipe === null) continue;
+            $pinRecipe = $this->db->prepare(
+                'UPDATE pos_order_items SET recipe_version_id = :version_id
+                 WHERE business_id = :business_id AND branch_id = :branch_id AND id = :order_item_id'
+            );
+            $pinRecipe->execute([
+                'version_id'=>(int)$recipe['version_id'],'business_id'=>$businessId,
+                'branch_id'=>$branchId,'order_item_id'=>(int)$item['order_item_id'],
+            ]);
             $lines = $this->db->prepare(
                 'SELECT rl.stock_item_id, si.base_unit_id,
                         CAST(ROUND(CAST(rl.quantity AS DECIMAL(18,6))
