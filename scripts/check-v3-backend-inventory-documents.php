@@ -52,6 +52,15 @@ $createStart = strpos($service, 'public function create(');
 $createEnd = strpos($service, 'public function addLine(', $createStart === false ? 0 : $createStart);
 $createMethod = $createStart === false || $createEnd === false ? '' : substr($service, $createStart, $createEnd - $createStart);
 $assert(str_contains($createMethod, "'waste']") && !str_contains($createMethod, "'return'"), 'New return documents must be blocked until source-linked return valuation is implemented; use audited inbound adjustment meanwhile.');
+
+$sourceLinkMigration = $read('database/v3/migrations/021_stock-document-source-links.sql');
+$assert(str_contains($sourceLinkMigration, 'ADD COLUMN source_document_id BIGINT UNSIGNED NULL'), 'Migration 021 must add an optional source-document reference without guessing historical links.');
+$assert(str_contains($sourceLinkMigration, 'ADD COLUMN source_document_line_id BIGINT UNSIGNED NULL'), 'Migration 021 must add an optional source-line reference.');
+$assert(str_contains($sourceLinkMigration, 'FOREIGN KEY (business_id, branch_id, source_document_id)'), 'A source document reference must be constrained to the same business and branch.');
+$assert(str_contains($sourceLinkMigration, 'FOREIGN KEY (business_id, branch_id, source_document_line_id)'), 'A source line reference must be constrained to the same business and branch.');
+$assert(str_contains($sourceLinkMigration, 'ON DELETE RESTRICT'), 'Source links must prevent deletion of referenced historical documents and lines.');
+$assert(str_contains($sourceLinkMigration, 'NULL AFTER source_order_id'), 'Historical stock documents must remain unlinked instead of receiving guessed source references.');
+
 $assert(str_contains($service, 'total_cost_amount'), 'Purchase receipt draft lines must capture total TOMAN cost.');
 $assert(str_contains($postingRepository, 'FOR UPDATE'), 'Posting must lock balance rows.');
 $assert(str_contains($postingRepository, 'INSERT INTO pos_stock_ledger'), 'Posting must append ledger entries.');
