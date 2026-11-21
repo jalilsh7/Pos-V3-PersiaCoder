@@ -219,6 +219,8 @@ export type InventoryBalance = {
 };
 
 export type InventoryLedgerEntry = {
+  source_order_id: string | null;
+  source_order_number: number | null;
   movement_type: string;
   quantity_delta: string;
   base_unit_code: string;
