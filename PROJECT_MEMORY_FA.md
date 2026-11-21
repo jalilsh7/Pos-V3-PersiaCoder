@@ -513,3 +513,5 @@ API client و UI اکنون cursor-based هستند: صفحه ۵۰تایی او�
 اگر سفارش دارای recipe_version_id باشد اما reservation نداشته باشد، تکمیل اکنون با `stock_reservation_missing` متوقف می‌شود؛ سفارش بدون رسپی همچنان مسیر عادی دارد. DB integration و static contract test افزوده شدند؛ اجرا نشده‌اند. commits: `4153aa4`, `e4f1956`, `a07595b`.
 ## Cross-branch source-order integrity test — 2026-11-21
 تست یکپارچه migration 019 اکنون تلاش ثبت گردش شعبه‌ای با سفارش شعبه دیگر همان کسب‌وکار را پوشش می‌دهد و باید دقیقاً توسط `fk_v3_stock_ledger_source_order_scope` با driver error 1452 رد شود؛ contract check نیز سناریو را guard می‌کند. اجرا نشده است. commits: `b59b9bd`, `8aa7471`.
+## One reservation per order invariant — 2026-11-21
+هر سفارش حداکثر یک چرخه رزرو موجودی در محدوده business/branch دارد؛ replay با idempotency key متفاوت نباید رزرو دوم ایجاد کند. سرویس و migration 020 این قاعده را enforce می‌کنند؛ duplicate تاریخی باعث توقف امن migration می‌شود و پاک‌سازی خودکار نداریم. تست integration و contract افزوده شده‌اند اما اجرا نشده‌اند. commits: `2360397`, `3616966`, `79319b4`, `4f9ce3a`.
