@@ -199,10 +199,10 @@ final readonly class CustomerRepository
         $statement = $this->connection->prepare(
             'INSERT INTO pos_customer_consent_events
                 (business_id, customer_id, event_key, purpose, channel, decision, source,
-                 notice_version, evidence_ref, actor_user_id)
+                 notice_version, evidence_ref, recipient_phone_normalized, actor_user_id)
              VALUES
                 (:business_id, :customer_id, :event_key, \'marketing\', \'sms\', :decision, :source,
-                 :notice_version, :evidence_ref, :actor_user_id)'
+                 :notice_version, :evidence_ref, :recipient_phone_normalized, :actor_user_id)'
         );
         $statement->execute([
             'business_id' => $businessId,
@@ -221,7 +221,7 @@ final readonly class CustomerRepository
     public function consentHistory(int $businessId, int $customerId, int $limit = 20): array
     {
         $statement = $this->connection->prepare(
-            'SELECT decision, source, notice_version, evidence_ref, created_at, actor_user_id
+            'SELECT decision, source, notice_version, evidence_ref, recipient_phone_normalized, created_at
              FROM pos_customer_consent_events
              WHERE business_id = :business_id AND customer_id = :customer_id
                AND purpose = \'marketing\' AND channel = \'sms\'
