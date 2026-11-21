@@ -1030,3 +1030,7 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - `scripts/check-v3-order-inventory-integration.php` اکنون درج گردش انبار با order متعلق به شعبه دیگر همان business را امتحان می‌کند؛ فقط ردشدن توسط constraint مشخص `fk_v3_stock_ledger_source_order_scope` با driver error 1452 قبولی محسوب می‌شود؛ خطاهای integrity دیگر false positive نیستند.
 - `scripts/check-v3-order-inventory-lifecycle.php` وجود این سناریو را در قرارداد static guard می‌کند.
 - هنوز هیچ تستی اجرا نشده؛ در gate دیتابیس هر دو موتور MySQL 8.4 و MariaDB 10.6 باید اجرا شوند.
+## One stock reservation per order — 2026-11-21
+- `OrderInventoryLifecycleService::reserve` اکنون رزرو را با business/branch/order lookup می‌کند، نه فقط idempotency key. replay با کلید متفاوت در صورت وجود رزرو فعال نباید مقدار رزرو را دوباره افزایش دهد.
+- migration `020_one-stock-reservation-per-order.sql` ایندکس قدیمی `(order_id,idempotency_key)` را با unique مرکب `(business_id,branch_id,order_id)` جایگزین می‌کند. در صورت duplicate تاریخی migration باید متوقف شود؛ هیچ حذف/ادغام خودکار انجام نمی‌شود.
+- DB integration test replay با کلید متفاوت و static contract check اضافه شدند. اجرا نشده‌اند. commits: `2360397`, `3616966`, `79319b4`, `4f9ce3a`.
