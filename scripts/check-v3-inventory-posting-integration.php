@@ -368,6 +368,9 @@ $assert($returnPost['body']['data']['stock_document']['status'] === 'posted', 'S
 $returnedBalance = $balance($sourceLocationId);
 $assert($returnedBalance['quantity_on_hand'] === '2.400000', 'Partial return did not increase stock by the requested base quantity.');
 $assert($returnedBalance['average_unit_cost'] === '1666.66666667', 'Return did not restore the source historical unit cost.');
+$sourceAfterPartialReturn = $documents->get($scope, $adjustmentOut);
+$assert($sourceAfterPartialReturn['lines'][0]['returnable_quantity'] === '0.6',
+    'Source document detail did not report remaining returnable quantity in the original unit.');
 $returnLedger = $pdo->prepare(
     "SELECT quantity_delta, unit_cost_snapshot, total_cost_amount
      FROM pos_stock_ledger WHERE document_line_id = (
@@ -397,6 +400,9 @@ foreach ([[$returnDraftOne, 'return-race-one'], [$returnDraftTwo, 'return-race-t
     );
 }
 $postDocument($returnDraftOne, 'return-race-one');
+$sourceAfterSecondPartial = $documents->get($scope, $adjustmentOut);
+$assert($sourceAfterSecondPartial['lines'][0]['returnable_quantity'] === '0.2',
+    'Remaining returnable quantity did not decrease after a second posted partial return.');
 $ledgerBeforeOverReturn = $ledgerCount();
 $overReturnBlocked = false;
 try {
