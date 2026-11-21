@@ -539,6 +539,11 @@ try {
         static fn (Request $request, array $parameters): Response => $getRecipeController()->activateVersion($request, $parameters),
         [$sessionMiddleware, $makePermissionMiddleware('catalog.manage', false), $csrfMiddleware, $originMiddleware],
     );
+    $router->add('GET', '/api/v1/catalog/products/{productPublicId}/management-details',
+        static fn (Request $request, array $parameters): Response => $getCatalogController()->productManagementDetails($request, $parameters),
+        [$sessionMiddleware, $makePermissionMiddleware('catalog.manage', false)],
+    );
+
     $router->add('POST', '/api/v1/catalog/products/{productPublicId}/variants',
         static fn (Request $request, array $parameters): Response => $getCatalogController()->createVariant($request, $parameters),
         [$sessionMiddleware, $makePermissionMiddleware('catalog.manage', false), $csrfMiddleware, $originMiddleware],
