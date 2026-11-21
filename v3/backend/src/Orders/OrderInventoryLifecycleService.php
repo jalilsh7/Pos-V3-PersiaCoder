@@ -120,7 +120,7 @@ final readonly class OrderInventoryLifecycleService
             "SELECT id, location_type FROM pos_stock_locations
              WHERE business_id = :business_id AND branch_id = :branch_id AND is_active = 1
                AND location_type IN ('kitchen','storage')
-             ORDER BY id FOR UPDATE"
+             ORDER BY id LOCK IN SHARE MODE"
         );
         $locationQuery->execute(['business_id'=>$businessId,'branch_id'=>$branchId]);
         $locationRows = $locationQuery->fetchAll(PDO::FETCH_ASSOC);
