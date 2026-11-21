@@ -169,7 +169,7 @@ final readonly class CustomerRepository
     public function latestConsent(int $businessId, int $customerId, string $purpose = 'marketing', string $channel = 'sms'): ?array
     {
         $statement = $this->connection->prepare(
-            'SELECT decision, source, notice_version, evidence_ref, created_at, actor_user_id
+            'SELECT decision, source, notice_version, evidence_ref, recipient_phone_normalized, created_at
              FROM pos_customer_consent_events
              WHERE business_id = :business_id AND customer_id = :customer_id
                AND purpose = :purpose AND channel = :channel
@@ -193,6 +193,7 @@ final readonly class CustomerRepository
         string $source,
         ?string $noticeVersion,
         ?string $evidenceRef,
+        ?string $recipientPhoneNormalized,
         int $actorUserId,
     ): void {
         $statement = $this->connection->prepare(
@@ -211,6 +212,7 @@ final readonly class CustomerRepository
             'source' => $source,
             'notice_version' => $noticeVersion,
             'evidence_ref' => $evidenceRef,
+            'recipient_phone_normalized' => $recipientPhoneNormalized,
             'actor_user_id' => $actorUserId,
         ]);
     }
@@ -299,7 +301,12 @@ final readonly class CustomerRepository
             'marketing_consent' => [
                 'purpose' => 'marketing',
                 'channel' => 'sms',
-                'decision' => $currentConsent['decision'] ?? 'unknown',
+                'decision' => $currentConsent === null
+                    ? 'unknown'
+                    : (($currentConsent['decision'] === 'granted'
+                        && !hash_equals((string) ($currentConsent['recipient_phone_normalized'] ?? ''), (string) ($customer['phone_normalized'] ?? '')))
+                        ? 'stale'
+                        : (string) $currentConsent['decision']),
                 'source' => $currentConsent['source'] ?? null,
                 'notice_version' => $currentConsent['notice_version'] ?? null,
                 'evidence_ref' => $currentConsent['evidence_ref'] ?? null,
@@ -310,7 +317,8 @@ final readonly class CustomerRepository
                     'notice_version' => $event['notice_version'] === null ? null : (string) $event['notice_version'],
                     'evidence_ref' => $event['evidence_ref'] === null ? null : (string) $event['evidence_ref'],
                     'recorded_at' => (string) $event['created_at'],
-                    'actor_user_id' => $event['actor_user_id'] === null ? null : (int) $event['actor_user_id'],
+                    'phone_matches_current' => $event['recipient_phone_normalized'] !== null
+                        && hash_equals((string) $event['recipient_phone_normalized'], (string) ($customer['phone_normalized'] ?? '')),
                 ], $consentHistory),
             ],
             'stats' => [
