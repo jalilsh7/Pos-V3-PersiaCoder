@@ -704,7 +704,7 @@ export type CustomerMarketingConsent = {
   evidence_ref: string | null;
   recorded_at: string | null;
   history: {
-    decision: "granted" | "withdrawn";
+    decision: "granted" | "withdrawn" | "invalidated";
     source: string;
     notice_version: string | null;
     evidence_ref: string | null;
