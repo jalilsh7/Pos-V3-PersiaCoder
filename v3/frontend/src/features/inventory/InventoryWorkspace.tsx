@@ -659,7 +659,7 @@ export function InventoryWorkspace() {
                 {selectedLedger.map((entry, index) => (
                   <div className="inventory-movement-row" key={`${entry.document_id ?? "ledger"}-${entry.created_at}-${entry.stock_item_id}-${entry.location_id}-${index}`}>
                     <span className={Number(entry.quantity_delta) >= 0 ? "inventory-movement-icon is-in" : "inventory-movement-icon is-out"}><Activity size={15} /></span>
-                    <div><strong>{movementLabel[entry.movement_type] ?? entry.movement_type}</strong><small>{entry.location_name} · {dateTime(entry.created_at)}{entry.document_no ? ` · سند ${entry.document_no}` : ""}</small>{entry.note ? <small>{entry.note}</small> : null}</div>
+                    <div><strong>{movementLabel[entry.movement_type] ?? entry.movement_type}</strong><small>{entry.location_name} · {dateTime(entry.created_at)}{entry.document_no ? ` · سند ${entry.document_no}` : ""}{entry.source_order_number ? ` · سفارش ${entry.source_order_number}` : ""}</small>{entry.note ? <small>{entry.note}</small> : null}</div>
                     <b>{Number(entry.quantity_delta) > 0 ? "+" : ""}{quantity(entry.quantity_delta)} {entry.base_unit_code}</b>
                   </div>
                 ))}
