@@ -1020,3 +1020,9 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - migration README و `FINANCE_INVENTORY_DATA_MODEL_V3.md` به‌روزرسانی شدند.
 - commits: `4c032bfafbe988ed41e2465cc141189cb043310b`, `1c6f75a182dfb91d6fe6e9b4bf29688fe147adde`, `a46b7d72e284b9d5cff5684af53ddaf4d211851c`, `0a521a7e2cfa7df36e566cf51baeed51a839d151`, `8bcfa2f3cdcd65627664cea0050e5c4d7c8c06da`, `f700733c5102728f5e57cfc6c1e5305e23ec3cc3`, `02584be2b6eeea84742f46b49f80c57164df8cca`, `1b5cdc393bba776096de2e664c6011faf0fff0b5`, `06250d4b7e7cf156dceb70fc0d22ca16f804752b`, `ad0645cfcc075f790dcaa3b102fa30c98ab3f4a0`.
 - اجرا نشده: migration 019، MySQL/MariaDB integration، PHP lint و frontend build. نتیجه PASS ادعا نشود.
+
+## Guard تکمیل سفارش رسپی‌دار بدون رزرو — 2026-11-21
+- `OrderInventoryLifecycleService::consume` قبلاً در نبود reservation بدون بررسی recipe snapshot برمی‌گشت. اکنون اگر `pos_order_items.recipe_version_id` برای هر قلم set باشد ولی reservation وجود نداشته باشد، `stock_reservation_missing` پرتاب می‌شود و تکمیل سفارش در تراکنش status rollback می‌شود. سفارش بدون رسپی همچنان مسیر عادی دارد.
+- DB integration test در `check-v3-order-inventory-integration.php` و static contract check در `check-v3-order-inventory-lifecycle.php` این مسیر را پوشش می‌دهند.
+- commits: `4153aa43f10b62ee283a22d0b938c6d476431603`, `e4f195682d5f964eec12a06590bea69f35c3f80b`, `a07595b68d36fbf26727664e4524cfda1b6922f5`.
+- تست اجرا نشده است.
