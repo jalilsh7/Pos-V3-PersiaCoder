@@ -63,10 +63,10 @@ $s = $pdo->prepare("INSERT INTO pos_products (business_id,public_id,name,product
 $s->execute(['business'=>$businessId,'public'=>$productPublicId]);
 $productId = (int)$pdo->lastInsertId();
 
-$variantInsert = $pdo->prepare('INSERT INTO pos_product_variants (business_id,product_id,name,is_active) VALUES (:business,:product,:name,1)');
-$variantInsert->execute(['business'=>$businessId,'product'=>$productId,'name'=>'CI Fallback Variant']);
+$variantInsert = $pdo->prepare('INSERT INTO pos_product_variants (business_id,public_id,product_id,name,is_active) VALUES (:business,:public,:product,:name,1)');
+$variantInsert->execute(['business'=>$businessId,'public'=>$uuid(),'product'=>$productId,'name'=>'CI Fallback Variant']);
 $fallbackVariantId = (int)$pdo->lastInsertId();
-$variantInsert->execute(['business'=>$businessId,'product'=>$productId,'name'=>'CI Dedicated Variant']);
+$variantInsert->execute(['business'=>$businessId,'public'=>$uuid(),'product'=>$productId,'name'=>'CI Dedicated Variant']);
 $dedicatedVariantId = (int)$pdo->lastInsertId();
 
 $recipePublicId = $uuid();
