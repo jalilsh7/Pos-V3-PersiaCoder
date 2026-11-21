@@ -1538,3 +1538,11 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - Static contract guard: `scripts/check-v3-customer-consent-schema.php`.
 - این بسته فقط foundation دیتابیس است؛ repository/service/controller/routes، UI ثبت و لغو، وضعیت جاری و suppression/enforcement در ارسال هنوز باقی است. تا تکمیل آن‌ها marketing dispatch باید غیرفعال بماند.
 - migration، contract script، PHP lint و DB integration هنوز اجرا نشده‌اند؛ فاز ۱۰ باز است.
+
+## CRM-CONSENT-2026-001 — تکمیل ثبت و نمایش رضایت (2026-11-22)
+- Backend repository/service/controller و route `POST /api/v1/customers/{customerPublicId}/marketing-sms-consent` اضافه شد. دسترسی با `customers.consent.manage` در middleware و service بررسی می‌شود؛ CSRF، same-origin، session، business scope، idempotency و audit برقرار است.
+- grant بدون موبایل معتبر مشتری، notice version و evidence reference رد می‌شود؛ وضعیت جاری از آخرین رخداد و history از جدول append-only خوانده می‌شود. withdrawal یک event مستقل است.
+- CustomersWorkspace وضعیت، تاریخچه و کنترل ثبت رضایت/انصراف را نمایش می‌دهد؛ API client و typeهای TypeScript به‌روز شدند.
+- تست integration مشتری برای حالت پیش‌فرض unknown، grant، replay، نبود مدرک و withdrawal گسترش یافت؛ static contract check نیز مسیر API/UI/service را پوشش می‌دهد.
+- **محدودیت مهم:** هیچ marketing dispatch یا کمپین فعالی اضافه نشده است. consent recording به‌تنهایی مجوز ارسال نیست؛ suppression باید در تمام نقاط enqueue/dispatch آینده enforce شود. transactional SMS مستقل باقی می‌ماند.
+- فایل‌های تست نوشته شده‌اند اما اجرا نشده‌اند؛ PHP lint، TypeScript/build، migration و DB integration در این محیط اجرا نشده‌اند. فاز ۱۰ باز است.
