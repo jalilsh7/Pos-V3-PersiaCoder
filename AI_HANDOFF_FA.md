@@ -975,3 +975,10 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 ## اتصال تست قراردادی چرخه موجودی سفارش به workflow بک‌اند — 2026-11-21
 - `scripts/check-v3-order-inventory-lifecycle.php` به `.github/workflows/v3-backend-validation.yml` افزوده شد. workflow فقط دستی است و trigger آن تغییر نکرده است.
 - commit: `c9154a7c4c60188c02358d8a76146fca5e44e1bc`. نتیجه اجرا موجود نیست؛ contract check هنوز PASS اعلام نمی‌شود.
+
+## اصلاح ترتیب قفل موجودی و آزمون اولویت برداشت — 2026-11-21
+- در `OrderInventoryLifecycleService` مکان‌ها و balanceها ابتدا با ترتیب صعودی ID قفل می‌شوند؛ این ترتیب با InventoryPostingService هم‌راستا و احتمال deadlock کمتر می‌شود. تخصیص همچنان جداگانه kitchen-first سپس storage است.
+- مکان‌های فعال با `FOR UPDATE` خوانده می‌شوند تا تغییر هم‌زمان فعال‌بودن مکان در حین رزرو کنترل شود.
+- تست integration عمداً storage را قبل از kitchen ایجاد می‌کند و همچنان انتظار دارد برداشت از kitchen شروع شود.
+- commits: `4194e4d5b1a18f2b5c015f31880bc6c4d3ff7442`, `c0294b703ed7eecaa98c85b7c5bad846faeacee4`, `b9a7fad038cd76412ffc7d81bafe0b8f406f2e10`.
+- تست اجرا نشده؛ تا اجرای workflow نتیجه نامشخص است.
