@@ -698,7 +698,7 @@ export type CustomerSummary = {
 export type CustomerMarketingConsent = {
   purpose: "marketing";
   channel: "sms";
-  decision: "granted" | "withdrawn" | "unknown";
+  decision: "granted" | "withdrawn" | "unknown" | "stale";
   source: string | null;
   notice_version: string | null;
   evidence_ref: string | null;
@@ -708,6 +708,7 @@ export type CustomerMarketingConsent = {
     source: string;
     notice_version: string | null;
     evidence_ref: string | null;
+    phone_matches_current: boolean;
     recorded_at: string;
     actor_user_id: number | null;
   }[];
