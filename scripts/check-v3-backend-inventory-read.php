@@ -61,4 +61,14 @@ $assert(($ledger->bindings[':location_id']['value'] ?? null) === 53, 'Ledger loc
 $assert(($ledger->bindings[':before_id']['value'] ?? null) === 900, 'Ledger cursor binding mismatch.');
 $assert(($ledger->bindings[':limit']['value'] ?? null) === 26, 'Ledger limit binding mismatch.');
 
-echo "V3 inventory read scope checks passed.\n";
+$controller = file_get_contents($root . '/v3/backend/src/Inventory/InventoryController.php');
+$service = file_get_contents($root . '/v3/backend/src/Inventory/InventoryService.php');
+$client = file_get_contents($root . '/v3/frontend/src/shared/api/client.ts');
+$workspace = file_get_contents($root . '/v3/frontend/src/features/inventory/InventoryWorkspace.tsx');
+$assert(str_contains($controller, "'entries' => $result['items'], 'next_cursor' => $result['next_cursor']"), 'Inventory ledger cursor must be included in response data for API clients.');
+$assert(str_contains($service, "'next_cursor' => $nextCursor"), 'Inventory service must return the next cursor for paged ledger reads.');
+$assert(str_contains($client, 'beforeId?: string') && str_contains($client, 'query.set("before_id", filters.beforeId)') && str_contains($client, 'nextCursor: data.next_cursor'), 'Inventory frontend API client must support cursor pagination.');
+$assert(str_contains($workspace, 'ledgerCursor') && str_contains($workspace, 'loadMoreLedger') && str_contains($workspace, 'بارگذاری گردش‌های قدیمی‌تر'), 'Inventory workspace must expose older ledger pages.');
+$assert(!str_contains($client, 'ledger_id: number;'), 'Internal ledger row IDs must not be exposed in the public frontend model.');
+
+echo "V3 inventory read scope and ledger pagination checks passed.\\n";
