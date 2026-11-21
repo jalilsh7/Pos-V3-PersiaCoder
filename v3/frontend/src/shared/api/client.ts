@@ -219,6 +219,7 @@ export type InventoryBalance = {
 };
 
 export type InventoryLedgerEntry = {
+  ledger_id: number;
   movement_type: string;
   quantity_delta: string;
   base_unit_code: string;
@@ -271,13 +272,15 @@ export async function getInventoryBalances(filters: {
 export async function getInventoryLedger(filters: {
   stockItemId?: string;
   locationId?: string;
+  beforeId?: string;
   limit?: number;
-} = {}): Promise<InventoryLedgerEntry[]> {
+} = {}): Promise<{ items: InventoryLedgerEntry[]; nextCursor: string | null }> {
   const query = new URLSearchParams({ limit: String(filters.limit ?? 50) });
   if (filters.stockItemId) query.set("stock_item_id", filters.stockItemId);
   if (filters.locationId) query.set("location_id", filters.locationId);
-  const data = await request<{ entries: InventoryLedgerEntry[] }>(`/inventory/ledger?${query.toString()}`);
-  return data.entries;
+  if (filters.beforeId) query.set("before_id", filters.beforeId);
+  const data = await request<{ entries: InventoryLedgerEntry[]; next_cursor: string | null }>(`/inventory/ledger?${query.toString()}`);
+  return { items: data.entries, nextCursor: data.next_cursor };
 }
 
 
