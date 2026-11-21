@@ -63,6 +63,12 @@ $s = $pdo->prepare("INSERT INTO pos_products (business_id,public_id,name,product
 $s->execute(['business'=>$businessId,'public'=>$productPublicId]);
 $productId = (int)$pdo->lastInsertId();
 
+$variantInsert = $pdo->prepare('INSERT INTO pos_product_variants (business_id,product_id,name,is_active) VALUES (:business,:product,:name,1)');
+$variantInsert->execute(['business'=>$businessId,'product'=>$productId,'name'=>'CI Fallback Variant']);
+$fallbackVariantId = (int)$pdo->lastInsertId();
+$variantInsert->execute(['business'=>$businessId,'product'=>$productId,'name'=>'CI Dedicated Variant']);
+$dedicatedVariantId = (int)$pdo->lastInsertId();
+
 $recipePublicId = $uuid();
 $s = $pdo->prepare('INSERT INTO pos_recipes (business_id,public_id,product_id,variant_id,name,is_active)
  VALUES (:business,:public,:product,NULL,\'CI Product Recipe\',1)');
@@ -77,14 +83,28 @@ $s = $pdo->prepare('INSERT INTO pos_recipe_lines (business_id,recipe_version_id,
  VALUES (:business,:version,:item,0.500000,:unit,1.00000000,0)');
 $s->execute(['business'=>$businessId,'version'=>$versionId,'item'=>$stockId,'unit'=>$unitId]);
 
-$createOrder = static function (string $suffix) use ($pdo,$businessId,$branchId,$productId,$prefix,$uuid): array {
+$variantRecipePublicId = $uuid();
+$s = $pdo->prepare('INSERT INTO pos_recipes (business_id,public_id,product_id,variant_id,name,is_active)
+ VALUES (:business,:public,:product,:variant,\'CI Variant Recipe\',1)');
+$s->execute(['business'=>$businessId,'public'=>$variantRecipePublicId,'product'=>$productId,'variant'=>$dedicatedVariantId]);
+$variantRecipeId = (int)$pdo->lastInsertId();
+$variantVersionPublicId = $uuid();
+$s = $pdo->prepare("INSERT INTO pos_recipe_versions (business_id,public_id,recipe_id,version_no,status,effective_from)
+ VALUES (:business,:public,:recipe,1,'active',UTC_TIMESTAMP(3))");
+$s->execute(['business'=>$businessId,'public'=>$variantVersionPublicId,'recipe'=>$variantRecipeId]);
+$variantVersionId = (int)$pdo->lastInsertId();
+$s = $pdo->prepare('INSERT INTO pos_recipe_lines (business_id,recipe_version_id,stock_item_id,quantity,unit_id,conversion_factor_snapshot,waste_percent)
+ VALUES (:business,:version,:item,0.250000,:unit,1.00000000,0)');
+$s->execute(['business'=>$businessId,'version'=>$variantVersionId,'item'=>$stockId,'unit'=>$unitId]);
+
+$createOrder = static function (string $suffix, ?int $variantId = null) use ($pdo,$businessId,$branchId,$productId,$prefix,$uuid): array {
     $s = $pdo->prepare("INSERT INTO pos_orders (business_id,branch_id,public_id,order_number,source_channel,order_status,payment_status,total_amount)
       VALUES (:business,:branch,:public,:number,'pos','draft','unpaid',10000)");
     $s->execute(['business'=>$businessId,'branch'=>$branchId,'public'=>$uuid(),'number'=>random_int(100000,900000)]);
     $orderId = (int)$pdo->lastInsertId();
-    $s = $pdo->prepare("INSERT INTO pos_order_items (business_id,branch_id,order_id,product_id,product_name_snapshot,quantity,unit_price_amount,line_total_amount)
-      VALUES (:business,:branch,:order,:product,'CI Recipe Product',1.000,10000,10000)");
-    $s->execute(['business'=>$businessId,'branch'=>$branchId,'order'=>$orderId,'product'=>$productId]);
+    $s = $pdo->prepare("INSERT INTO pos_order_items (business_id,branch_id,order_id,product_id,variant_id,product_name_snapshot,quantity,unit_price_amount,line_total_amount)
+      VALUES (:business,:branch,:order,:product,:variant,'CI Recipe Product',1.000,10000,10000)");
+    $s->execute(['business'=>$businessId,'branch'=>$branchId,'order'=>$orderId,'product'=>$productId,'variant'=>$variantId]);
     return [$orderId,(int)$pdo->lastInsertId()];
 };
 $service = new OrderInventoryLifecycleService($pdo);
@@ -94,7 +114,7 @@ $readBalance = static function (int $locationId) use ($pdo,$businessId,$branchId
     $s->execute(['business'=>$businessId,'branch'=>$branchId,'item'=>$stockId,'location'=>$locationId]);
     return $s->fetch(PDO::FETCH_ASSOC) ?: throw new RuntimeException('Stock balance missing.');
 };
-[$orderId,$orderItemId] = $createOrder('consume');
+[$orderId,$orderItemId] = $createOrder('consume',$fallbackVariantId);
 $pdo->beginTransaction();
 $service->apply($scope,$orderId,'accepted','ci-reserve-'.$prefix);
 $pdo->commit();
@@ -136,6 +156,17 @@ $pdo->beginTransaction();
 $service->apply($scope,$releaseOrderId,'cancelled','ci-release-cancel-replay-'.$prefix);
 $pdo->commit();
 $assert($readBalance($locationIds['storage'])['quantity_reserved']==='0.000000','Cancellation did not release the active reservation.');
+
+[$variantOrderId,$variantOrderItemId] = $createOrder('variant',$dedicatedVariantId);
+$pdo->beginTransaction();
+$service->apply($scope,$variantOrderId,'accepted','ci-variant-reserve-'.$prefix);
+$pdo->commit();
+$s=$pdo->prepare('SELECT recipe_version_id FROM pos_order_items WHERE id=:id');
+$s->execute(['id'=>$variantOrderItemId]);
+$assert((int)$s->fetchColumn()===$variantVersionId,'Variant-specific recipe did not take precedence over the product recipe.');
+$pdo->beginTransaction();
+$service->apply($scope,$variantOrderId,'cancelled','ci-variant-release-'.$prefix);
+$pdo->commit();
 
 [$shortOrderId] = $createOrder('shortage');
 $pdo->prepare('UPDATE pos_stock_balances SET quantity_on_hand=0.100000 WHERE business_id=:business AND branch_id=:branch AND stock_item_id=:item AND location_id=:location')
