@@ -47,11 +47,18 @@ $assert(str_contains($postingService, 'stock_item_inactive'), 'Posting must reje
 $assert(str_contains($postingService, 'stock_location_inactive'), 'Posting must reject inactive locations.');
 $assert(str_contains($postingService, 'weightedAverageFromTotalCost'), 'Purchase receipts must use moving weighted average valuation.');
 $assert(str_contains($postingService, 'transfer_out'), 'Transfers must create a paired outbound ledger event.');
-$assert(str_contains($postingService, 'stock_document_type_not_postable'), 'Unsupported return valuation must be rejected explicitly.');
+$assert(str_contains($postingService, "'return_in'") && str_contains($postingService, 'findPostedReturnSourceByIdForUpdate'), 'Source-linked return posting must use historical source valuation.');
+$assert(str_contains($postingService, 'canAddReturnQuantity') && str_contains($postingService, 'stock_return_quantity_exceeded'), 'Return posting must recheck cumulative quantity while holding the source lock.');
+$assert(str_contains($service, 'source_document_id') && str_contains($service, 'source_document_line_id'), 'Return drafts and lines must retain exact source references.');
+$assert(str_contains($service, 'findReturnSourceLineForUpdate') && str_contains($service, 'canAddReturnQuantity'), 'Return line creation must validate source scope and remaining quantity.');
+$assert(str_contains($repository, 'recipient_phone_normalized') === false, 'Inventory repository must not depend on CRM consent fields.');
+$assert(str_contains($repository, 'source_document_line_id') && str_contains($repository, 'returnedBaseQuantity'), 'Inventory repository must support source-linked return accounting.');
+$assert(str_contains($repository, 'findPostedReturnSourceForUpdate') && str_contains($repository, 'findReturnSourceLineByIdForUpdate'), 'Return source and source lines must be lockable within scope.');
+$assert(str_contains($postingRepository, "'return_in'") === false, 'Return movement type is written through the shared append-only ledger method.');
 $createStart = strpos($service, 'public function create(');
 $createEnd = strpos($service, 'public function addLine(', $createStart === false ? 0 : $createStart);
 $createMethod = $createStart === false || $createEnd === false ? '' : substr($service, $createStart, $createEnd - $createStart);
-$assert(str_contains($createMethod, "'waste']") && !str_contains($createMethod, "'return'"), 'New return documents must be blocked until source-linked return valuation is implemented; use audited inbound adjustment meanwhile.');
+$assert(str_contains($createMethod, "'return'") && str_contains($createMethod, 'findPostedReturnSourceForUpdate'), 'Return draft creation must require a posted source document.');
 
 $sourceLinkMigration = $read('database/v3/migrations/021_stock-document-source-links.sql');
 $assert(str_contains($sourceLinkMigration, 'ADD COLUMN source_document_id BIGINT UNSIGNED NULL'), 'Migration 021 must add an optional source-document reference without guessing historical links.');
@@ -60,6 +67,10 @@ $assert(str_contains($sourceLinkMigration, 'FOREIGN KEY (business_id, branch_id,
 $assert(str_contains($sourceLinkMigration, 'FOREIGN KEY (business_id, branch_id, source_document_line_id)'), 'A source line reference must be constrained to the same business and branch.');
 $assert(str_contains($sourceLinkMigration, 'ON DELETE RESTRICT'), 'Source links must prevent deletion of referenced historical documents and lines.');
 $assert(str_contains($sourceLinkMigration, 'NULL AFTER source_order_id'), 'Historical stock documents must remain unlinked instead of receiving guessed source references.');
+$integration = $read('scripts/check-v3-inventory-posting-integration.php');
+$assert(str_contains($integration, 'return-partial-one') && str_contains($integration, 'return_in'), 'Database integration must cover partial return valuation.');
+$assert(str_contains($integration, 'return-race-two') && str_contains($integration, 'overReturnBlocked'), 'Database integration must reject cumulative over-return across drafts.');
+$assert(str_contains($frontController, 'inventory/documents/{documentPublicId}/lines'), 'Return line API must use the protected inventory document line route.');
 
 $assert(str_contains($service, 'total_cost_amount'), 'Purchase receipt draft lines must capture total TOMAN cost.');
 $assert(str_contains($postingRepository, 'FOR UPDATE'), 'Posting must lock balance rows.');
