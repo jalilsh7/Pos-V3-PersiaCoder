@@ -933,3 +933,9 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - Commitهای کد: `648adea4f8ecff7c9a251013d485776af2b265d9`, `2dbc0a9d14a6a260c10e964a9868fa54acb03f32`, `e12b445eccf8eebd7cbf2b15e0d4b3e961fb7dc5`, `8a7b792b797336014e67f95ff8bae64b366ebfa9`, `47a6f9aac779b4af8950ab8316ed9bd8c07bc94d`, `bbd20c5306f85f16ac24d22596baf030cfac6556`, `c642d0980f63da530093f62dbdac0eb4485733f5`.
 - وضعیت اعتبارسنجی: فایل‌ها بعد از ثبت دوباره از main خوانده شدند؛ contract check به‌روزرسانی شده اما هنوز اجرا نشده؛ PHP lint، TypeScript، build و DB integration نیز اجرا نشده‌اند.
 - ادامه پیشنهادی: ممیزی end-to-end ماژول انبار و چرخه سند/خطوط/ثبت، سپس یک بسته جامع برای تکمیل مدیریت اسناد و تست‌های یکپارچگی؛ بدون حدس درباره policyهای تجاری.
+
+## تصمیم و UX رسپی برای Variantها (2026-11-21)
+- تصمیم RECIPE-VARIANT-EDIT-2026-001: ویرایش رسپی فعال با دکمه انجام می‌شود، اما active/retired immutable می‌مانند؛ دکمه خطوط active را در فرم کپی می‌کند و ذخیره، draft جدید در همان scope می‌سازد.
+- هر Variant می‌تواند رسپی و تاریخچه نسخه مستقل داشته باشد؛ رسپی عمومی محصول scope جداگانه دارد. Backend create/read از قبل variant_id و scope را پشتیبانی می‌کرد.
+- fallback خودکار Variant به رسپی عمومی محصول تصمیم‌گیری نشده است.
+- Commit UI: 19368bcd8e7f31d013cbb024cee7d912acf29920. فایل UI بعد از commit مجدداً از main دریافت و وجود دکمه/کپی خطوط/حالت draft بررسی شد؛ build و تست اجرا نشده‌اند.
