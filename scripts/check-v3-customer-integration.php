@@ -155,6 +155,9 @@ $service->update(
     'ci-customer-phone-restore-0001', $requestId, $ip,
 );
 
+$assert($service->get($scope, $customerId)['marketing_consent']['decision'] === 'stale',
+    'Restoring an old phone number incorrectly revived previously invalidated marketing consent.');
+
 $consentReplay = $service->recordMarketingSmsConsent(
     $actor, $scope, $customerId, $consentPayload,
     'ci-customer-consent-grant-0001', $requestId, $ip,
