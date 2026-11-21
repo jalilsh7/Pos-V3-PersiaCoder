@@ -1090,3 +1090,4 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - هر grant به `recipient_phone_normalized` زمان ثبت متصل است. اگر شماره مشتری عوض شود، read model وضعیت را `stale` برمی‌گرداند؛ شماره جدید رضایت قبلی را به ارث نمی‌برد. integration script این رفتار را پوشش می‌دهد. هنوز هیچ suppression در worker یا marketing dispatch وجود ندارد.
 
 - تغییر شماره پس از grant، رخداد append-only `invalidated` با audit ایجاد می‌کند؛ restore شماره قدیمی نیز رضایت را احیا نمی‌کند. `invalidated` از `withdrawn` جداست و UI علت را نشان می‌دهد. قبل از dispatch، suppression و eligibility لحظه ارسال همچنان باید ساخته شود.
+- grant فقط برای مشتری فعال دارای شماره معتبر پذیرفته می‌شود؛ مشتری غیرفعال یا بدون موبایل نمی‌تواند رضایت SMS marketing جدید ثبت کند.
