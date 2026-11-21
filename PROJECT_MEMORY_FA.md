@@ -478,3 +478,6 @@ Variant recipe در اولویت و در نبود آن product recipe fallback �
 
 ## تست integration چرخه سفارش و انبار — 2026-11-21
 یک تست DB مستقل برای چرخه `OrderInventoryLifecycleService` اضافه شد که سناریوهای reserve چندمحلی با kitchen priority، pin نسخه رسپی و snapshot، consume و ledger valuation، release در cancellation و rollback کمبود موجودی را بررسی می‌کند. در workflow دستی دیتابیس برای MySQL 8.4 و MariaDB 10.6 ثبت شده است. تست هنوز اجرا نشده و هیچ PASSی ثبت نشده است. commits: `2f7341e`, `1d934f5`, `ed8d508`, `b4e2e5a`.
+
+## Gate تست چرخه سفارش/رسپی/انبار — 2026-11-21
+تست قراردادی `scripts/check-v3-order-inventory-lifecycle.php` به workflow دستی Backend افزوده شد؛ workflow همچنان manual-only است. commit `c9154a7`. اجرای آن هنوز گزارش نشده است.
