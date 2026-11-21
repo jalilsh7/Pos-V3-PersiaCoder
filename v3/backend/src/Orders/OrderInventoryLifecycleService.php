@@ -222,8 +222,6 @@ final readonly class OrderInventoryLifecycleService
             'SELECT rl.*, si.base_unit_id
              FROM pos_stock_reservation_lines rl
              INNER JOIN pos_stock_items si ON si.id=rl.stock_item_id AND si.business_id=rl.business_id
-             INNER JOIN pos_stock_balances b ON b.business_id=rl.business_id AND b.branch_id=rl.branch_id
-               AND b.stock_item_id=rl.stock_item_id AND b.location_id=rl.location_id
              WHERE rl.business_id=:business AND rl.branch_id=:branch AND rl.reservation_id=:reservation
              ORDER BY rl.stock_item_id,rl.location_id FOR UPDATE'
         );
