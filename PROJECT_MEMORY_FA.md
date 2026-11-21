@@ -505,3 +505,6 @@ API client و UI اکنون cursor-based هستند: صفحه ۵۰تایی او�
 - برچسب تعداد و پیام خالی ledger با pagination هماهنگ شد و refresh خطای قبلی را reset می‌کند. commit `2217464`. Build اجرا نشده.
 
 - تست integration برای variantهای آزمایشی `public_id` اجباری migration 007 را اکنون seed می‌کند؛ commit `e30e7ed`. اجرای DB pending.
+
+## Order-to-ledger traceability — 2026-11-21
+گردش مصرف رسپی اکنون با `source_order_id` به سفارش مبدأ متصل می‌شود؛ migration 019 FK مرکب business/branch دارد، repository با scope همان شعبه شماره سفارش را برمی‌گرداند و UI آن را نمایش می‌دهد. integration test و static checks گسترش یافتند؛ migration/test/build اجرا نشده‌اند. commits: `4c032bf`, `1c6f75a`, `a46b7d7`, `0a521a7`, `8bcfa2f`, `f700733`, `02584be`, `1b5cdc3`, `06250d4`, `ad0645c`.
