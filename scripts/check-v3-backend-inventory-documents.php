@@ -79,6 +79,7 @@ $assert(str_contains($sourceLinkMigration, 'NULL AFTER source_order_id'), 'Histo
 $integration = $read('scripts/check-v3-inventory-posting-integration.php');
 $assert(str_contains($integration, 'return-partial-one') && str_contains($integration, 'return_in'), 'Database integration must cover partial return valuation.');
 $assert(str_contains($integration, 'return-race-two') && str_contains($integration, 'overReturnBlocked'), 'Database integration must reject cumulative over-return across drafts.');
+$assert(str_contains($integration, 'return-parallel-one') && str_contains($integration, 'pcntl_fork') && str_contains($integration, 'returnBlockedCount'), 'Database integration must exercise a true parallel source-return posting race.');
 $assert(str_contains($frontController, 'inventory/documents/{documentPublicId}/lines'), 'Return line API must use the protected inventory document line route.');
 
 $assert(str_contains($service, 'total_cost_amount'), 'Purchase receipt draft lines must capture total TOMAN cost.');
