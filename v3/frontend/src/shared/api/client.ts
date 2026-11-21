@@ -710,7 +710,6 @@ export type CustomerMarketingConsent = {
     evidence_ref: string | null;
     phone_matches_current: boolean;
     recorded_at: string;
-    actor_user_id: number | null;
   }[];
 };
 
