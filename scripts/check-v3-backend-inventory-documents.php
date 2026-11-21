@@ -57,6 +57,7 @@ $assert(str_contains($repository, 'recipient_phone_normalized') === false, 'Inve
 $assert(str_contains($repository, 'source_document_line_id') && str_contains($repository, 'returnedBaseQuantity'), 'Inventory repository must support source-linked return accounting.');
 $assert(str_contains($repository, 'findPostedReturnSourceForUpdate') && str_contains($repository, 'findReturnSourceLineByIdForUpdate'), 'Return source and source lines must be lockable within scope.');
 $assert(str_contains($repository, 'canAddReturnQuantity') && str_contains($repository, 'SUM(return_line.base_quantity)'), 'Cumulative posted return quantities must be calculated in SQL decimal arithmetic.');
+$assert(str_contains($repository, 'returnable_quantity') && str_contains($workspace, 'returnable_quantity'), 'The UI must show remaining returnable quantity and disable exhausted lines.');
 $assert(str_contains($repository, 'source_document_public_id') && str_contains($repository, 'source_document_line_id'), 'Document and line details must expose immutable source references.');
 $assert(str_contains($service, 'stock_return_line_inherited'), 'Return lines must not permit manual item, unit or valuation edits.');
 $assert(str_contains($client, 'source_document_line_id: string') && str_contains($client, '| "return"'), 'Frontend API contract must support source-linked return documents and lines.');
