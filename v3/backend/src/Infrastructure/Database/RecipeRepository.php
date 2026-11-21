@@ -165,6 +165,15 @@ final readonly class RecipeRepository
         ]);
     }
 
+    public function deleteRecipeLinesForVersion(int $businessId, int $versionId): void
+    {
+        $s = $this->connection->prepare(
+            'DELETE FROM pos_recipe_lines
+             WHERE business_id = :business_id AND recipe_version_id = :version_id'
+        );
+        $s->execute(['business_id' => $businessId, 'version_id' => $versionId]);
+    }
+
     public function findVersion(int $businessId, string $publicId): ?array
     {
         $s = $this->connection->prepare(
