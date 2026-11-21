@@ -17,6 +17,8 @@ $postingService = $read('v3/backend/src/Inventory/InventoryPostingService.php');
 $postingRepository = $read('v3/backend/src/Infrastructure/Database/InventoryPostingRepository.php');
 $controller = $read('v3/backend/src/Inventory/InventoryController.php');
 $frontController = $read('v3/backend/public/index.php');
+$client = $read('v3/frontend/src/shared/api/client.ts');
+$workspace = $read('v3/frontend/src/features/inventory/InventoryWorkspace.tsx');
 $lineMigration = $read('database/v3/migrations/012_stock-document-line-public-ids.sql');
 
 $assert(str_contains($repository, 'WHERE business_id = :business_id AND branch_id = :branch_id'), 'Document lookup must enforce business and branch scope.');
@@ -54,6 +56,12 @@ $assert(str_contains($service, 'findReturnSourceLineForUpdate') && str_contains(
 $assert(str_contains($repository, 'recipient_phone_normalized') === false, 'Inventory repository must not depend on CRM consent fields.');
 $assert(str_contains($repository, 'source_document_line_id') && str_contains($repository, 'returnedBaseQuantity'), 'Inventory repository must support source-linked return accounting.');
 $assert(str_contains($repository, 'findPostedReturnSourceForUpdate') && str_contains($repository, 'findReturnSourceLineByIdForUpdate'), 'Return source and source lines must be lockable within scope.');
+$assert(str_contains($repository, 'canAddReturnQuantity') && str_contains($repository, 'SUM(return_line.base_quantity)'), 'Cumulative posted return quantities must be calculated in SQL decimal arithmetic.');
+$assert(str_contains($repository, 'source_document_public_id') && str_contains($repository, 'source_document_line_id'), 'Document and line details must expose immutable source references.');
+$assert(str_contains($service, 'stock_return_line_inherited'), 'Return lines must not permit manual item, unit or valuation edits.');
+$assert(str_contains($client, 'source_document_line_id: string') && str_contains($client, '| "return"'), 'Frontend API contract must support source-linked return documents and lines.');
+$assert(str_contains($workspace, 'returnSourceDocumentId') && str_contains($workspace, 'returnSourceLineId'), 'Inventory UI must select a posted source document and exact source line.');
+$assert(str_contains($workspace, 'documentType === "return"'), 'Inventory UI must provide the return workflow.');
 $assert(str_contains($postingRepository, "'return_in'") === false, 'Return movement type is written through the shared append-only ledger method.');
 $createStart = strpos($service, 'public function create(');
 $createEnd = strpos($service, 'public function addLine(', $createStart === false ? 0 : $createStart);
