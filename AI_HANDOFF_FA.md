@@ -1106,3 +1106,14 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - دقت وضعیت تست: Integration جدید دو پیش‌نویس مستقل را می‌سازد و با posting ترتیبی اثبات می‌کند پس از ثبت اول، دومی در صورت عبور تجمعی رد می‌شود؛ این هنوز تست واقعی fork/connection هم‌زمان برای دو برگشت نیست. اجرای race هم‌زمان برگشت روی MySQL و MariaDB باید پیش از پذیرش اضافه/اجرا شود.
 
 - تکمیل تست رقابت: `scripts/check-v3-inventory-posting-integration.php` اکنون دو return draft مستقل برای همان 0.2 مانده می‌سازد و با دو process/connection جدا (`pcntl_fork`) هم‌زمان post می‌کند؛ انتظار دقیقاً یک posting موفق و یک رد over-return است. تست نوشته شده اما اجرا نشده؛ بنابراین رفتار concurrency هنوز runtime-verified نیست.
+
+
+## ادامه کار پس از SMS-TEMPLATE-RECIPIENT-2026-001 (2026-11-22)
+
+- SmsServiceTemplateOutbox در مسیر پیامک تراکنشی رویداد سفارش اصلاح شد: customer_id متصل باید معتبر، فعال و متعلق به business جاری باشد؛ شماره مقصد از پروفایل مشتری snapshot می‌شود و recipient_phone اختیاری فقط در صورت تطابق دقیق پذیرفته می‌شود. مشتری متصل نامعتبر/غیرفعال دیگر به شماره guest fallback نمی‌کند.
+- consent بازاریابی عمداً در worker تراکنشی بررسی نمی‌شود؛ لغو رضایت بازاریابی نباید پیام ضروری سفارش را متوقف کند.
+- مسیر marketing campaign/outbox مستقل هنوز وجود ندارد. تا ساخت suppression در enqueue و بررسی مجدد آخرین رضایت + شماره مقصد در لحظه dispatch، هیچ ارسال بازاریابی نباید فعال شود.
+- static contract check جدید: scripts/check-v3-sms-template-recipient-isolation.php.
+- commits: 13e8eb3, 516d582.
+- اجرا نشده: static script، PHP lint، migration، DB integration، TypeScript/build و ارسال واقعی provider.
+- گام بعد: طراحی و پیاده‌سازی مسیر مستقل کمپین بازاریابی (audience snapshot، consent/phone revalidation در enqueue و dispatch، opt-out و suppression) بدون استفاده مجدد از مسیر تراکنشی.
