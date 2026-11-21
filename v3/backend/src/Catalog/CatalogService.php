@@ -332,6 +332,14 @@ final readonly class CatalogService
         return $this->catalog->productDetails($scope->businessId, $id) ?? [];
     }
 
+    public function productManagementDetails(BusinessScope $scope, string $publicId): array
+    {
+        if (!self::isUuid($publicId)) throw new HttpException(422, 'product_id_invalid', 'The product identifier is invalid.');
+        $id = $this->catalog->findProductIdByPublicId($scope->businessId, $publicId);
+        if ($id === null) throw new HttpException(404, 'product_not_found', 'The product was not found.');
+        return $this->catalog->productDetails($scope->businessId, $id, true) ?? [];
+    }
+
     public function createVariant(AuthenticatedPrincipal $actor, BusinessScope $scope, string $productPublicId, array $payload, string $key, string $requestId, string $ip): array
     {
         $productId = $this->catalog->findProductIdByPublicId($scope->businessId, $productPublicId);
