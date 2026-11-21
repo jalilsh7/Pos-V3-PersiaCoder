@@ -39,6 +39,8 @@ $assert(str_contains($schema, 'CREATE TABLE pos_stock_reservations'), 'Reservati
 $assert(str_contains($schema, 'CREATE TABLE pos_order_item_recipe_lines'), 'Order recipe snapshot schema is missing.');
 $assert(str_contains($orderScopeMigration, 'ALTER TABLE pos_order_item_recipe_lines') && str_contains($orderScopeMigration, 'ADD COLUMN business_id BIGINT UNSIGNED NOT NULL AFTER id') && str_contains($orderScopeMigration, 'ADD COLUMN branch_id BIGINT UNSIGNED NOT NULL AFTER business_id'), 'Order recipe snapshot business/branch scope migration is missing.');
 $assert(str_contains($migration, 'fk_v3_order_item_recipe_location_scope'), 'Order recipe snapshot location scope constraint is missing.');
+$assert(str_contains($migration, 'ADD COLUMN unit_cost_snapshot DECIMAL(24,8) NOT NULL DEFAULT 0 AFTER base_quantity'), 'Reservation-time cost snapshot migration is missing.');
+$assert(str_contains($lifecycle, 'unit_cost_snapshot'), 'Reservation-time cost snapshot is not used by the order lifecycle.');
 $assert(str_contains($lifecycle, 'branch_context_required'), 'Stock lifecycle must reject missing branch context.');
 $assert(str_contains($lifecycle, 'takeRemaining'), 'Snapshot allocation must preserve exact quantities without rounding loss.');
 
