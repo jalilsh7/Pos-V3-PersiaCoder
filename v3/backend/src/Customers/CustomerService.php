@@ -279,6 +279,35 @@ final readonly class CustomerService
                     $input['notes'],
                     $input['is_active'],
                 );
+                if (($existing['phone_normalized'] ?? null) !== $input['phone_normalized']) {
+                    $priorConsent = $this->customers->latestConsent($scope->businessId, (int) $existing['id']);
+                    if (($priorConsent['decision'] ?? null) === 'granted') {
+                        $this->customers->appendConsentEvent(
+                            $scope->businessId,
+                            (int) $existing['id'],
+                            self::uuidV4(),
+                            'invalidated',
+                            'pos',
+                            $priorConsent['notice_version'] === null ? null : (string) $priorConsent['notice_version'],
+                            $priorConsent['evidence_ref'] === null ? null : (string) $priorConsent['evidence_ref'],
+                            $priorConsent['recipient_phone_normalized'] === null ? null : (string) $priorConsent['recipient_phone_normalized'],
+                            $actor->userId,
+                        );
+                        $this->audit->record(
+                            $actor->userId,
+                            'customer.marketing_consent.invalidated_by_phone_change',
+                            'customer',
+                            $publicId,
+                            ['decision' => 'granted'],
+                            ['decision' => 'invalidated', 'reason' => 'customer_phone_changed'],
+                            null,
+                            $requestId,
+                            $ipAddress,
+                            $scope->businessId,
+                            $scope->branchId,
+                        );
+                    }
+                }
                 $this->audit->record(
                     $actor->userId,
                     'customer.updated',
