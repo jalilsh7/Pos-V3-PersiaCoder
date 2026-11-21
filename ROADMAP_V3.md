@@ -1449,3 +1449,9 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - `scripts/check-v3-order-inventory-lifecycle.php` به workflow دستی Backend اضافه شد تا قرارداد اتصال transition، snapshot رسپی، قفل و تخصیص موجودی، valuation زمان رزرو و scope migration در gate بک‌اند کنترل شود.
 - workflow همچنان `workflow_dispatch` است و اجرای خودکار push/schedule اضافه نشده است.
 - commit: `c9154a7c4c60188c02358d8a76146fca5e44e1bc`. اجرای workflow هنوز انجام نشده است.
+
+### کاهش deadlock در رزرو موجودی سفارش — 2026-11-21
+- قفل ردیف مکان‌ها و مانده‌ها اکنون با ترتیب صعودی ID گرفته می‌شود تا با الگوی InventoryPostingService هم‌راستا باشد؛ ترتیب تخصیص مستقل باقی می‌ماند و همچنان kitchen قبل از storage مصرف می‌شود.
+- query مکان‌های فعال با `FOR UPDATE` قفل می‌شود تا غیرفعال‌سازی مکان در میانه رزرو با عملیات جاری تداخل نکند.
+- تست DB ترتیب seed مکان‌ها را عمداً storage سپس kitchen می‌سازد تا ثابت کند اولویت تخصیص به ID وابسته نیست. contract check نیز lock order را بررسی می‌کند.
+- commits: `4194e4d`، `c0294b7`، `b9a7fad`. تست‌ها هنوز اجرا نشده‌اند.
