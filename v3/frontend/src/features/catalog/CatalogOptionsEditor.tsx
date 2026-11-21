@@ -1,8 +1,8 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import {
   attachCatalogOptionGroup, createCatalogOptionGroup, createCatalogVariant,
   updateCatalogOption, updateCatalogOptionGroup, updateCatalogVariant,
-  type PosCatalogProductDetail,
+  getPosCatalogProductManagementDetails, type PosCatalogProductDetail,
 } from "../../shared/api/client";
 import { Button, StatusBadge } from "../../shared/ui";
 
@@ -16,6 +16,7 @@ const parseSignedInteger = (value: string) => {
 export function CatalogOptionsEditor({ productId, detail, onSaved }: {
   productId: string; detail: PosCatalogProductDetail; onSaved: () => Promise<void>;
 }) {
+  const [currentDetail, setCurrentDetail] = useState(detail);
   const [variantName, setVariantName] = useState("");
   const [variantSku, setVariantSku] = useState("");
   const [variantDelta, setVariantDelta] = useState("0");
@@ -32,6 +33,18 @@ export function CatalogOptionsEditor({ productId, detail, onSaved }: {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    let active = true;
+    getPosCatalogProductManagementDetails(productId).then((next) => { if (active) setCurrentDetail(next); })
+      .catch((error: unknown) => { if (active) setMessage(error instanceof Error ? error.message : "دریافت جزئیات مدیریتی گزینه‌ها ناموفق بود."); });
+    return () => { active = false; };
+  }, [productId]);
+
+  async function refreshManagedDetail() {
+    const next = await getPosCatalogProductManagementDetails(productId);
+    setCurrentDetail(next);
+  }
+
   async function saveVariant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const delta = parseSignedInteger(variantDelta);
@@ -39,7 +52,7 @@ export function CatalogOptionsEditor({ productId, detail, onSaved }: {
     setBusy(true); setMessage(null);
     try {
       await createCatalogVariant(productId, { name: variantName.trim(), sku: variantSku.trim() || null, price_delta_amount: delta });
-      setVariantName(""); setVariantSku(""); setVariantDelta("0"); await onSaved(); setMessage("تنوع محصول ثبت شد.");
+      setVariantName(""); setVariantSku(""); setVariantDelta("0"); await onSaved(); await refreshManagedDetail(); setMessage("تنوع محصول ثبت شد.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "ثبت تنوع ناموفق بود."); }
     finally { setBusy(false); }
   }
@@ -57,20 +70,20 @@ export function CatalogOptionsEditor({ productId, detail, onSaved }: {
       const group = await createCatalogOptionGroup({ name: groupName.trim(), selection_type: selectionType,
         min_select: min, max_select: max, is_required_default: required, options: clean });
       try {
-        await attachCatalogOptionGroup(productId, { option_group_id: group.id, sort_order: detail.option_groups.length, is_required: attachRequired });
+        await attachCatalogOptionGroup(productId, { option_group_id: group.id, sort_order: currentDetail.option_groups.length, is_required: attachRequired });
       } catch (error) {
         setMessage(`گروه «${groupName.trim()}» ساخته شد اما اتصال آن ناموفق بود. شناسه گروه: ${group.id}؛ برای جلوگیری از گروه تکراری، دوباره فرم ساخت را ارسال نکنید.`);
         return;
       }
       setGroupName(""); setOptions([{ name: "", price: "0" }, { name: "", price: "0" }]);
       setMinSelect("0"); setMaxSelect("1"); setRequired(false); setAttachRequired(false);
-      await onSaved(); setMessage("گروه گزینه ساخته و به همین محصول متصل شد.");
+      await onSaved(); await refreshManagedDetail(); setMessage("گروه گزینه ساخته و به همین محصول متصل شد.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "ساخت گروه گزینه ناموفق بود."); }
     finally { setBusy(false); }
   }
   async function toggle(action: () => Promise<void>) {
     setBusy(true); setMessage(null);
-    try { await action(); await onSaved(); }
+    try { await action(); await onSaved(); await refreshManagedDetail(); }
     catch (error) { setMessage(error instanceof Error ? error.message : "ذخیره تغییر انجام نشد."); }
     finally { setBusy(false); }
   }
@@ -122,7 +135,7 @@ export function CatalogOptionsEditor({ productId, detail, onSaved }: {
     </div>
     <div className="catalog-editor-section">
       <strong>گروه‌های گزینه متصل به محصول</strong>
-      {detail.option_groups.map((group) => <div className="catalog-editor-group" key={group.id}>
+      {currentDetail.option_groups.map((group) => <div className="catalog-editor-group" key={group.id}>
         <div className="catalog-editor-row"><span><b>{group.name}</b><small>{group.selection_type === "single" ? "تک‌انتخابی" : "چندانتخابی"} · حداقل {group.min_select} / حداکثر {group.max_select} · {group.is_required ? "اجباری برای این محصول" : "اختیاری"}</small></span><StatusBadge variant="success">متصل</StatusBadge></div>
         <div className="catalog-editor-form">
           <input aria-label="نام گروه" value={(groupDrafts[group.id] ?? { name: group.name }).name} onChange={(event) => setGroupDrafts((current) => ({ ...current, [group.id]: { ...(current[group.id] ?? { name: group.name, type: group.selection_type, min: String(group.min_select), max: String(group.max_select), required: group.is_required_default }), name: event.target.value } }))} />
@@ -140,7 +153,7 @@ export function CatalogOptionsEditor({ productId, detail, onSaved }: {
           <Button size="sm" variant="ghost" disabled={busy} onClick={() => void toggle(() => updateCatalogOption(option.id, { is_active: !option.is_active }))}>{option.is_active ? "غیرفعال" : "فعال‌سازی"}</Button>
         </div>)}
       </div>)}
-      {!detail.option_groups.length ? <small className="catalog-editor-hint">گروه گزینه‌ای به این محصول متصل نیست.</small> : null}
+      {!currentDetail.option_groups.length ? <small className="catalog-editor-hint">گروه گزینه‌ای به این محصول متصل نیست.</small> : null}
       <form onSubmit={(event) => void saveGroup(event)} className="catalog-editor-form catalog-editor-group-form">
         <input aria-label="نام گروه گزینه" placeholder="نام گروه، مثلاً انتخاب سس" value={groupName} onChange={(event) => setGroupName(event.target.value)} maxLength={140} required />
         <select aria-label="نوع انتخاب" value={selectionType} onChange={(event) => { setSelectionType(event.target.value as "single" | "multiple"); if (event.target.value === "single") setMaxSelect("1"); }}>
