@@ -32,6 +32,16 @@ final readonly class RecipeController
         ));
     }
 
+    public function updateDraftVersion(Request $request, array $parameters): Response
+    {
+        return $this->idempotentResponse($this->recipes->updateDraftVersion(
+            $this->principal($request), $this->scope($request),
+            (string) ($parameters['versionPublicId'] ?? ''), $this->jsonPayload($request),
+            $request->header('idempotency-key') ?? '', $request->requestId,
+            (string) ($request->attribute('remote_ip') ?? ''),
+        ));
+    }
+
     public function activateVersion(Request $request, array $parameters): Response
     {
         return $this->idempotentResponse($this->recipes->activateVersion(
