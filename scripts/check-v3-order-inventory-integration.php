@@ -98,6 +98,9 @@ $readBalance = static function (int $locationId) use ($pdo,$businessId,$branchId
 $pdo->beginTransaction();
 $service->apply($scope,$orderId,'accepted','ci-reserve-'.$prefix);
 $pdo->commit();
+$pdo->beginTransaction();
+$service->apply($scope,$orderId,'accepted','ci-reserve-'.$prefix);
+$pdo->commit();
 $assert($readBalance($locationIds['kitchen'])['quantity_reserved']==='0.400000','Kitchen priority allocation was not reserved.');
 $assert($readBalance($locationIds['storage'])['quantity_reserved']==='0.100000','Storage fallback allocation was not reserved.');
 $s=$pdo->prepare('SELECT recipe_version_id FROM pos_order_items WHERE id=:id');
@@ -109,6 +112,9 @@ $assert((int)$s->fetchColumn()===2,'Recipe snapshot was not split across both st
 
 $pdo->beginTransaction();
 $service->apply($scope,$orderId,'completed','ci-complete-'.$prefix);
+$pdo->commit();
+$pdo->beginTransaction();
+$service->apply($scope,$orderId,'completed','ci-complete-replay-'.$prefix);
 $pdo->commit();
 $assert($readBalance($locationIds['kitchen'])['quantity_on_hand']==='0.000000','Kitchen on-hand quantity was not consumed.');
 $assert($readBalance($locationIds['storage'])['quantity_reserved']==='0.000000','Storage reservation was not cleared on consumption.');
@@ -125,6 +131,9 @@ $service->apply($scope,$releaseOrderId,'accepted','ci-release-reserve-'.$prefix)
 $pdo->commit();
 $pdo->beginTransaction();
 $service->apply($scope,$releaseOrderId,'cancelled','ci-release-cancel-'.$prefix);
+$pdo->commit();
+$pdo->beginTransaction();
+$service->apply($scope,$releaseOrderId,'cancelled','ci-release-cancel-replay-'.$prefix);
 $pdo->commit();
 $assert($readBalance($locationIds['storage'])['quantity_reserved']==='0.000000','Cancellation did not release the active reservation.');
 
