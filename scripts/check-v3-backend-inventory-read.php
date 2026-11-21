@@ -71,4 +71,4 @@ $assert(str_contains($client, 'beforeId?: string') && str_contains($client, 'que
 $assert(str_contains($workspace, 'ledgerCursor') && str_contains($workspace, 'loadMoreLedger') && str_contains($workspace, 'بارگذاری گردش‌های قدیمی‌تر'), 'Inventory workspace must expose older ledger pages.');
 $assert(!str_contains($client, 'ledger_id: number;'), 'Internal ledger row IDs must not be exposed in the public frontend model.');
 
-echo "V3 inventory read scope and ledger pagination checks passed.\\n";
+echo "V3 inventory read scope and ledger pagination checks passed.\n";
