@@ -258,13 +258,13 @@ final readonly class OrderInventoryLifecycleService
             $eventKey = 'order-consume:' . $orderId . ':' . (int)$line['stock_item_id'] . ':' . (int)$line['location_id'];
             $ledger = $this->db->prepare(
                 "INSERT INTO pos_stock_ledger
-                 (business_id,branch_id,stock_item_id,location_id,document_line_id,movement_type,quantity_delta,
+                 (business_id,branch_id,stock_item_id,location_id,document_line_id,source_order_id,movement_type,quantity_delta,
                   base_unit_id,unit_cost_snapshot,total_cost_amount,source_event_key)
-                 VALUES (:business,:branch,:item,:location,NULL,'consumption_out',:delta,:unit,:cost,:total,:event)"
+                 VALUES (:business,:branch,:item,:location,NULL,:source_order_id,'consumption_out',:delta,:unit,:cost,:total,:event)"
             );
             $ledger->execute([
                 'business'=>$businessId,'branch'=>$branchId,'item'=>(int)$line['stock_item_id'],'location'=>(int)$line['location_id'],
-                'delta'=>'-'.$qty,'unit'=>(int)$line['base_unit_id'],'cost'=>(string)$line['unit_cost_snapshot'],
+                'source_order_id'=>$orderId,'delta'=>'-'.$qty,'unit'=>(int)$line['base_unit_id'],'cost'=>(string)$line['unit_cost_snapshot'],
                 'total'=>'-'.$totalCost,'event'=>$eventKey,
             ]);
             $lineUpdate = $this->db->prepare(
