@@ -215,11 +215,14 @@ final readonly class InventoryDocumentRepository
     public function findPostedReturnSourceForUpdate(int $businessId, int $branchId, string $publicId): ?array
     {
         $s = $this->connection->prepare(
-            "SELECT id, public_id, document_no, document_type, location_id, status
-             FROM pos_stock_documents
-             WHERE business_id = :business_id AND branch_id = :branch_id
-               AND public_id = :public_id AND status = 'posted'
-               AND document_type IN ('adjustment_out','consumption','waste')
+            "SELECT d.id, d.public_id, d.document_no, d.document_type, d.location_id, d.status,
+                    l.public_id AS location_public_id
+             FROM pos_stock_documents d
+             INNER JOIN pos_stock_locations l
+               ON l.id = d.location_id AND l.business_id = d.business_id AND l.branch_id = d.branch_id
+             WHERE d.business_id = :business_id AND d.branch_id = :branch_id
+               AND d.public_id = :public_id AND d.status = 'posted'
+               AND d.document_type IN ('adjustment_out','consumption','waste')
              LIMIT 1 FOR UPDATE"
         );
         $s->execute(['business_id' => $businessId, 'branch_id' => $branchId, 'public_id' => $publicId]);
