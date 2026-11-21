@@ -5,6 +5,7 @@ import {
   createCustomer,
   getCustomerDetails,
   getCustomers,
+  recordCustomerMarketingSmsConsent,
   updateCustomer,
   type CustomerDetail,
   type CustomerSummary,
@@ -53,6 +54,10 @@ export function CustomersWorkspace() {
   const [editPhone, setEditPhone] = useState("");
   const [editNotes, setEditNotes] = useState("");
   const [editActive, setEditActive] = useState(true);
+  const [consentNoticeVersion, setConsentNoticeVersion] = useState("marketing-sms-v1");
+  const [consentEvidenceRef, setConsentEvidenceRef] = useState("");
+  const [consentSaving, setConsentSaving] = useState(false);
+  const consentAttempt = useRef<{ signature: string; key: string } | null>(null);
   const createAttempt = useRef<{ signature: string; key: string } | null>(null);
   const updateAttempt = useRef<{ signature: string; key: string } | null>(null);
   const listRequestVersion = useRef(0);
@@ -154,6 +159,33 @@ export function CustomersWorkspace() {
       .finally(() => { if (active) setDetailLoading(false); });
     return () => { active = false; };
   }, [selectedId]);
+
+  async function submitConsent(decision: "granted" | "withdrawn") {
+    if (!selectedId || consentSaving) return;
+    const payload = decision === "granted"
+      ? { decision, notice_version: consentNoticeVersion.trim(), evidence_ref: consentEvidenceRef.trim() }
+      : { decision };
+    if (decision === "granted" && (!payload.notice_version || !payload.evidence_ref)) {
+      setActionError("برای ثبت رضایت، نسخه متن اطلاع‌رسانی و مرجع/شرح مدرک رضایت الزامی است.");
+      return;
+    }
+    const signature = JSON.stringify([selectedId, payload]);
+    if (!consentAttempt.current || consentAttempt.current.signature !== signature) {
+      consentAttempt.current = { signature, key: globalThis.crypto.randomUUID() };
+    }
+    setConsentSaving(true);
+    setActionError(null);
+    try {
+      await recordCustomerMarketingSmsConsent(selectedId, payload, consentAttempt.current.key);
+      consentAttempt.current = null;
+      setDetail(await getCustomerDetails(selectedId));
+      if (decision === "granted") setConsentEvidenceRef("");
+    } catch (cause) {
+      setActionError(cause instanceof ApiError ? cause.message : cause instanceof Error ? cause.message : "ثبت وضعیت رضایت پیامکی انجام نشد.");
+    } finally {
+      setConsentSaving(false);
+    }
+  }
 
   const selected = detail?.customer ?? null;
   const visible = useMemo(() => customers, [customers]);
@@ -290,6 +322,36 @@ export function CustomersWorkspace() {
                 <div><span>خرید خالص ثبت‌شده</span><strong>{money(detail.stats.total_spent)} <small>تومان</small></strong></div>
                 <div><span>آخرین سفارش</span><strong>{dateTime(detail.stats.last_order_at)}</strong></div>
               </div>
+              <section className="customers-note" aria-label="رضایت پیامک تبلیغاتی">
+                <strong>رضایت دریافت پیامک تبلیغاتی</strong>
+                <p>
+                  وضعیت فعلی: {detail.marketing_consent.decision === "granted" ? "رضایت ثبت‌شده" : detail.marketing_consent.decision === "withdrawn" ? "انصراف ثبت‌شده" : "نامشخص / بدون رضایت معتبر"}
+                  {detail.marketing_consent.recorded_at ? ` · ${dateTime(detail.marketing_consent.recorded_at)}` : ""}
+                </p>
+                <p>ثبت رضایت فقط پس از اعلام صریح مشتری انجام شود؛ وجود شماره همراه به‌تنهایی رضایت محسوب نمی‌شود.</p>
+                <div className="customers-create-fields">
+                  <TextField label="نسخه متن اطلاع‌رسانی" value={consentNoticeVersion} onChange={(event) => setConsentNoticeVersion(event.target.value)} />
+                  <TextField label="مرجع یا شرح مدرک رضایت (الزامی)" value={consentEvidenceRef} onChange={(event) => setConsentEvidenceRef(event.target.value)} placeholder="مثلاً فرم امضاشده / شناسه ثبت رضایت" />
+                </div>
+                <div className="customers-detail-actions">
+                  <Button variant="primary" disabled={consentSaving || !selected.phone || !consentNoticeVersion.trim() || !consentEvidenceRef.trim()} onClick={() => { void submitConsent("granted"); }}>
+                    {consentSaving ? "در حال ثبت..." : "ثبت رضایت اعلام‌شده"}
+                  </Button>
+                  <Button variant="secondary" disabled={consentSaving || detail.marketing_consent.decision !== "granted"} onClick={() => { void submitConsent("withdrawn"); }}>
+                    ثبت انصراف
+                  </Button>
+                </div>
+                {detail.marketing_consent.history.length > 0 ? (
+                  <div className="customers-history">
+                    {detail.marketing_consent.history.map((event, index) => (
+                      <div className="customers-order" key={`${event.recorded_at}-${index}`}>
+                        <div><strong>{event.decision === "granted" ? "رضایت ثبت شد" : "انصراف ثبت شد"}</strong><small>{dateTime(event.recorded_at)} · {event.source}</small></div>
+                        <div className="customers-order-total"><small>{event.notice_version || "بدون نسخه متن"}{event.evidence_ref ? ` · ${event.evidence_ref}` : ""}</small></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </section>
               <div className="customers-profile-stats customers-loyalty-stats">
                 <div><span>امتیاز وفاداری</span><strong>{money(detail.loyalty.points_balance)}</strong></div>
                 <div><span>اعتبار مشتری</span><strong>{money(detail.loyalty.credit_balance)} <small>تومان</small></strong></div>
