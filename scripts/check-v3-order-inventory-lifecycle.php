@@ -17,8 +17,8 @@ $assert(str_contains($service, 'new OrderInventoryLifecycleService($connection)'
 $assert(str_contains($service, '$this->inventoryLifecycle->apply('), 'Order status transition does not invoke stock lifecycle.');
 $assert(strpos($service, '$this->inventoryLifecycle->apply(') < strpos($service, '$this->orders->updateOrderStatus('), 'Stock lifecycle must execute before the order status update in the same transaction.');
 
-$assert(str_contains($lifecycle, "if ($targetStatus === 'accepted')"), 'Acceptance reservation hook is missing.');
-$assert(str_contains($lifecycle, "elseif ($targetStatus === 'completed')"), 'Completion consumption hook is missing.');
+$assert(str_contains($lifecycle, 'if ($targetStatus === \'accepted\')'), 'Acceptance reservation hook is missing.');
+$assert(str_contains($lifecycle, 'elseif ($targetStatus === \'completed\')'), 'Completion consumption hook is missing.');
 $assert(str_contains($lifecycle, "['cancelled', 'rejected']"), 'Cancellation/rejection release hook is missing.');
 $assert(str_contains($lifecycle, 'variant_scope_id = :variant_scope'), 'Variant recipe lookup is missing.');
 $assert(str_contains($lifecycle, 'return ($variantId === null ? null : $find($variantId)) ?? $find(null)'), 'Product-level recipe fallback is missing.');
