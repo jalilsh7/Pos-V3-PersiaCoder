@@ -106,3 +106,8 @@ MySQL/MariaDB برای بسیاری از دستورات DDL implicit commit ان
 - این مجوز فقط دسترسی خواندن صف پیامک و تاریخچه تحویل را می‌دهد؛ عملیات ارسال، retry یا مدیریت تنظیمات provider را اعطا نمی‌کند.
 - دسترسی installation owner از wildcard موجود RBAC پیروی می‌کند.
 - migration فقط در مخزن ثبت شده و هنوز اجرای DB validation برای آن انجام نشده است.
+
+## Migration 019 — مرجع سفارش در دفتر گردش انبار
+- فایل `019_stock-ledger-order-reference.sql` ستون nullable `source_order_id` را به `pos_stock_ledger` اضافه می‌کند تا خروج مصرف ناشی از سفارش مستقیماً به سفارش مبدأ متصل باشد.
+- FK مرکب روی `business_id, branch_id, source_order_id` مانع اتصال گردش به سفارش شعبه یا کسب‌وکار دیگر می‌شود؛ برای گردش‌های مبتنی بر سند، این ستون NULL باقی می‌ماند.
+- migration برای نصب تازه از طریق migration runner اجرا می‌شود؛ اجرای واقعی روی MySQL/MariaDB هنوز باید در workflow دستی تأیید شود.
