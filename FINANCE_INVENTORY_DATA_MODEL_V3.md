@@ -68,7 +68,7 @@
 - `pos_units`: واحدهای استاندارد با کد و نوع کمیت مانند جرم، حجم، تعداد؛ نمونه g/kg، ml/l، each.
 - `pos_stock_locations`: انبار/محل نگهداری؛ نسخه اول می‌تواند چند محل در یک کسب‌وکار داشته باشد.
 - `pos_stock_documents` و `pos_stock_document_lines`: سربرگ و ردیف اسناد رسید، حواله، انتقال، شمارش، اصلاح، ضایعات و برگشت.
-- `pos_stock_ledger`: دفتر تغییرناپذیر گردش؛ هر ردیف مقدار signed در واحد پایه، محل، قلم، علت، سند مرجع، actor، زمان و idempotency دارد.
+- `pos_stock_ledger`: دفتر تغییرناپذیر گردش؛ هر ردیف مقدار signed در واحد پایه، محل، قلم، علت، سند مرجع، actor، زمان و idempotency دارد. مصرف ناشی از سفارش با `source_order_id` به سفارش مبدأ متصل می‌شود و FK مرکب business/branch مانع ارجاع بین‌محدوده‌ای است.
 - `pos_stock_reservations` و `pos_stock_reservation_lines`: رزرو موقت/قطعی موجودی برای سفارش یا فرایند داخلی.
 - `pos_stock_balances`: در صورت نیاز projection/cache برای query سریع؛ منبع حقیقت همچنان ledger به‌علاوه رزروهای فعال است و projection باید قابل بازسازی باشد.
 
