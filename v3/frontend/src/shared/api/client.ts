@@ -354,6 +354,16 @@ export async function createRecipeDraftVersion(productId: string, payload: {
     { method: "POST", body: JSON.stringify(payload) },
   );
 }
+export async function updateRecipeDraftVersion(versionId: string, payload: {
+  name: string;
+  lines: { stock_item_id: string; quantity: string; unit_code: string; waste_percent: string }[];
+}): Promise<void> {
+  await request<{ recipe_version: { id: string; status: string } }>(
+    `/catalog/recipe-versions/${encodeURIComponent(versionId)}`,
+    { method: "PATCH", body: JSON.stringify(payload) },
+  );
+}
+
 export async function activateRecipeVersion(versionId: string): Promise<void> {
   await request<{ recipe_version: { id: string; status: string } }>(
     `/catalog/recipe-versions/${encodeURIComponent(versionId)}/activate`,
