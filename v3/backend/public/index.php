@@ -535,6 +535,11 @@ try {
         [$sessionMiddleware, $makePermissionMiddleware('catalog.manage', false), $csrfMiddleware, $originMiddleware],
     );
 
+    $router->add('PATCH', '/api/v1/catalog/recipe-versions/{versionPublicId}',
+        static fn (Request $request, array $parameters): Response => $getRecipeController()->updateDraftVersion($request, $parameters),
+        [$sessionMiddleware, $makePermissionMiddleware('catalog.manage', false), $csrfMiddleware, $originMiddleware],
+    );
+
     $router->add('POST', '/api/v1/catalog/recipe-versions/{versionPublicId}/activate',
         static fn (Request $request, array $parameters): Response => $getRecipeController()->activateVersion($request, $parameters),
         [$sessionMiddleware, $makePermissionMiddleware('catalog.manage', false), $csrfMiddleware, $originMiddleware],
