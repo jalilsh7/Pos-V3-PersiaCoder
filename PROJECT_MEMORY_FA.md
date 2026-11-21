@@ -493,3 +493,5 @@ integration test اکنون پذیرش تکراری با همان کلید، م�
 
 ## Inventory ledger pagination — 2026-11-21
 API client و UI اکنون cursor-based هستند: صفحه ۵۰تایی اول، سپس بارگذاری گردش‌های قدیمی‌تر با `before_id/next_cursor`. شناسه داخلی ledger به UI افشا نمی‌شود. contract check scope گسترش یافت. commits: `1431478`, `a7dd0f1`, `8cda2b4`, `9b98c1c`, `d1a7f07`, `c79dd6a`, `7647b99`. تست/build اجرا نشده.
+
+- خطای بارگذاری گردش‌های قدیمی‌تر در همان پنل با state مستقل نشان داده می‌شود؛ commit `bb16935`؛ تست/build pending.
