@@ -154,3 +154,13 @@ php v3/backend/tests/Communications/Sms/LegacySmsParserTest.php
 - CLI: scripts/poll-v3-sms-service-template-deliveries.php; apply migration 018 first. Schedule the CLI on the customer server with the same protected Shared Number environment credentials as the send worker.
 - Unknown lookup outcomes never trigger a new SMS send. Provider receipt IDs are treated as strings to preserve 16–19 digit values.
 - Status mapping and actual account response must be verified in a controlled provider test before declaring production acceptance.
+
+
+## Linked customer recipient isolation — 2026-11-22
+
+- Shared Number order-event messages are transactional; marketing consent is intentionally not consulted in this path.
+- When an order event has a linked customer_id, enqueue requires an active customer in the same business with a valid normalized mobile. The customer profile mobile is authoritative. An optional recipient_phone override is accepted only when it normalizes to the exact same mobile.
+- Invalid/inactive linked customers and mismatched overrides fail closed; they never fall back to a guest-provided number.
+- Guest recipient fallback is available only when no customer is linked.
+- Marketing campaigns must use a separate queue/dispatch path. Keep them disabled until consent and current-phone suppression are checked both at enqueue and immediately before provider dispatch, with opt-out support.
+- Static contract check: php scripts/check-v3-sms-template-recipient-isolation.php (added; not run in this batch).
