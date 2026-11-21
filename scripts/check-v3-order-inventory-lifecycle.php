@@ -5,6 +5,7 @@ $service = file_get_contents(__DIR__ . '/../v3/backend/src/Orders/OrderService.p
 $lifecycle = file_get_contents(__DIR__ . '/../v3/backend/src/Orders/OrderInventoryLifecycleService.php');
 $schema = file_get_contents(__DIR__ . '/../database/v3/schema.sql');
 $migration = file_get_contents(__DIR__ . '/../database/v3/migrations/011_scope-inventory-and-recipes.sql');
+$orderLedgerMigration = file_get_contents(__DIR__ . '/../database/v3/migrations/019_stock-ledger-order-reference.sql');
 $orderScopeMigration = file_get_contents(__DIR__ . '/../database/v3/migrations/008_scope-orders-and-service-areas.sql');
 
 $assert = static function (bool $condition, string $message): void {
@@ -29,6 +30,8 @@ $assert(str_contains($lifecycle, 'SET quantity_on_hand=quantity_on_hand-'), 'Con
 $assert(str_contains($lifecycle, 'SET quantity_reserved=quantity_reserved-'), 'Consumption/release must decrement reserved stock.');
 $assert(str_contains($lifecycle, "'consumption_out'"), 'Consumption ledger movement is missing.');
 $assert(str_contains($lifecycle, 'source_event_key'), 'Consumption ledger idempotency key is missing.');
+$assert(str_contains($lifecycle, 'source_order_id') && str_contains($lifecycle, ':source_order_id'), 'Order consumption ledger entries must reference their source order.');
+$assert(str_contains($orderLedgerMigration, 'ADD COLUMN source_order_id') && str_contains($orderLedgerMigration, 'fk_v3_stock_ledger_source_order_scope'), 'Order ledger source reference must be business/branch scoped by migration 019.');
 $assert(str_contains($lifecycle, 'recipe_version_id = :version_id'), 'Accepted order item must pin its recipe version.');
 $assert(str_contains($lifecycle, 'pos_order_item_recipe_lines'), 'Order item recipe snapshot is missing.');
 $assert(str_contains($lifecycle, \"'storefront' : 'pos'\"), 'Reservation source type must reflect the originating sales channel.');
