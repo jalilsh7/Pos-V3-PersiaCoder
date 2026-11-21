@@ -569,7 +569,7 @@ export function InventoryWorkspace() {
             </>}
             <label>مقدار<input required inputMode="decimal" pattern="^[0-9]+([.][0-9]{1,6})?$" value={documentQuantity} onChange={(event) => setDocumentQuantity(event.target.value)} /></label>
             {needsCost ? <label>مبلغ کل خرید/ورودی (تومان)<input required inputMode="numeric" pattern="^[0-9]+$" value={documentCost} onChange={(event) => setDocumentCost(event.target.value)} /></label> : null}
-            {needsReason ? <label className="inventory-document-reason">دلیل ثبت<input required maxLength={500} value={documentReason} onChange={(event) => setDocumentReason(event.target.value)} placeholder="شرح دلیل تعدیل یا ضایعات" /></label> : null}
+            {needsReason ? <label className="inventory-document-reason">دلیل ثبت<input required maxLength={500} value={documentReason} onChange={(event) => setDocumentReason(event.target.value)} placeholder="شرح دلیل تعدیل، ضایعات یا برگشت" /></label> : null}
           </div>
           {documentMessage ? <p className="inventory-document-message" role="status">{documentMessage}</p> : null}
           <div className="inventory-document-actions"><span>می‌توانید پیش‌نویس چندردیفی بسازید یا یک سند تک‌ردیفی را مستقیم ثبت نهایی کنید.</span><div><Button variant="secondary" type="button" disabled={documentBusy || loading || !activeLocations.length || documentType === "return"} onClick={() => void createDraftOnly()}>ایجاد پیش‌نویس</Button><Button type="submit" disabled={documentBusy || loading || (documentType === "return" ? (!returnSourceDocumentId || !returnSourceLineId) : (!activeLocations.length || !activeItems.length || !units.length))}>{documentBusy ? "در حال ثبت..." : "ثبت سریع سند"}</Button></div></div>
