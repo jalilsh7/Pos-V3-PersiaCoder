@@ -133,6 +133,7 @@ export function InventoryWorkspace() {
       setBalances(stockBalances);
       setLedger(ledgerPage.items);
       setLedgerCursor(ledgerPage.nextCursor);
+      setLedgerError(null);
       setUnits(stockUnits);
       setDocuments(stockDocuments);
       setSuppliers(stockSuppliers);
@@ -653,7 +654,7 @@ export function InventoryWorkspace() {
               <div className="inventory-balance"><span>موجودی در انبارک انتخاب‌شده</span><strong>{quantity(selectedBalances.reduce((sum, row) => sum + Number(row.quantity_on_hand), 0))} <small>{selected.base_unit.code}</small></strong></div>
               <div className="inventory-threshold"><span>رزروشده</span><b>{quantity(selectedBalances.reduce((sum, row) => sum + Number(row.quantity_reserved), 0))} {selected.base_unit.code}</b></div>
               <div className="inventory-threshold"><span>قابل استفاده</span><b>{quantity(selectedBalances.reduce((sum, row) => sum + Number(row.quantity_available), 0))} {selected.base_unit.code}</b></div>
-              <div className="inventory-history-heading"><strong><Activity size={15} /> گردش‌های ثبت‌شده</strong><span>{quantity(selectedLedger.length)} مورد اخیر</span></div>
+              <div className="inventory-history-heading"><strong><Activity size={15} /> گردش‌های ثبت‌شده</strong><span>{quantity(selectedLedger.length)} مورد بارگذاری‌شده</span></div>
               <div className="inventory-history">
                 {selectedLedger.map((entry, index) => (
                   <div className="inventory-movement-row" key={`${entry.document_id ?? "ledger"}-${entry.created_at}-${entry.stock_item_id}-${entry.location_id}-${index}`}>
@@ -662,7 +663,7 @@ export function InventoryWorkspace() {
                     <b>{Number(entry.quantity_delta) > 0 ? "+" : ""}{quantity(entry.quantity_delta)} {entry.base_unit_code}</b>
                   </div>
                 ))}
-                {!selectedLedger.length ? <div className="inventory-empty">برای این قلم در بازه اخیر گردش ثبت‌شده‌ای وجود ندارد.</div> : null}
+                {!selectedLedger.length ? <div className="inventory-empty">در گردش‌های بارگذاری‌شده برای این قلم موردی نیست؛ در صورت وجود سوابق قدیمی‌تر، آن‌ها را بارگذاری کنید.</div> : null}
               </div>
               {ledgerError ? <Notice variant="warning">{ledgerError}</Notice> : null}
               {ledgerCursor ? <div className="inventory-ledger-more"><Button variant="secondary" onClick={() => void loadMoreLedger()} disabled={ledgerLoadingMore}>{ledgerLoadingMore ? "در حال دریافت..." : "بارگذاری گردش‌های قدیمی‌تر"}</Button></div> : null}
