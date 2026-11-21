@@ -164,6 +164,8 @@ ALTER TABLE pos_recipe_lines
     REFERENCES pos_stock_items(business_id, id) ON DELETE RESTRICT;
 
 ALTER TABLE pos_order_item_recipe_lines
+  ADD COLUMN business_id BIGINT UNSIGNED NOT NULL AFTER id,
+  ADD COLUMN branch_id BIGINT UNSIGNED NOT NULL AFTER business_id,
   DROP FOREIGN KEY fk_order_item_recipe_lines_version,
   DROP FOREIGN KEY fk_order_item_recipe_lines_stock,
   DROP FOREIGN KEY fk_order_item_recipe_lines_location,
