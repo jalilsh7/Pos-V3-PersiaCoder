@@ -162,9 +162,11 @@ export function CustomersWorkspace() {
 
   async function submitConsent(decision: "granted" | "withdrawn") {
     if (!selectedId || consentSaving) return;
-    const payload = decision === "granted"
-      ? { decision, notice_version: consentNoticeVersion.trim(), evidence_ref: consentEvidenceRef.trim() }
-      : { decision };
+    const payload: { decision: "granted" | "withdrawn"; notice_version?: string; evidence_ref?: string } = { decision };
+    if (decision === "granted") {
+      payload.notice_version = consentNoticeVersion.trim();
+      payload.evidence_ref = consentEvidenceRef.trim();
+    }
     if (decision === "granted" && (!payload.notice_version || !payload.evidence_ref)) {
       setActionError("برای ثبت رضایت، نسخه متن اطلاع‌رسانی و مرجع/شرح مدرک رضایت الزامی است.");
       return;
