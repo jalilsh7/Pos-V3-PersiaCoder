@@ -542,3 +542,10 @@ Migration 021 به contract check اسناد انبار متصل شد: ارجا�
 
 ## CRM-CONSENT-2026-001 — زیرساخت append-only رضایت بازاریابی (2026-11-22)
 Migration 022 و clean-install schema جدول `pos_customer_consent_events` را اضافه کردند؛ event-key یکتا، business/customer composite FK، source، notice_version، evidence_ref و actor دارد. نسخه اول فقط marketing/SMS است؛ grant بدون notice_version و grant از import رد می‌شود. permission `customers.consent.manage` برای manager seed شده و static contract guard افزوده شده است. API/UI/current-state/suppression هنوز پیاده‌سازی نشده و marketing dispatch باید غیرفعال بماند. migration و تست‌ها اجرا نشده‌اند.
+
+## CRM-CONSENT-2026-001 — API و UI ثبت/لغو رضایت (2026-11-22)
+- CustomerService/Repository ثبت رخدادهای grant/withdraw، استخراج آخرین وضعیت و history را اضافه کردند؛ ثبت با `customers.consent.manage`، قفل مشتری، idempotency و audit محافظت می‌شود.
+- grant به موبایل معتبر، notice_version و evidence_ref نیاز دارد؛ migration 022 و clean schema هر دو مدرک را در DB enforce می‌کنند. حالت بدون رخداد `unknown` است؛ شماره داشتن رضایت نیست.
+- route با session/permission/CSRF/same-origin، API client TypeScript و کنترل‌های CustomersWorkspace اضافه شدند. history append-only است.
+- integration test و static contract check گسترش یافتند اما اجرا نشده‌اند؛ lint/build/migration نیز اجرا نشده‌اند.
+- باز: suppression و eligibility در marketing enqueue/dispatch، اتصال رضایت به شماره فعلی و تست race/opt-out. تا آن زمان marketing dispatch غیرفعال؛ transactional SMS جداست.
