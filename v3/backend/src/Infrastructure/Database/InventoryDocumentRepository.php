@@ -157,6 +157,7 @@ final readonly class InventoryDocumentRepository
             'id' => (string) $r['public_id'], 'document_no' => (string) $r['document_no'],
             'document_type' => (string) $r['document_type'], 'status' => (string) $r['status'],
             'reason' => $r['reason'] === null ? null : (string) $r['reason'],
+            'source_document' => $r['source_document_public_id'] === null ? null : ['id' => (string) $r['source_document_public_id'], 'document_no' => (string) $r['source_document_no']],
             'location' => ['id' => (string) $r['location_id'], 'name' => (string) $r['location_name']],
             'destination' => $r['destination_location_id'] === null ? null : [
                 'id' => (string) $r['destination_location_id'], 'name' => (string) $r['destination_location_name'],
@@ -566,7 +567,7 @@ final readonly class InventoryDocumentRepository
     private function listLines(int $businessId, int $branchId, int $documentId): array
     {
         $s = $this->connection->prepare(
-            'SELECT l.public_id AS line_id, si.public_id AS stock_item_id, si.name AS stock_item_name,
+            'SELECT l.public_id AS line_id, l.source_document_line_id, si.public_id AS stock_item_id, si.name AS stock_item_name,
                     l.quantity, u.code AS unit_code, u.name AS unit_name,
                     l.conversion_factor_snapshot, l.base_quantity, l.note
              FROM pos_stock_document_lines l
