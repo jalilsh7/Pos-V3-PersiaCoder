@@ -325,10 +325,10 @@ export function CustomersWorkspace() {
               <section className="customers-note" aria-label="رضایت پیامک تبلیغاتی">
                 <strong>رضایت دریافت پیامک تبلیغاتی</strong>
                 <p>
-                  وضعیت فعلی: {detail.marketing_consent.decision === "granted" ? "رضایت ثبت‌شده" : detail.marketing_consent.decision === "withdrawn" ? "انصراف ثبت‌شده" : "نامشخص / بدون رضایت معتبر"}
+                  وضعیت فعلی: {detail.marketing_consent.decision === "granted" ? "رضایت ثبت‌شده" : detail.marketing_consent.decision === "withdrawn" ? "انصراف ثبت‌شده" : detail.marketing_consent.decision === "stale" ? "شماره تغییر کرده؛ رضایت نیازمند ثبت مجدد" : "نامشخص / بدون رضایت معتبر"}
                   {detail.marketing_consent.recorded_at ? ` · ${dateTime(detail.marketing_consent.recorded_at)}` : ""}
                 </p>
-                <p>ثبت رضایت فقط پس از اعلام صریح مشتری انجام شود؛ وجود شماره همراه به‌تنهایی رضایت محسوب نمی‌شود.</p>
+                <p>ثبت رضایت فقط پس از اعلام صریح مشتری انجام شود؛ وجود شماره همراه به‌تنهایی رضایت محسوب نمی‌شود. با تغییر شماره، رضایت قبلی برای شماره جدید معتبر نیست.</p>
                 <div className="customers-create-fields">
                   <TextField label="نسخه متن اطلاع‌رسانی" value={consentNoticeVersion} onChange={(event) => setConsentNoticeVersion(event.target.value)} />
                   <TextField label="مرجع یا شرح مدرک رضایت (الزامی)" value={consentEvidenceRef} onChange={(event) => setConsentEvidenceRef(event.target.value)} placeholder="مثلاً فرم امضاشده / شناسه ثبت رضایت" />
