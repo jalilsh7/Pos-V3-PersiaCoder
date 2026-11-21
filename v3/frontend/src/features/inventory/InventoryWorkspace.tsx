@@ -440,10 +440,20 @@ export function InventoryWorkspace() {
       await refreshData();
     } catch (cause) {
       const detail = cause instanceof ApiError ? cause.message : "ثبت سند انجام نشد.";
-      setDocumentMessage(createdDocument
-        ? `سند پیش‌نویس ${createdDocument.document_no} ایجاد شد، اما تکمیل/ثبت نهایی آن ناموفق بود: ${detail} برای جلوگیری از ثبت تکراری، پیش‌نویس را از فهرست اسناد بررسی کنید.`
-        : detail);
-      if (createdDocument) await refreshData();
+      if (createdDocument) {
+        await refreshData();
+        try {
+          const recovered = await getInventoryDocument(createdDocument.id);
+          setActiveDocument(recovered);
+          setDocumentMessage(recovered.status === "posted"
+            ? `وضعیت سند ${createdDocument.document_no} در سرور «ثبت نهایی» است؛ مانده انبار را به‌روزرسانی کردیم.`
+            : `سند ${createdDocument.document_no} به‌صورت پیش‌نویس باقی مانده است. جزئیات آن باز شد تا بدون ایجاد سند تکراری ادامه دهید. خطا: ${detail}`);
+        } catch {
+          setDocumentMessage(`سند ${createdDocument.document_no} ایجاد شده است اما وضعیت نهایی آن قابل دریافت نیست. سند جدید نسازید؛ از فهرست اسناد، همین شماره را بررسی کنید. خطا: ${detail}`);
+        }
+      } else {
+        setDocumentMessage(detail);
+      }
     } finally {
       setDocumentBusy(false);
     }
