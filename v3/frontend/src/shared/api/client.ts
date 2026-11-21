@@ -446,6 +446,7 @@ export type InventoryDocumentLine = {
   unit_name: string;
   conversion_factor_snapshot: string;
   base_quantity: string;
+  returnable_quantity: string;
   note: string | null;
 };
 export type InventoryDocumentDetail = InventoryDocumentSummary & {
