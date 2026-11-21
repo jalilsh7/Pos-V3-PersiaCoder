@@ -5,6 +5,7 @@ $service = file_get_contents(__DIR__ . '/../v3/backend/src/Orders/OrderService.p
 $lifecycle = file_get_contents(__DIR__ . '/../v3/backend/src/Orders/OrderInventoryLifecycleService.php');
 $schema = file_get_contents(__DIR__ . '/../database/v3/schema.sql');
 $migration = file_get_contents(__DIR__ . '/../database/v3/migrations/011_scope-inventory-and-recipes.sql');
+$orderScopeMigration = file_get_contents(__DIR__ . '/../database/v3/migrations/008_scope-orders-and-service-areas.sql');
 
 $assert = static function (bool $condition, string $message): void {
     if (!$condition) {
@@ -36,6 +37,9 @@ $assert(str_contains($lifecycle, 'FOR UPDATE'), 'Inventory lifecycle must lock m
 $assert(str_contains($lifecycle, 'DECIMAL(18,6)'), 'Inventory arithmetic must use database decimal precision.');
 $assert(str_contains($schema, 'CREATE TABLE pos_stock_reservations'), 'Reservation schema is missing.');
 $assert(str_contains($schema, 'CREATE TABLE pos_order_item_recipe_lines'), 'Order recipe snapshot schema is missing.');
-$assert(str_contains($migration, 'ADD COLUMN business_id BIGINT UNSIGNED NOT NULL AFTER id'), 'Inventory branch/business scope migration is missing.');
+$assert(str_contains($orderScopeMigration, 'ALTER TABLE pos_order_item_recipe_lines') && str_contains($orderScopeMigration, 'ADD COLUMN business_id BIGINT UNSIGNED NOT NULL AFTER id') && str_contains($orderScopeMigration, 'ADD COLUMN branch_id BIGINT UNSIGNED NOT NULL AFTER business_id'), 'Order recipe snapshot business/branch scope migration is missing.');
+$assert(str_contains($migration, 'fk_v3_order_item_recipe_location_scope'), 'Order recipe snapshot location scope constraint is missing.');
+$assert(str_contains($lifecycle, 'branch_context_required'), 'Stock lifecycle must reject missing branch context.');
+$assert(str_contains($lifecycle, 'takeRemaining'), 'Snapshot allocation must preserve exact quantities without rounding loss.');
 
 fwrite(STDOUT, "V3 order-to-recipe inventory lifecycle contract checks passed.\n");
