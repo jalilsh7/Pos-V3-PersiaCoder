@@ -998,3 +998,5 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - تست `check-v3-backend-inventory-read.php` اکنون قرارداد pagination UI/API را هم بررسی می‌کند.
 - commits: `143147831566932016826facc93bb54bf0414379`, `a7dd0f173b712120ec6d6a6c8779d185384764c6`, `8cda2b4fa283d2857645aa8803335073eef8e33b`, `9b98c1c59e2ecd7e39a1417727a3c2c976d00120`, `d1a7f075bfcdf26dfb58fe60aae76c884de85c36`, `c79dd6a11596ab0a496c8bd5da6d103c07723ab1`, `7647b99ec82de3fb9ffd5ba30584279ca2eb6609`.
 - هنوز build/typecheck و تست contract اجرا نشده‌اند.
+
+- خطای pagination گردش انبار state مستقل `ledgerError` دارد و در همان پنل نمایش داده می‌شود؛ retry همان cursor را حفظ می‌کند. commit `bb169356d99aad76bc2c53ce142a693738d5220a`. Build اجرا نشده.
