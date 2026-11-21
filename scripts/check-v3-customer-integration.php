@@ -125,6 +125,55 @@ $assert(is_array($customer) && $customer['phone_normalized'] === '09123456789',
     'Iranian mobile was not normalized to the canonical local form.');
 $customerDbId = (int) $customer['id'];
 
+$initialDetail = $service->get($scope, $customerId);
+$assert($initialDetail['marketing_consent']['decision'] === 'unknown'
+    && $initialDetail['marketing_consent']['history'] === [],
+    'A customer without explicit evidence was incorrectly treated as opted in.');
+
+$consentPayload = [
+    'decision' => 'granted',
+    'notice_version' => 'marketing-sms-v1',
+    'evidence_ref' => 'ci-consent-form-' . bin2hex(random_bytes(3)),
+];
+$consentGranted = $service->recordMarketingSmsConsent(
+    $actor, $scope, $customerId, $consentPayload,
+    'ci-customer-consent-grant-0001', $requestId, $ip,
+);
+$assert($consentGranted['status'] === 201
+    && $consentGranted['body']['data']['consent']['decision'] === 'granted',
+    'Explicit SMS marketing consent was not recorded.');
+$consentReplay = $service->recordMarketingSmsConsent(
+    $actor, $scope, $customerId, $consentPayload,
+    'ci-customer-consent-grant-0001', $requestId, $ip,
+);
+$assert($consentReplay['replayed'] === true, 'Consent grant retry was not idempotent.');
+$consentState = $service->get($scope, $customerId)['marketing_consent'];
+$assert($consentState['decision'] === 'granted' && count($consentState['history']) === 1,
+    'Consent current state or append-only history is incorrect.');
+
+$missingEvidenceBlocked = false;
+try {
+    $service->recordMarketingSmsConsent(
+        $actor, $scope, $customerId,
+        ['decision' => 'granted'],
+        'ci-customer-consent-no-evidence-0001', $requestId, $ip,
+    );
+} catch (HttpException $error) {
+    $missingEvidenceBlocked = $error->status === 422 && $error->errorCode === 'customer_consent_evidence_required';
+}
+$assert($missingEvidenceBlocked, 'Consent grant without a notice version was not rejected.');
+
+$consentWithdrawn = $service->recordMarketingSmsConsent(
+    $actor, $scope, $customerId,
+    ['decision' => 'withdrawn'],
+    'ci-customer-consent-withdraw-0001', $requestId, $ip,
+);
+$assert($consentWithdrawn['body']['data']['consent']['decision'] === 'withdrawn',
+    'Marketing consent withdrawal was not recorded.');
+$withdrawnState = $service->get($scope, $customerId)['marketing_consent'];
+$assert($withdrawnState['decision'] === 'withdrawn' && count($withdrawnState['history']) === 2,
+    'Consent withdrawal did not supersede the grant while preserving history.');
+
 $insertOrder = $pdo->prepare(
     "INSERT INTO pos_orders
         (business_id, branch_id, public_id, order_number, source_channel, order_status, payment_status,
@@ -240,4 +289,4 @@ try {
 }
 $assert($scopeBlocked, 'Customer detail leaked across business scope.');
 
-echo "V3 customer CRUD, phone normalization, order spend and business scope integration checks passed." . PHP_EOL;
+echo "V3 customer CRUD, phone normalization, order spend, consent evidence, withdrawal, idempotency and business scope integration checks passed." . PHP_EOL;
