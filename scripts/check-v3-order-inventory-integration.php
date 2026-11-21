@@ -45,7 +45,7 @@ $s->execute(['business'=>$businessId,'public'=>$stockPublicId,'code'=>$prefix,'u
 $stockId = (int)$pdo->lastInsertId();
 
 $locationIds = [];
-foreach ([['kitchen','Kitchen'],['storage','Storage']] as [$type,$name]) {
+foreach ([['storage','Storage'],['kitchen','Kitchen']] as [$type,$name]) {
     $s = $pdo->prepare('INSERT INTO pos_stock_locations (business_id,branch_id,public_id,code,name,location_type,is_active)
       VALUES (:business,:branch,:public,:code,:name,:type,1)');
     $s->execute(['business'=>$businessId,'branch'=>$branchId,'public'=>$uuid(),'code'=>$prefix.'-'.$type,'name'=>$name,'type'=>$type]);
