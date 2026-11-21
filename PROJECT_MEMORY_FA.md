@@ -495,3 +495,6 @@ integration test اکنون پذیرش تکراری با همان کلید، م�
 API client و UI اکنون cursor-based هستند: صفحه ۵۰تایی اول، سپس بارگذاری گردش‌های قدیمی‌تر با `before_id/next_cursor`. شناسه داخلی ledger به UI افشا نمی‌شود. contract check scope گسترش یافت. commits: `1431478`, `a7dd0f1`, `8cda2b4`, `9b98c1c`, `d1a7f07`, `c79dd6a`, `7647b99`. تست/build اجرا نشده.
 
 - خطای بارگذاری گردش‌های قدیمی‌تر در همان پنل با state مستقل نشان داده می‌شود؛ commit `bb16935`؛ تست/build pending.
+
+## Variant recipe precedence integration — 2026-11-21
+تست DB چرخه سفارش اکنون fallback از Variant بدون رسپی به رسپی محصول و اولویت رسپی اختصاصی Variant را پوشش می‌دهد. commit `5dc69e9`. تست اجرا نشده.
