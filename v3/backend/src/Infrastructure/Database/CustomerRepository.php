@@ -199,6 +199,31 @@ final readonly class CustomerRepository
         );
         $orders->execute(['business_id' => $businessId, 'customer_id' => $customerId]);
 
+        // Loyalty is read from the append-only customer ledger. No points or credit
+        // are inferred from orders until an explicit earning policy is configured.
+        $loyaltySummary = $this->connection->prepare(
+            'SELECT COALESCE(SUM(points_delta), 0) AS points_balance,
+                    COALESCE(SUM(credit_delta), 0) AS credit_balance,
+                    COALESCE(SUM(visit_delta), 0) AS visit_count
+             FROM pos_customer_ledger
+             WHERE customer_id = :customer_id'
+        );
+        $loyaltySummary->execute(['customer_id' => $customerId]);
+        $loyalty = $loyaltySummary->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        $loyaltyEntries = $this->connection->prepare(
+            'SELECT l.event_key, l.points_delta, l.credit_delta, l.visit_delta,
+                    l.reason, l.created_at, o.public_id AS order_public_id,
+                    o.order_number
+             FROM pos_customer_ledger l
+             LEFT JOIN pos_orders o
+               ON o.id = l.order_id AND o.business_id = :business_id
+             WHERE l.customer_id = :customer_id
+             ORDER BY l.created_at DESC, l.id DESC
+             LIMIT 20'
+        );
+        $loyaltyEntries->execute(['business_id' => $businessId, 'customer_id' => $customerId]);
+
         return [
             'customer' => self::mapCustomer($customer),
             'stats' => [
@@ -215,6 +240,21 @@ final readonly class CustomerRepository
                 'total_amount' => (int) $row['total_amount'],
                 'created_at' => (string) $row['created_at'],
             ], $orders->fetchAll(PDO::FETCH_ASSOC)),
+            'loyalty' => [
+                'points_balance' => (int) ($loyalty['points_balance'] ?? 0),
+                'credit_balance' => (int) ($loyalty['credit_balance'] ?? 0),
+                'visit_count' => (int) ($loyalty['visit_count'] ?? 0),
+                'entries' => array_map(static fn (array $row): array => [
+                    'event_key' => (string) $row['event_key'],
+                    'points_delta' => (int) $row['points_delta'],
+                    'credit_delta' => (int) $row['credit_delta'],
+                    'visit_delta' => (int) $row['visit_delta'],
+                    'reason' => $row['reason'] === null ? '' : (string) $row['reason'],
+                    'order_id' => $row['order_public_id'] === null ? null : (string) $row['order_public_id'],
+                    'order_number' => $row['order_number'] === null ? null : (int) $row['order_number'],
+                    'created_at' => (string) $row['created_at'],
+                ], $loyaltyEntries->fetchAll(PDO::FETCH_ASSOC)),
+            ],
         ];
     }
 
