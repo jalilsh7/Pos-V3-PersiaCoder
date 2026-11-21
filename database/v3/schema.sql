@@ -294,7 +294,8 @@ CREATE TABLE pos_customer_consent_events (
     decision <> 'granted' OR
     (notice_version IS NOT NULL AND CHAR_LENGTH(TRIM(notice_version)) > 0
      AND evidence_ref IS NOT NULL AND CHAR_LENGTH(TRIM(evidence_ref)) > 0
-     AND recipient_phone_normalized IS NOT NULL AND recipient_phone_normalized REGEXP '^09[0-9]{9} <> 'import')
+     AND recipient_phone_normalized IS NOT NULL AND recipient_phone_normalized REGEXP '^09[0-9]{9}$'
+     AND source <> 'import')
   )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
      AND source <> 'import')
