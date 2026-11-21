@@ -62,6 +62,7 @@ const movementLabel: Record<string, string> = {
   transfer_in: "انتقال ورودی",
   transfer_out: "انتقال خروجی",
   return: "برگشت",
+  return_in: "برگشت به انبار",
 };
 
 export function InventoryWorkspace() {
