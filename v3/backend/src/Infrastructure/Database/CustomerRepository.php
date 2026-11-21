@@ -165,6 +165,73 @@ final readonly class CustomerRepository
         ];
     }
 
+    /** @return array<string,mixed>|null */
+    public function latestConsent(int $businessId, int $customerId, string $purpose = 'marketing', string $channel = 'sms'): ?array
+    {
+        $statement = $this->connection->prepare(
+            'SELECT decision, source, notice_version, evidence_ref, created_at, actor_user_id
+             FROM pos_customer_consent_events
+             WHERE business_id = :business_id AND customer_id = :customer_id
+               AND purpose = :purpose AND channel = :channel
+             ORDER BY id DESC LIMIT 1'
+        );
+        $statement->execute([
+            'business_id' => $businessId,
+            'customer_id' => $customerId,
+            'purpose' => $purpose,
+            'channel' => $channel,
+        ]);
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
+        return is_array($row) ? $row : null;
+    }
+
+    public function appendConsentEvent(
+        int $businessId,
+        int $customerId,
+        string $eventKey,
+        string $decision,
+        string $source,
+        ?string $noticeVersion,
+        ?string $evidenceRef,
+        int $actorUserId,
+    ): void {
+        $statement = $this->connection->prepare(
+            'INSERT INTO pos_customer_consent_events
+                (business_id, customer_id, event_key, purpose, channel, decision, source,
+                 notice_version, evidence_ref, actor_user_id)
+             VALUES
+                (:business_id, :customer_id, :event_key, \'marketing\', \'sms\', :decision, :source,
+                 :notice_version, :evidence_ref, :actor_user_id)'
+        );
+        $statement->execute([
+            'business_id' => $businessId,
+            'customer_id' => $customerId,
+            'event_key' => $eventKey,
+            'decision' => $decision,
+            'source' => $source,
+            'notice_version' => $noticeVersion,
+            'evidence_ref' => $evidenceRef,
+            'actor_user_id' => $actorUserId,
+        ]);
+    }
+
+    /** @return list<array<string,mixed>> */
+    public function consentHistory(int $businessId, int $customerId, int $limit = 20): array
+    {
+        $statement = $this->connection->prepare(
+            'SELECT decision, source, notice_version, evidence_ref, created_at, actor_user_id
+             FROM pos_customer_consent_events
+             WHERE business_id = :business_id AND customer_id = :customer_id
+               AND purpose = \'marketing\' AND channel = \'sms\'
+             ORDER BY id DESC LIMIT :fetch_limit'
+        );
+        $statement->bindValue(':business_id', $businessId, PDO::PARAM_INT);
+        $statement->bindValue(':customer_id', $customerId, PDO::PARAM_INT);
+        $statement->bindValue(':fetch_limit', $limit, PDO::PARAM_INT);
+        $statement->execute();
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function detail(int $businessId, string $publicId): ?array
     {
         $customer = $this->findByPublicId($businessId, $publicId);
