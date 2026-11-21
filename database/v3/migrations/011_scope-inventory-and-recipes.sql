@@ -99,6 +99,7 @@ ALTER TABLE pos_stock_reservations
     REFERENCES pos_orders(business_id, branch_id, id) ON DELETE RESTRICT;
 
 ALTER TABLE pos_stock_reservation_lines
+  ADD COLUMN unit_cost_snapshot DECIMAL(24,8) NOT NULL DEFAULT 0 AFTER base_quantity,
   DROP FOREIGN KEY fk_stock_reservation_lines_reservation,
   DROP FOREIGN KEY fk_stock_reservation_lines_item,
   DROP FOREIGN KEY fk_stock_reservation_lines_location,
