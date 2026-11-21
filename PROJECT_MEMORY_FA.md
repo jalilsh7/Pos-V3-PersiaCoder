@@ -420,3 +420,13 @@
 - UI مشتریان load more با صفحه 50تایی و stale-response guard دارد.
 - Integration test برای صفحات متوالی، عدم تکرار و cursor نامعتبر اضافه شد؛ هنوز در phase gate اجرا نشده است.
 
+
+
+## بسته مدیریت گروه‌های غیرفعال کاتالوگ — 2026-11-21
+- endpoint مدیریتی مجزا `GET /api/v1/catalog/products/{productPublicId}/management-details` اضافه شد؛ فقط session معتبر و مجوز `catalog.manage` دارد.
+- repository جزئیات را با گزینه `includeInactiveGroups` می‌خواند؛ مسیر عمومی `GET /catalog/products/{id}` همچنان گروه‌های غیرفعال را حذف می‌کند و قرارداد POS/storefront تغییر نکرد.
+- UI مدیریت تنوع/افزودنی اکنون جزئیات مدیریتی را بارگذاری و پس از تغییرات refresh می‌کند؛ گروه غیرفعال قابل مشاهده و فعال‌سازی مجدد است. گزینه‌های غیرفعال در جزئیات مدیریتی نیز از قبل برگردانده می‌شدند.
+- scope همچنان بر اساس business_id جاری اعمال می‌شود؛ endpoint فقط خواندنی است و audit mutation جدیدی ندارد.
+- تست PHP/TypeScript/build و تست endpoint اجرا نشده‌اند؛ باید در gate تجمیعی فاز 5 بررسی شوند. هیچ داده واقعی یا migration تغییر نکرده است.
+- Commitهای کد: `9c2bc41e6a29ed59388449ba96966e7745fd308f`, `7242540c39f75693b0729cb59c12714c73378053`, `2b8dc9e23b533888a218aac257b05e8844ab673e`, `f2b727caccf61954552d7b0fda6bf36f7494972f`, `73ddcc8570d6094ba5a405585bd560eaa7a18e91`, `a2ce558c24e39f1fdc6d850c40d69b034291f7d3`.
+- ادامه بسته فاز 5: بررسی و پیاده‌سازی ویرایش امن نسخه draft رسپی؛ active/retired immutable می‌مانند. اتصال رزرو/مصرف رسپی به سفارش تا تصویب policyهای محصولی باز، انجام نشود.
