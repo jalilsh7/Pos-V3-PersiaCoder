@@ -475,3 +475,6 @@ Variant recipe در اولویت و در نبود آن product recipe fallback �
 - API ایجاد سند جدید `return` تا زمان پیاده‌سازی valuation مبتنی بر مرجع برگشت نمی‌پذیرد. برگشت فیزیکی فعلاً با `adjustment_in` دارای دلیل و audit ثبت می‌شود؛ اسناد return قدیمی فقط قابل مشاهده‌اند و قابل posting نیستند.
 - commits: `7c934cb`, `1f242ad`, `ad79a74`, `6e8a153`.
 - تست‌ها نوشته/گسترش داده شده‌اند اما اجرا نشده‌اند؛ فاز ۵ باز است.
+
+## تست integration چرخه سفارش و انبار — 2026-11-21
+یک تست DB مستقل برای چرخه `OrderInventoryLifecycleService` اضافه شد که سناریوهای reserve چندمحلی با kitchen priority، pin نسخه رسپی و snapshot، consume و ledger valuation، release در cancellation و rollback کمبود موجودی را بررسی می‌کند. در workflow دستی دیتابیس برای MySQL 8.4 و MariaDB 10.6 ثبت شده است. تست هنوز اجرا نشده و هیچ PASSی ثبت نشده است. commits: `2f7341e`, `1d934f5`, `ed8d508`, `b4e2e5a`.
