@@ -695,8 +695,27 @@ export type CustomerSummary = {
   updated_at: string;
 };
 
+export type CustomerMarketingConsent = {
+  purpose: "marketing";
+  channel: "sms";
+  decision: "granted" | "withdrawn" | "unknown";
+  source: string | null;
+  notice_version: string | null;
+  evidence_ref: string | null;
+  recorded_at: string | null;
+  history: {
+    decision: "granted" | "withdrawn";
+    source: string;
+    notice_version: string | null;
+    evidence_ref: string | null;
+    recorded_at: string;
+    actor_user_id: number | null;
+  }[];
+};
+
 export type CustomerDetail = {
   customer: CustomerSummary;
+  marketing_consent: CustomerMarketingConsent;
   stats: { order_count: number; total_spent: number; last_order_at: string | null };
   recent_orders: {
     id: string;
@@ -764,6 +783,17 @@ export async function updateCustomer(
     headers: { "Idempotency-Key": idempotencyKey },
     body: JSON.stringify(payload),
   });
+}
+
+export async function recordCustomerMarketingSmsConsent(
+  customerId: string,
+  payload: { decision: "granted" | "withdrawn"; notice_version?: string; evidence_ref?: string },
+  idempotencyKey: string,
+): Promise<{ consent: { purpose: "marketing"; channel: "sms"; decision: "granted" | "withdrawn"; source: "pos"; notice_version: string | null; evidence_ref: string | null; recorded_at: string } }> {
+  return request<{ consent: { purpose: "marketing"; channel: "sms"; decision: "granted" | "withdrawn"; source: "pos"; notice_version: string | null; evidence_ref: string | null; recorded_at: string } }>(
+    `/customers/${encodeURIComponent(customerId)}/marketing-sms-consent`,
+    { method: "POST", headers: { "Idempotency-Key": idempotencyKey }, body: JSON.stringify(payload) },
+  );
 }
 
 export type OpenCashPaymentSession = {
