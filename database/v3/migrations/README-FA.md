@@ -111,3 +111,10 @@ MySQL/MariaDB برای بسیاری از دستورات DDL implicit commit ان
 - فایل `019_stock-ledger-order-reference.sql` ستون nullable `source_order_id` را به `pos_stock_ledger` اضافه می‌کند تا خروج مصرف ناشی از سفارش مستقیماً به سفارش مبدأ متصل باشد.
 - FK مرکب روی `business_id, branch_id, source_order_id` مانع اتصال گردش به سفارش شعبه یا کسب‌وکار دیگر می‌شود؛ برای گردش‌های مبتنی بر سند، این ستون NULL باقی می‌ماند.
 - migration برای نصب تازه از طریق migration runner اجرا می‌شود؛ اجرای واقعی روی MySQL/MariaDB هنوز باید در workflow دستی تأیید شود.
+
+### Migration 022 — شواهد رضایت مشتری
+- جدول `pos_customer_consent_events` رخدادهای append-only رضایت/انصراف بازاریابی را ذخیره می‌کند؛ وضعیت جاری از آخرین رخداد به‌دست می‌آید.
+- FK مرکب business/customer مانع اتصال رضایت مشتری به کسب‌وکار دیگر می‌شود؛ `event_key` در محدوده business یکتا است.
+- grant نیازمند `notice_version` است و import مجاز به ایجاد grant نیست. permission `customers.consent.manage` برای manager seed می‌شود.
+- این migration به‌تنهایی مجوز ارسال تبلیغاتی ایجاد نمی‌کند؛ تا تکمیل API و suppression در مسیر dispatch، ارسال marketing باید غیرفعال بماند.
+- اجرای migration روی MySQL/MariaDB هنوز گزارش نشده است.
