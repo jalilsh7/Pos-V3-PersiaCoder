@@ -296,3 +296,10 @@ UI باید وضعیت‌ها را به‌صورت «رضایت ثبت‌شده�
 - نمونه PHP/HTTP قدیمی فقط مرجع شکل پارامترهاست؛ در V3 از HTTPS و adapter امن استفاده شود.
 
 - نسخه 0.2 — تکمیل تطبیق OrderService، customer schema، routeهای جاری و مستند provider؛ وضعیت همچنان «آماده بازبینی مفهومی؛ نیازمند تکمیل Backend».
+
+## 17. وضعیت اجرایی consent در V3 — 2026-11-22
+- رخدادهای consent در migration 022 و clean-install schema تعریف شده‌اند؛ grant نیازمند notice version، evidence reference و snapshot شماره موبایل نرمال‌شده زمان رضایت است.
+- Customer API برای grant/withdraw با permission، CSRF، same-origin، idempotency و audit ثبت شده؛ customer detail آخرین وضعیت و history را ارائه می‌کند.
+- CustomersWorkspace وضعیت unknown/granted/withdrawn/stale و عملیات ثبت/انصراف را نمایش می‌دهد. تغییر شماره، رضایت شماره قبلی را stale می‌کند.
+- ارسال marketing همچنان غیرفعال است؛ suppression در enqueue و dispatch و بررسی مجدد شماره/رضایت در لحظه ارسال باید پیش از فعال‌سازی پیاده شود.
+- تست‌های integration و static اضافه شده‌اند اما در این نشست اجرا نشده‌اند؛ migration و build نیز اجرا نشده‌اند.
