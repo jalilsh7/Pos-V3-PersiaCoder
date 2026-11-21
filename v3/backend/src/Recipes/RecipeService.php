@@ -190,6 +190,123 @@ final readonly class RecipeService
         );
     }
 
+    /**
+     * Replace the contents of a draft recipe version atomically.
+     * Active and retired versions are immutable.
+     *
+     * @param array<string,mixed> $payload
+     * @return array{status:int,body:array<string,mixed>,replayed:bool}
+     */
+    public function updateDraftVersion(
+        AuthenticatedPrincipal $actor, BusinessScope $scope, string $versionPublicId,
+        array $payload, string $key, string $requestId, string $ip,
+    ): array {
+        if (!self::isUuid($versionPublicId)) {
+            throw new HttpException(422, 'recipe_version_id_invalid', 'The recipe version identifier is invalid.');
+        }
+        $name = trim((string) ($payload['name'] ?? ''));
+        if ($name === '' || self::unicodeLength($name) > 160) {
+            throw new HttpException(422, 'recipe_name_invalid', 'Recipe name is required and must not exceed 160 characters.');
+        }
+        $inputLines = $payload['lines'] ?? null;
+        if (!is_array($inputLines) || count($inputLines) < 1 || count($inputLines) > 100) {
+            throw new HttpException(422, 'recipe_lines_invalid', 'A recipe must contain between 1 and 100 ingredient lines.');
+        }
+
+        $normalized = [];
+        $seen = [];
+        foreach ($inputLines as $line) {
+            if (!is_array($line) || !is_string($line['stock_item_id'] ?? null)
+                || !self::isUuid($line['stock_item_id'])
+                || !is_string($line['unit_code'] ?? null)
+                || !preg_match('/^[a-z0-9._-]{1,32}$/', $line['unit_code'])) {
+                throw new HttpException(422, 'recipe_line_invalid', 'Each recipe line requires a stock item UUID and unit code.');
+            }
+            $quantity = self::decimalInput($line['quantity'] ?? null, 6, false, 'recipe_quantity_invalid');
+            $waste = self::decimalInput($line['waste_percent'] ?? '0', 4, true, 'recipe_waste_invalid');
+            if ((float) $waste > 100) {
+                throw new HttpException(422, 'recipe_waste_invalid', 'Waste percent must not exceed 100.');
+            }
+            $lineKey = $line['stock_item_id'] . ':' . $line['unit_code'];
+            if (isset($seen[$lineKey])) {
+                throw new HttpException(422, 'recipe_line_duplicate', 'A stock item and unit combination can appear only once in a recipe version.');
+            }
+            $seen[$lineKey] = true;
+            $normalized[] = [
+                'stock_item_public_id' => $line['stock_item_id'],
+                'quantity' => $quantity, 'unit_code' => $line['unit_code'], 'waste_percent' => $waste,
+            ];
+        }
+        $fingerprint = hash('sha256', json_encode(
+            [$versionPublicId, $name, $normalized], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE,
+        ));
+        return $this->idempotency->execute(
+            $actor->userId, $scope, 'catalog.recipe.version.update', $key, $fingerprint,
+            function (PDO $db) use ($scope, $actor, $versionPublicId, $name, $normalized, $requestId, $ip): array {
+                $locked = $this->recipes->findVersionForUpdate($scope->businessId, $versionPublicId);
+                if ($locked === null) {
+                    throw new HttpException(404, 'recipe_version_not_found', 'The recipe version was not found.');
+                }
+                if ((string) $locked['status'] !== 'draft') {
+                    throw new HttpException(409, 'recipe_version_not_draft', 'Only a draft recipe version can be edited.');
+                }
+                $resolved = [];
+                foreach ($normalized as $line) {
+                    $stockItem = $this->recipes->findStockItem($scope->businessId, $line['stock_item_public_id']);
+                    if ($stockItem === null) {
+                        throw new HttpException(404, 'recipe_stock_item_not_found', 'A stock item was not found or is inactive in this business.');
+                    }
+                    $unit = $this->recipes->findUnit($line['unit_code']);
+                    if ($unit === null) {
+                        throw new HttpException(422, 'recipe_unit_not_found', 'A recipe unit code does not exist.');
+                    }
+                    if ((string) $unit['dimension'] !== (string) $stockItem['base_unit_dimension']) {
+                        throw new HttpException(422, 'recipe_unit_dimension_mismatch', 'Recipe units must match the stock item base unit dimension.');
+                    }
+                    $factor = (int) $unit['id'] === (int) $stockItem['base_unit_id']
+                        ? '1.00000000'
+                        : $this->recipes->findConversionFactor((int) $unit['id'], (int) $stockItem['base_unit_id']);
+                    if ($factor === null || (float) $factor <= 0) {
+                        throw new HttpException(422, 'recipe_unit_conversion_missing', 'No valid conversion exists from the recipe unit to the stock item base unit.');
+                    }
+                    $resolved[] = [
+                        'stock_item_id' => (int) $stockItem['id'], 'unit_id' => (int) $unit['id'],
+                        'quantity' => $line['quantity'], 'conversion_factor' => $factor,
+                        'waste_percent' => $line['waste_percent'],
+                    ];
+                }
+
+                $recipeId = (int) $locked['recipe_id'];
+                $before = [
+                    'status' => 'draft', 'name' => (string) $locked['recipe_name'],
+                    'line_count' => $this->recipes->countRecipeVersionLines($scope->businessId, (int) $locked['id']),
+                ];
+                if ((string) $locked['recipe_name'] !== $name) {
+                    $this->recipes->updateRecipeName($scope->businessId, $recipeId, $name);
+                }
+                $this->recipes->deleteRecipeLinesForVersion($scope->businessId, (int) $locked['id']);
+                foreach ($resolved as $line) {
+                    $this->recipes->createRecipeLine(
+                        $scope->businessId, (int) $locked['id'], $line['stock_item_id'], $line['quantity'],
+                        $line['unit_id'], $line['conversion_factor'], $line['waste_percent'],
+                    );
+                }
+                $after = [
+                    'status' => 'draft', 'name' => $name,
+                    'version_no' => (int) $locked['version_no'], 'line_count' => count($resolved),
+                ];
+                $this->audit->record(
+                    $actor->userId, 'catalog.recipe_version.updated', 'recipe_version', $versionPublicId,
+                    $before, $after, null, $requestId, $ip, $scope->businessId,
+                );
+                return ['status' => 200, 'body' => [
+                    'data' => ['recipe_version' => ['id' => $versionPublicId] + $after],
+                    'meta' => (object) [],
+                ]];
+            },
+        );
+    }
+
     /** @return array{status:int,body:array<string,mixed>,replayed:bool} */
     public function activateVersion(
         AuthenticatedPrincipal $actor, BusinessScope $scope, string $versionPublicId,
