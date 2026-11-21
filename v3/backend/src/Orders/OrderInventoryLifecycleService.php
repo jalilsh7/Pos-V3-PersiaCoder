@@ -21,8 +21,11 @@ final readonly class OrderInventoryLifecycleService
         string $targetStatus,
         string $idempotencyKey,
     ): void {
+        if ($scope->branchId === null || $scope->branchId < 1) {
+            throw new HttpException(400, 'branch_context_required', 'برای عملیات رزرو و مصرف موجودی، انتخاب شعبه الزامی است.');
+        }
         $businessId = $scope->businessId;
-        $branchId = (int) $scope->branchId;
+        $branchId = $scope->branchId;
         if ($targetStatus === 'accepted') {
             $this->reserve($businessId, $branchId, $orderId, $idempotencyKey);
         } elseif ($targetStatus === 'completed') {
