@@ -1485,3 +1485,10 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - ریزبهبود UX گردش: تعداد ردیف‌ها اکنون «مورد بارگذاری‌شده» است، پیام خالی به صفحه‌های بارگذاری‌شده اشاره می‌کند و refresh خطای pagination قبلی را پاک می‌کند. commit `2217464`; build اجرا نشده.
 
 - اصلاح fixture تست: Variantهای آزمایشی اکنون `public_id` اجباری migration 007 را دریافت می‌کنند؛ بدون این مقدار تست DB پیش از اجرای lifecycle روی FK/NOT NULL متوقف می‌شد. commit `e30e7ed`. تست هنوز اجرا نشده است.
+
+### اتصال دفتر انبار به سفارش مبدأ — 2026-11-21
+- migration جدید `019_stock-ledger-order-reference.sql` ستون nullable `source_order_id` و FK مرکب business/branch را برای `pos_stock_ledger` اضافه می‌کند.
+- مصرف رسپی در `OrderInventoryLifecycleService` اکنون order_id داخلی را روی ledger ثبت می‌کند؛ `InventoryRepository::listLedger` با join scoped به `pos_orders` شماره سفارش و public ID را برمی‌گرداند؛ UI شماره سفارش را کنار گردش مصرف نمایش می‌دهد.
+- تست DB چرخه سفارش وجود دو ردیف ledger متصل به همان سفارش را assert می‌کند. تست‌های static نیز migration، درج و join scope را بررسی می‌کنند.
+- commits: `4c032bf`، `1c6f75a`، `a46b7d7`، `0a521a7`، `8bcfa2f`، `f700733`، `02584be`، `1b5cdc3`، `06250d4`، `ad0645c`.
+- migration و تست‌ها اجرا نشده‌اند؛ workflow دیتابیس MySQL/MariaDB باید در gate دستی اجرا شود.
