@@ -171,6 +171,18 @@ $pdo->beginTransaction();
 $service->apply($scope,$variantOrderId,'cancelled','ci-variant-release-'.$prefix);
 $pdo->commit();
 
+[$missingReservationOrderId,$missingReservationItemId] = $createOrder('missing-reservation');
+$pdo->prepare('UPDATE pos_order_items SET recipe_version_id=:version WHERE id=:item')
+    ->execute(['version'=>$versionId,'item'=>$missingReservationItemId]);
+$pdo->beginTransaction();
+try {
+    $service->apply($scope,$missingReservationOrderId,'completed','ci-missing-reservation-'.$prefix);
+    throw new RuntimeException('Recipe-tracked order completed without a stock reservation.');
+} catch (HttpException $error) {
+    $pdo->rollBack();
+    $assert($error->errorCode === 'stock_reservation_missing', 'Unexpected missing-reservation error.');
+}
+
 [$shortOrderId] = $createOrder('shortage');
 $pdo->prepare('UPDATE pos_stock_balances SET quantity_on_hand=0.100000 WHERE business_id=:business AND branch_id=:branch AND stock_item_id=:item AND location_id=:location')
     ->execute(['business'=>$businessId,'branch'=>$branchId,'item'=>$stockId,'location'=>$locationIds['storage']]);
