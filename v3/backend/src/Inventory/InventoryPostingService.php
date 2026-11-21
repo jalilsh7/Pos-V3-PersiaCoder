@@ -59,11 +59,20 @@ final readonly class InventoryPostingService
                     }
                 }
                 if ($type === 'return') {
-                    throw new HttpException(409, 'stock_document_type_not_postable', 'Return posting requires a source-linked return valuation policy and is not enabled yet.');
+                    $sourceDocumentId = (int) ($document['source_document_id'] ?? 0);
+                    if ($sourceDocumentId < 1) {
+                        throw new HttpException(409, 'stock_return_source_invalid', 'A return document must reference its posted source document.');
+                    }
+                    $returnSource = $this->documents->findPostedReturnSourceByIdForUpdate(
+                        $scope->businessId, $branchId, $sourceDocumentId,
+                    );
+                    if ($returnSource === null || (int) $returnSource['location_id'] !== (int) $document['location_id']) {
+                        throw new HttpException(409, 'stock_return_source_invalid', 'The linked source document is no longer eligible for return.');
+                    }
                 }
                 $supportedTypes = [
                     'purchase_receipt', 'transfer', 'adjustment_in',
-                    'adjustment_out', 'consumption', 'waste',
+                    'adjustment_out', 'consumption', 'waste', 'return',
                 ];
                 if (!in_array($type, $supportedTypes, true)) {
                     throw new HttpException(409, 'stock_document_type_not_postable', 'This stock document type is not enabled for posting.');
@@ -119,6 +128,47 @@ final readonly class InventoryPostingService
                     'waste' => 'waste_out',
                 ];
                 foreach ($lines as $line) {
+                    if ($type === 'return') {
+                        $sourceLineId = (int) ($line['source_document_line_id'] ?? 0);
+                        if ($sourceLineId < 1) {
+                            throw new HttpException(409, 'stock_return_source_line_missing', 'Every return line must reference its exact source line.');
+                        }
+                        $sourceLine = $this->documents->findReturnSourceLineByIdForUpdate(
+                            $scope->businessId, $branchId, (int) $document['source_document_id'], $sourceLineId,
+                        );
+                        if ($sourceLine === null || (int) $sourceLine['stock_item_id'] !== (int) $line['stock_item_id']) {
+                            throw new HttpException(409, 'stock_return_source_line_invalid', 'A return line does not match an eligible source line.');
+                        }
+                        if (!$this->documents->canAddReturnQuantity(
+                            $scope->businessId, $branchId, $sourceLineId, (int) $document['id'], '0', '1',
+                        )) {
+                            throw new HttpException(409, 'stock_return_quantity_exceeded', 'Posted returns plus this document exceed the original outbound quantity.');
+                        }
+                        $quantity = (string) $line['base_quantity'];
+                        $unitCost = (string) $sourceLine['unit_cost_snapshot'];
+                        $cost = self::requireLedgerAmount($this->posting->costForQuantity($quantity, $unitCost));
+                        $balance = $this->posting->lockBalance(
+                            $scope->businessId, $branchId, (int) $line['stock_item_id'], $sourceLocationId,
+                        );
+                        $averageCost = $this->posting->weightedAverageFromUnitCost(
+                            $balance['quantity_on_hand'], $balance['average_unit_cost'], $quantity, $unitCost,
+                        );
+                        $this->posting->receiveBalance(
+                            $scope->businessId, $branchId, (int) $line['stock_item_id'], $sourceLocationId,
+                            $quantity, $averageCost,
+                        );
+                        $this->posting->appendLedger(
+                            $scope->businessId, $branchId, (int) $line['stock_item_id'], $sourceLocationId,
+                            (int) $line['id'], 'return_in', $quantity, $baseUnitIds[(int) $line['stock_item_id']],
+                            $unitCost, $cost,
+                            self::eventKey($documentPublicId, (string) $line['public_id'], 'return_in'),
+                        );
+                        $this->documents->updateLineValuation(
+                            $scope->businessId, $branchId, (int) $document['id'], (int) $line['id'],
+                            $unitCost, $cost,
+                        );
+                        continue;
+                    }
                     $lineId = (int) $line['id'];
                     $linePublicId = (string) $line['public_id'];
                     $itemId = (int) $line['stock_item_id'];
