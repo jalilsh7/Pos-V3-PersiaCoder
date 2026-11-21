@@ -1010,3 +1010,5 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - contract check: `9ae2196a922a4ffae74cb3cd7326650c3ca423e3`; code: `bd3c25a39c6e5ca06ee39586ee1b03b495a4467e`. MySQL/MariaDB test هنوز اجرا نشده.
 
 - متن تعداد و حالت خالی در پنل گردش با pagination هماهنگ شد؛ refresh خطای قبلی بارگذاری قدیمی‌تر را پاک می‌کند. commit `2217464fa60301a1bee37c8fdc685b2e061dae9e`. Build pending.
+
+- fixtureهای Variant در تست DB با `public_id` اجباری migration 007 اصلاح شدند. commit `e30e7ed7818805ca9dfdf7f76833a2589a2ed03b`; تست اجرا نشده.
