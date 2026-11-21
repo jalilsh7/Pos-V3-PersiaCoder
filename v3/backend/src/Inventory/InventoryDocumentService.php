@@ -186,9 +186,13 @@ final readonly class InventoryDocumentService
         }
         $stockItemPublicId = $payload['stock_item_id'] ?? null;
         $unitCode = $payload['unit_code'] ?? null;
+        $sourceLinePublicId = $payload['source_document_line_id'] ?? null;
+        if ($sourceLinePublicId !== null && (!is_string($sourceLinePublicId) || !self::isUuid($sourceLinePublicId))) {
+            throw new HttpException(422, 'stock_return_source_line_invalid', 'A valid source_document_line_id is required.');
+        }
         $quantity = $payload['quantity'] ?? null;
-        if (!is_string($stockItemPublicId) || !self::isUuid($stockItemPublicId)
-            || !is_string($unitCode) || !preg_match('/^[a-z0-9._-]{1,32}$/', $unitCode)) {
+        if ($sourceLinePublicId === null && (!is_string($stockItemPublicId) || !self::isUuid($stockItemPublicId)
+            || !is_string($unitCode) || !preg_match('/^[a-z0-9._-]{1,32}$/', $unitCode))) {
             throw new HttpException(422, 'stock_document_line_reference_invalid', 'A valid stock_item_id and unit_code are required.');
         }
         if (is_int($quantity)) $quantity = (string) $quantity;
@@ -207,13 +211,13 @@ final readonly class InventoryDocumentService
         $totalCostAmount = self::normalizeTotalCost($payload['total_cost_amount'] ?? '0');
         $linePublicId = self::uuidV4();
         $fingerprint = hash('sha256', json_encode(
-            [$documentPublicId, $stockItemPublicId, $quantity, $unitCode, $totalCostAmount, $note],
+            [$documentPublicId, $stockItemPublicId, $sourceLinePublicId, $quantity, $unitCode, $totalCostAmount, $note],
             JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE,
         ));
         return $this->idempotency->execute(
             $actor->userId, $scope, 'inventory.stock-document.line.create', $key, $fingerprint,
             function (PDO $db) use (
-                $actor, $scope, $branchId, $documentPublicId, $stockItemPublicId,
+                $actor, $scope, $branchId, $documentPublicId, $stockItemPublicId, $sourceLinePublicId,
                 $unitCode, $quantity, $note, $linePublicId, $hasCostAmount, $totalCostAmount, $requestId, $ip,
             ): array {
                 $document = $this->documents->findDraftForUpdate($scope->businessId, $branchId, $documentPublicId);
@@ -223,33 +227,66 @@ final readonly class InventoryDocumentService
                 if ((string) $document['status'] !== 'draft') {
                     throw new HttpException(409, 'stock_document_not_draft', 'Lines can only be added to a draft stock document.');
                 }
-                $costRequired = in_array((string) $document['document_type'], ['purchase_receipt', 'adjustment_in'], true);
-                if ($costRequired && !$hasCostAmount) {
-                    throw new HttpException(422, 'stock_document_line_cost_required', 'This document type requires a total_cost_amount in TOMAN.');
-                }
-                if (!$costRequired && $totalCostAmount !== '0') {
-                    throw new HttpException(422, 'stock_document_line_cost_not_allowed', 'Cost input is only accepted for purchase receipts and inbound adjustments.');
-                }
-                $item = $this->documents->findStockItemForLine($scope->businessId, $stockItemPublicId);
-                if ($item === null) throw new HttpException(404, 'stock_item_not_found', 'The active stock item was not found in this business.');
-                $unit = $this->documents->findUnitForLine($unitCode);
-                if ($unit === null) throw new HttpException(422, 'stock_document_line_unit_not_found', 'The selected unit does not exist.');
-                if ((string) $unit['dimension'] !== (string) $item['base_dimension']) {
-                    throw new HttpException(422, 'stock_document_line_unit_dimension_mismatch', 'The selected unit does not match the stock item base unit dimension.');
-                }
-                $factor = $this->documents->findConversionFactor((int) $unit['id'], (int) $item['base_unit_id']);
-                if ($factor === null || trim(str_replace('.', '', $factor), '0') === '') {
-                    throw new HttpException(422, 'stock_document_line_conversion_missing', 'No valid conversion exists from the selected unit to the stock item base unit.');
+                $documentType = (string) $document['document_type'];
+                $sourceDocumentLineId = null;
+                if ($documentType === 'return') {
+                    if ($sourceLinePublicId === null || (int) ($document['source_document_id'] ?? 0) < 1) {
+                        throw new HttpException(422, 'stock_return_source_line_required', 'A return line must reference an exact source document line.');
+                    }
+                    if ($hasCostAmount || $totalCostAmount !== '0' || $stockItemPublicId !== null || $unitCode !== null) {
+                        throw new HttpException(422, 'stock_return_cost_or_item_override_not_allowed', 'Return item, unit and cost are inherited from the source line and cannot be overridden.');
+                    }
+                    $sourceLine = $this->documents->findReturnSourceLineForUpdate(
+                        $scope->businessId, $branchId, (int) $document['source_document_id'], $sourceLinePublicId,
+                    );
+                    if ($sourceLine === null) {
+                        throw new HttpException(409, 'stock_return_source_line_invalid', 'The source line is not an eligible posted outbound line with historical valuation.');
+                    }
+                    if (!$this->documents->canAddReturnQuantity(
+                        $scope->businessId, $branchId, (int) $sourceLine['id'], (int) $document['id'],
+                        $quantity, (string) $sourceLine['conversion_factor_snapshot'],
+                    )) {
+                        throw new HttpException(409, 'stock_return_quantity_exceeded', 'The return quantity exceeds the remaining quantity of the source line.');
+                    }
+                    $item = [
+                        'id' => (int) $sourceLine['stock_item_id'],
+                        'public_id' => (string) $sourceLine['stock_item_public_id'],
+                    ];
+                    $unit = ['id' => (int) $sourceLine['unit_id'], 'code' => (string) $sourceLine['unit_code']];
+                    $factor = (string) $sourceLine['conversion_factor_snapshot'];
+                    $sourceDocumentLineId = (int) $sourceLine['id'];
+                } else {
+                    if ($sourceLinePublicId !== null) {
+                        throw new HttpException(422, 'stock_return_source_line_not_allowed', 'Only return lines can reference a source document line.');
+                    }
+                    $costRequired = in_array($documentType, ['purchase_receipt', 'adjustment_in'], true);
+                    if ($costRequired && !$hasCostAmount) {
+                        throw new HttpException(422, 'stock_document_line_cost_required', 'This document type requires a total_cost_amount in TOMAN.');
+                    }
+                    if (!$costRequired && $totalCostAmount !== '0') {
+                        throw new HttpException(422, 'stock_document_line_cost_not_allowed', 'Cost input is only accepted for purchase receipts and inbound adjustments.');
+                    }
+                    $item = $this->documents->findStockItemForLine($scope->businessId, (string) $stockItemPublicId);
+                    if ($item === null) throw new HttpException(404, 'stock_item_not_found', 'The active stock item was not found in this business.');
+                    $unit = $this->documents->findUnitForLine((string) $unitCode);
+                    if ($unit === null) throw new HttpException(422, 'stock_document_line_unit_not_found', 'The selected unit does not exist.');
+                    if ((string) $unit['dimension'] !== (string) $item['base_dimension']) {
+                        throw new HttpException(422, 'stock_document_line_unit_dimension_mismatch', 'The selected unit does not match the stock item base unit dimension.');
+                    }
+                    $factor = $this->documents->findConversionFactor((int) $unit['id'], (int) $item['base_unit_id']);
+                    if ($factor === null || trim(str_replace('.', '', $factor), '0') === '') {
+                        throw new HttpException(422, 'stock_document_line_conversion_missing', 'No valid conversion exists from the selected unit to the stock item base unit.');
+                    }
                 }
                 $this->documents->addLine(
                     $scope->businessId, $branchId, (int) $document['id'], $linePublicId, (int) $item['id'],
-                    $quantity, (int) $unit['id'], $factor, $totalCostAmount, $note,
+                    $quantity, (int) $unit['id'], $factor, $totalCostAmount, $note, $sourceDocumentLineId,
                 );
                 $after = [
                     'id' => $linePublicId,
                     'document_no' => (string) $document['document_no'],
-                    'stock_item_id' => $stockItemPublicId, 'quantity' => $quantity,
-                    'unit_code' => $unitCode, 'conversion_factor_snapshot' => $factor,
+                    'stock_item_id' => $item['public_id'], 'quantity' => $quantity,
+                    'unit_code' => $unit['code'], 'source_document_line_id' => $sourceLinePublicId, 'conversion_factor_snapshot' => $factor,
                     'total_cost_amount' => $totalCostAmount, 'currency' => 'TOMAN',
                     'note' => $note,
                 ];
