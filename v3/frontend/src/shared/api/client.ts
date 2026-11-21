@@ -707,6 +707,21 @@ export type CustomerDetail = {
     total_amount: number;
     created_at: string;
   }[];
+  loyalty: {
+    points_balance: number;
+    credit_balance: number;
+    visit_count: number;
+    entries: {
+      event_key: string;
+      points_delta: number;
+      credit_delta: number;
+      visit_delta: number;
+      reason: string;
+      order_id: string | null;
+      order_number: number | null;
+      created_at: string;
+    }[];
+  };
 };
 
 export async function getCustomers(options: {
