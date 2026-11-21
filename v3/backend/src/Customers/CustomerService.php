@@ -191,6 +191,9 @@ final readonly class CustomerService
                 if ($decision === 'granted' && $customer['phone_normalized'] === null) {
                     throw new HttpException(409, 'customer_phone_required_for_consent', 'A valid mobile number is required before granting SMS marketing consent.');
                 }
+                if ($decision === 'granted' && !(bool) $customer['is_active']) {
+                    throw new HttpException(409, 'customer_inactive_for_consent', 'Marketing consent cannot be granted to an inactive customer.');
+                }
                 $before = $this->customers->latestConsent($scope->businessId, (int) $customer['id']);
                 $eventKey = self::uuidV4();
                 $this->customers->appendConsentEvent(
