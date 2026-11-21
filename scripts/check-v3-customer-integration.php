@@ -142,6 +142,19 @@ $consentGranted = $service->recordMarketingSmsConsent(
 $assert($consentGranted['status'] === 201
     && $consentGranted['body']['data']['consent']['decision'] === 'granted',
     'Explicit SMS marketing consent was not recorded.');
+$phoneChanged = $service->update(
+    $actor, $scope, $customerId,
+    ['phone' => '09111111111'],
+    'ci-customer-phone-change-0001', $requestId, $ip,
+);
+$assert($service->get($scope, $customerId)['marketing_consent']['decision'] === 'stale',
+    'Consent for the previous mobile number remained valid after the customer phone changed.');
+$service->update(
+    $actor, $scope, $customerId,
+    ['phone' => '09123456789'],
+    'ci-customer-phone-restore-0001', $requestId, $ip,
+);
+
 $consentReplay = $service->recordMarketingSmsConsent(
     $actor, $scope, $customerId, $consentPayload,
     'ci-customer-consent-grant-0001', $requestId, $ip,
