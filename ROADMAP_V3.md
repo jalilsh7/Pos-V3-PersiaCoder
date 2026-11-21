@@ -1546,3 +1546,5 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - تست integration مشتری برای حالت پیش‌فرض unknown، grant، replay، نبود مدرک و withdrawal گسترش یافت؛ static contract check نیز مسیر API/UI/service را پوشش می‌دهد.
 - **محدودیت مهم:** هیچ marketing dispatch یا کمپین فعالی اضافه نشده است. consent recording به‌تنهایی مجوز ارسال نیست؛ suppression باید در تمام نقاط enqueue/dispatch آینده enforce شود. transactional SMS مستقل باقی می‌ماند.
 - فایل‌های تست نوشته شده‌اند اما اجرا نشده‌اند؛ PHP lint، TypeScript/build، migration و DB integration در این محیط اجرا نشده‌اند. فاز ۱۰ باز است.
+
+- کنترل حریم خصوصی تکمیلی: grant شماره موبایل نرمال‌شده زمان ثبت را snapshot می‌کند. با تغییر شماره مشتری، پروفایل وضعیت را `stale` نشان می‌دهد؛ تست integration برای تغییر و بازگردانی شماره اضافه شده است. این کنترل، جایگزین suppression زمان ارسال نیست.
