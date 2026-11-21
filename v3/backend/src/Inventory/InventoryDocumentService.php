@@ -109,6 +109,9 @@ final readonly class InventoryDocumentService
         if ($supplierPublicId !== null && (!is_string($supplierPublicId) || !self::isUuid($supplierPublicId))) {
             throw new HttpException(422, 'stock_document_supplier_invalid', 'The supplier identifier is invalid.');
         }
+        if ($type === 'return' && ($locationPublicId !== null || $destinationPublicId !== null || $supplierPublicId !== null)) {
+            throw new HttpException(422, 'stock_return_source_fields_locked', 'Return location, destination and supplier are inherited from the source document and cannot be supplied.');
+        }
         $reasonValue = $payload['reason'] ?? '';
         if (!is_string($reasonValue)) throw new HttpException(422, 'stock_document_reason_invalid', 'The reason must be text.');
         $reason = trim($reasonValue);
