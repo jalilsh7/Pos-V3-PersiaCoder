@@ -125,3 +125,5 @@ MySQL/MariaDB برای بسیاری از دستورات DDL implicit commit ان
 - این migration هنوز در محیط MySQL/MariaDB اجرا نشده است. وجود API ثبت رضایت، marketing dispatch را فعال نمی‌کند؛ suppression در مسیر ارسال هنوز لازم است.
 
 - هر grant علاوه بر notice_version و evidence_ref، شماره موبایل نرمال‌شده زمان ثبت را در `recipient_phone_normalized` نگهداری می‌کند؛ تغییر شماره مشتری باعث stale شدن رضایت قبلی در read model می‌شود. این migration هنوز اجرا نشده است.
+
+- مقدار `invalidated` برای بی‌اعتبارکردن grant قبلی پس از تغییر شماره پشتیبانی می‌شود و با `withdrawn` (انصراف مشتری) تفاوت دارد. بازگرداندن شماره قدیمی، grant قبلی را احیا نمی‌کند.
