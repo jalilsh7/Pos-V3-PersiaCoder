@@ -1012,3 +1012,11 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - متن تعداد و حالت خالی در پنل گردش با pagination هماهنگ شد؛ refresh خطای قبلی بارگذاری قدیمی‌تر را پاک می‌کند. commit `2217464fa60301a1bee37c8fdc685b2e061dae9e`. Build pending.
 
 - fixtureهای Variant در تست DB با `public_id` اجباری migration 007 اصلاح شدند. commit `e30e7ed7818805ca9dfdf7f76833a2589a2ed03b`; تست اجرا نشده.
+
+## اتصال گردش مصرف به سفارش مبدأ — 2026-11-21
+- migration `019_stock-ledger-order-reference.sql` ستون nullable `source_order_id` و FK مرکب `(business_id,branch_id,source_order_id)` به `pos_orders` اضافه می‌کند.
+- OrderInventoryLifecycleService در ledger مصرف مقدار order ID را می‌نویسد. InventoryRepository با join محدود به business/branch، public ID و شماره سفارش را می‌خواند. API client و InventoryWorkspace شماره سفارش را کنار ردیف مصرف نمایش می‌دهند.
+- integration test وجود دو ledger line با source_order_id سفارش را بررسی می‌کند؛ contract scripts migration/insert/join scope و UI را guard می‌کنند.
+- migration README و `FINANCE_INVENTORY_DATA_MODEL_V3.md` به‌روزرسانی شدند.
+- commits: `4c032bfafbe988ed41e2465cc141189cb043310b`, `1c6f75a182dfb91d6fe6e9b4bf29688fe147adde`, `a46b7d72e284b9d5cff5684af53ddaf4d211851c`, `0a521a7e2cfa7df36e566cf51baeed51a839d151`, `8bcfa2f3cdcd65627664cea0050e5c4d7c8c06da`, `f700733c5102728f5e57cfc6c1e5305e23ec3cc3`, `02584be2b6eeea84742f46b49f80c57164df8cca`, `1b5cdc393bba776096de2e664c6011faf0fff0b5`, `06250d4b7e7cf156dceb70fc0d22ca16f804752b`, `ad0645cfcc075f790dcaa3b102fa30c98ab3f4a0`.
+- اجرا نشده: migration 019، MySQL/MariaDB integration، PHP lint و frontend build. نتیجه PASS ادعا نشود.
