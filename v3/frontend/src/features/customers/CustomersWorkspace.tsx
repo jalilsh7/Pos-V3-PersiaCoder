@@ -290,6 +290,28 @@ export function CustomersWorkspace() {
                 <div><span>خرید خالص ثبت‌شده</span><strong>{money(detail.stats.total_spent)} <small>تومان</small></strong></div>
                 <div><span>آخرین سفارش</span><strong>{dateTime(detail.stats.last_order_at)}</strong></div>
               </div>
+              <div className="customers-profile-stats customers-loyalty-stats">
+                <div><span>امتیاز وفاداری</span><strong>{money(detail.loyalty.points_balance)}</strong></div>
+                <div><span>اعتبار مشتری</span><strong>{money(detail.loyalty.credit_balance)} <small>تومان</small></strong></div>
+                <div><span>مراجعه ثبت‌شده</span><strong>{money(detail.loyalty.visit_count)}</strong></div>
+              </div>
+              <div className="customers-history-title"><h3>گردش باشگاه مشتریان</h3><span>{money(detail.loyalty.entries.length)} رویداد اخیر</span></div>
+              <div className="customers-history">
+                {detail.loyalty.entries.map((entry) => (
+                  <div className="customers-order" key={entry.event_key}>
+                    <div>
+                      <strong>{entry.reason || "رویداد وفاداری"}</strong>
+                      <small>{dateTime(entry.created_at)}{entry.order_number ? ` · سفارش #${money(entry.order_number)}` : ""}</small>
+                    </div>
+                    <div className="customers-order-total">
+                      {entry.points_delta !== 0 ? <strong>{entry.points_delta > 0 ? "+" : ""}{money(entry.points_delta)} امتیاز</strong> : null}
+                      {entry.credit_delta !== 0 ? <strong>{entry.credit_delta > 0 ? "+" : ""}{money(entry.credit_delta)} تومان</strong> : null}
+                      {entry.visit_delta !== 0 ? <strong>{entry.visit_delta > 0 ? "+" : ""}{money(entry.visit_delta)} مراجعه</strong> : null}
+                    </div>
+                  </div>
+                ))}
+                {detail.loyalty.entries.length === 0 ? <div className="customers-empty">هنوز رویدادی در دفتر وفاداری این مشتری ثبت نشده است.</div> : null}
+              </div>
               {editing ? (
                 <div className="customers-create customers-edit">
                   <TextField label="نام مشتری" value={editName} onChange={(event) => setEditName(event.target.value)} />
