@@ -508,3 +508,6 @@ API client و UI اکنون cursor-based هستند: صفحه ۵۰تایی او�
 
 ## Order-to-ledger traceability — 2026-11-21
 گردش مصرف رسپی اکنون با `source_order_id` به سفارش مبدأ متصل می‌شود؛ migration 019 FK مرکب business/branch دارد، repository با scope همان شعبه شماره سفارش را برمی‌گرداند و UI آن را نمایش می‌دهد. integration test و static checks گسترش یافتند؛ migration/test/build اجرا نشده‌اند. commits: `4c032bf`, `1c6f75a`, `a46b7d7`, `0a521a7`, `8bcfa2f`, `f700733`, `02584be`, `1b5cdc3`, `06250d4`, `ad0645c`.
+
+## Missing reservation completion guard — 2026-11-21
+اگر سفارش دارای recipe_version_id باشد اما reservation نداشته باشد، تکمیل اکنون با `stock_reservation_missing` متوقف می‌شود؛ سفارش بدون رسپی همچنان مسیر عادی دارد. DB integration و static contract test افزوده شدند؛ اجرا نشده‌اند. commits: `4153aa4`, `e4f1956`, `a07595b`.
