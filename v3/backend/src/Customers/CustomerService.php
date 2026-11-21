@@ -201,6 +201,7 @@ final readonly class CustomerService
                     'pos',
                     $noticeVersion,
                     $evidenceRef,
+                    $customer['phone_normalized'] === null ? null : (string) $customer['phone_normalized'],
                     $actor->userId,
                 );
                 $this->audit->record(
