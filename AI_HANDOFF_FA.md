@@ -1034,3 +1034,11 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - `OrderInventoryLifecycleService::reserve` اکنون رزرو را با business/branch/order lookup می‌کند، نه فقط idempotency key. replay با کلید متفاوت در صورت وجود رزرو فعال نباید مقدار رزرو را دوباره افزایش دهد.
 - migration `020_one-stock-reservation-per-order.sql` ایندکس قدیمی `(order_id,idempotency_key)` را با unique مرکب `(business_id,branch_id,order_id)` جایگزین می‌کند. در صورت duplicate تاریخی migration باید متوقف شود؛ هیچ حذف/ادغام خودکار انجام نمی‌شود.
 - DB integration test replay با کلید متفاوت و static contract check اضافه شدند. اجرا نشده‌اند. commits: `2360397`, `3616966`, `79319b4`, `4f9ce3a`.
+
+## ادامه کار — بسته برگشت و اصلاح انبار (2026-11-21)
+- HEAD مبنا پیش از این بسته: `06508e94278b472e3328bfa9483b5bffd055607b`.
+- تصمیم `INV-RETURN-2026-001` در سند تصمیمات ثبت شد. برگشت باید از سند و ردیف مبدأ ثبت‌شده باشد، جزئی و محدود به مقدار خروجی باقی‌مانده؛ بهای تاریخی از snapshot ردیف مبدأ گرفته می‌شود.
+- اصلاح سند ثبت‌شده با mutation ممنوع است؛ فقط سند جبرانی مستقل و linked مجاز است. ledger append-only باقی می‌ماند.
+- Migration `021_stock-document-source-links.sql` اضافه شد؛ FKها ارجاع سند/ردیف را در محدوده business و branch enforce می‌کنند. سوابق قبلی بدون backfill باقی می‌مانند.
+- کارهای مانده همین بسته: repository/service validation و locking، posting نوع return، route/permission، UI انتخاب سند و ردیف مبدأ، integration coverage برای partial/over-return/concurrency/cross-branch/idempotency/rollback، سپس به‌روزرسانی مستندات و اجرای دروازه تست.
+- Migration اجرا نشده و هیچ تست/build/runtime اجرا نشده است؛ تا زمان اجرای واقعی ادعای موفقیت نداریم.
