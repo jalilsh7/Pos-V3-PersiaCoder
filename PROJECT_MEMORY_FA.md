@@ -503,3 +503,5 @@ API client و UI اکنون cursor-based هستند: صفحه ۵۰تایی او�
 قفل مکان‌های فعال از `FOR UPDATE` انحصاری به `LOCK IN SHARE MODE` مرتب‌شده تغییر کرد تا رزروهای هم‌زمان شعبه serialize نشوند؛ update مکان همچنان تا پایان رزرو منتظر می‌ماند. balanceها با `FOR UPDATE` و ترتیب ثابت قفل می‌شوند. commits: `bd3c25a`, `9ae2196`. تست اجرا نشده.
 
 - برچسب تعداد و پیام خالی ledger با pagination هماهنگ شد و refresh خطای قبلی را reset می‌کند. commit `2217464`. Build اجرا نشده.
+
+- تست integration برای variantهای آزمایشی `public_id` اجباری migration 007 را اکنون seed می‌کند؛ commit `e30e7ed`. اجرای DB pending.
