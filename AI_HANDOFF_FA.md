@@ -1000,3 +1000,7 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - هنوز build/typecheck و تست contract اجرا نشده‌اند.
 
 - خطای pagination گردش انبار state مستقل `ledgerError` دارد و در همان پنل نمایش داده می‌شود؛ retry همان cursor را حفظ می‌کند. commit `bb169356d99aad76bc2c53ce142a693738d5220a`. Build اجرا نشده.
+
+## تست اولویت رسپی تنوع و fallback محصول — 2026-11-21
+- تست integration اکنون Variant بدون رسپی اختصاصی را برای اثبات fallback به رسپی محصول و Variant دارای رسپی فعال را برای اثبات precedence نسخه اختصاصی پوشش می‌دهد.
+- commit: `5dc69e95c060d120f7c37031808d0d1f0ec2e819`. اجرا نشده.
