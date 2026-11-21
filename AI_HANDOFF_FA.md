@@ -982,3 +982,8 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - تست integration عمداً storage را قبل از kitchen ایجاد می‌کند و همچنان انتظار دارد برداشت از kitchen شروع شود.
 - commits: `4194e4d5b1a18f2b5c015f31880bc6c4d3ff7442`, `c0294b703ed7eecaa98c85b7c5bad846faeacee4`, `b9a7fad038cd76412ffc7d81bafe0b8f406f2e10`.
 - تست اجرا نشده؛ تا اجرای workflow نتیجه نامشخص است.
+
+## بهبود بازیابی سند انبار پس از خطای میانی — 2026-11-21
+- `InventoryWorkspace` پس از موفقیت create و شکست add-line/post، همان سند را با `getInventoryDocument` بازیابی می‌کند؛ اگر posted شده باشد وضعیت واقعی نشان داده می‌شود، و اگر draft مانده باشد همان draft باز می‌شود تا کاربر ادامه دهد. در خطای دریافت وضعیت، شماره سند و هشدار عدم ایجاد سند تکراری نمایش داده می‌شود.
+- contract script `check-v3-backend-inventory-documents.php` این UX را بررسی می‌کند.
+- commits: `ee23fb0afa4806b88b189d25fefb288b0e702736`, `8fce65af76dc8adf0f289202050911fe21bbf2c0`. تست/build اجرا نشده‌اند.
