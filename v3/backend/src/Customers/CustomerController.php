@@ -65,6 +65,21 @@ final readonly class CustomerController
         return $this->idempotentResponse($result);
     }
 
+    public function recordMarketingSmsConsent(Request $request, array $parameters): Response
+    {
+        $this->assertJson($request);
+        $result = $this->customers->recordMarketingSmsConsent(
+            $this->principal($request),
+            $this->scope($request),
+            (string) ($parameters['customerPublicId'] ?? ''),
+            $request->json(),
+            $request->header('idempotency-key') ?? '',
+            $request->requestId,
+            (string) ($request->attribute('remote_ip') ?? ''),
+        );
+        return $this->idempotentResponse($result);
+    }
+
     public function update(Request $request, array $parameters): Response
     {
         $this->assertJson($request);
