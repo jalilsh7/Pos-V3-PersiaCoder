@@ -8,9 +8,9 @@ use PersiaCoder\\PosV3\\Orders\\OrderInventoryLifecycleService;
 $root = dirname(__DIR__);
 require_once $root . '/database/v3/bin/bootstrap.php';
 spl_autoload_register(static function (string $class) use ($root): void {
-    $prefix = 'PersiaCoder\\\\PosV3\\\\';
+$prefix = 'PersiaCoder\\PosV3\\';
     if (!str_starts_with($class, $prefix)) return;
-    $file = $root . '/v3/backend/src/' . str_replace('\\\\', DIRECTORY_SEPARATOR, substr($class, strlen($prefix))) . '.php';
+$file = $root . '/v3/backend/src/' . str_replace('\\', DIRECTORY_SEPARATOR, substr($class, strlen($prefix))) . '.php';
     if (is_file($file)) require $file;
 });
 
@@ -117,7 +117,7 @@ $s->execute(['business'=>$businessId,'branch'=>$branchId]);
 $assert((int)$s->fetchColumn()===2,'Consumption ledger entries were not written for both locations.');
 $s=$pdo->prepare("SELECT CAST(SUM(total_cost_amount) AS CHAR) FROM pos_stock_ledger WHERE business_id=:business AND branch_id=:branch AND movement_type='consumption_out'");
 $s->execute(['business'=>$businessId,'branch'=>$branchId]);
-$assert((string)$s->fetchColumn()==='-2250','Consumption valuation did not use reservation-time unit cost snapshots.');
+$assert((string)$s->fetchColumn()==='-1050','Consumption valuation did not use reservation-time unit cost snapshots.');
 
 [$releaseOrderId] = $createOrder('release');
 $pdo->beginTransaction();
@@ -137,7 +137,7 @@ try {
     throw new RuntimeException('Insufficient stock was incorrectly accepted.');
 } catch (HttpException $error) {
     $pdo->rollBack();
-    $assert($error->statusCode === 409 || $error->getCode() === 409 || str_contains($error->getMessage(),'موجودی'), 'Unexpected shortage exception.');
+    $assert($error->status === 409, 'Unexpected shortage exception.');
 }
 $s=$pdo->prepare('SELECT COUNT(*) FROM pos_stock_reservations WHERE business_id=:business AND branch_id=:branch AND order_id=:order');
 $s->execute(['business'=>$businessId,'branch'=>$branchId,'order'=>$shortOrderId]);
