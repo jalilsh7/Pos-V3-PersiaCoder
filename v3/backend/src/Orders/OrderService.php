@@ -23,6 +23,7 @@ final readonly class OrderService
     private IdempotencyService $idempotency;
     private AuditLogService $audit;
     private SmsServiceTemplateOutbox $smsTemplates;
+    private OrderInventoryLifecycleService $inventoryLifecycle;
 
     public function __construct(
         PDO $connection,
@@ -33,6 +34,7 @@ final readonly class OrderService
         $this->idempotency = new IdempotencyService($connection, $applicationKey);
         $this->audit = new AuditLogService(new AuditLogRepository($connection));
         $this->smsTemplates = new SmsServiceTemplateOutbox($connection, $applicationKey);
+        $this->inventoryLifecycle = new OrderInventoryLifecycleService($connection);
     }
 
     public function list(
@@ -567,6 +569,13 @@ final readonly class OrderService
                     throw new HttpException(403, 'permission_denied', 'Kitchen update permission is required for this transition.');
                 }
 
+                // Stock reservation/consumption/release shares the status transaction.
+                $this->inventoryLifecycle->apply(
+                    $scope,
+                    (int) $order['id'],
+                    $targetStatus,
+                    hash('sha256', $idempotencyKey),
+                );
                 $this->orders->updateOrderStatus(
                     $scope->businessId,
                     (int) $scope->branchId,
