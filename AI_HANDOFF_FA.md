@@ -987,3 +987,7 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - `InventoryWorkspace` پس از موفقیت create و شکست add-line/post، همان سند را با `getInventoryDocument` بازیابی می‌کند؛ اگر posted شده باشد وضعیت واقعی نشان داده می‌شود، و اگر draft مانده باشد همان draft باز می‌شود تا کاربر ادامه دهد. در خطای دریافت وضعیت، شماره سند و هشدار عدم ایجاد سند تکراری نمایش داده می‌شود.
 - contract script `check-v3-backend-inventory-documents.php` این UX را بررسی می‌کند.
 - commits: `ee23fb0afa4806b88b189d25fefb288b0e702736`, `8fce65af76dc8adf0f289202050911fe21bbf2c0`. تست/build اجرا نشده‌اند.
+
+## گسترش سناریوهای replay چرخه انبار سفارش — 2026-11-21
+- integration test اکنون replay پذیرش با همان کلید، replay مصرف پس از وضعیت consumed و replay آزادسازی پس از وضعیت released را نیز اجرا می‌کند؛ انتظار عدم درج ledger تکراری و عدم کاهش مجدد رزرو حفظ شده است.
+- commit: `a0083d4010e796221050f5f6e8614955ea25ad63`. اجرا نشده.
