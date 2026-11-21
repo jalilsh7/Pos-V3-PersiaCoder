@@ -572,7 +572,21 @@ final readonly class InventoryDocumentRepository
         $s = $this->connection->prepare(
             'SELECT l.public_id AS line_id, l.source_document_line_id, si.public_id AS stock_item_id, si.name AS stock_item_name,
                     l.quantity, u.code AS unit_code, u.name AS unit_name,
-                    l.conversion_factor_snapshot, l.base_quantity, l.note
+                    l.conversion_factor_snapshot, l.base_quantity,
+                    CAST(GREATEST(l.base_quantity - COALESCE((
+                        SELECT SUM(return_line.base_quantity)
+                        FROM pos_stock_document_lines return_line
+                        INNER JOIN pos_stock_documents return_doc
+                          ON return_doc.id = return_line.document_id
+                         AND return_doc.business_id = return_line.business_id
+                         AND return_doc.branch_id = return_line.branch_id
+                        WHERE return_line.business_id = l.business_id
+                          AND return_line.branch_id = l.branch_id
+                          AND return_line.source_document_line_id = l.id
+                          AND return_doc.document_type = 'return'
+                          AND return_doc.status = 'posted'
+                    ), 0), 0) / l.conversion_factor_snapshot AS DECIMAL(18,6)) AS returnable_quantity,
+                    l.note
              FROM pos_stock_document_lines l
              INNER JOIN pos_stock_items si
                ON si.id = l.stock_item_id AND si.business_id = l.business_id
@@ -592,6 +606,7 @@ final readonly class InventoryDocumentRepository
             'unit_name' => (string) $r['unit_name'],
             'conversion_factor_snapshot' => (string) $r['conversion_factor_snapshot'],
             'base_quantity' => (string) $r['base_quantity'],
+            'returnable_quantity' => (string) $r['returnable_quantity'],
             'note' => $r['note'] === null ? null : (string) $r['note'],
         ], $s->fetchAll(PDO::FETCH_ASSOC));
     }
