@@ -1,17 +1,17 @@
 <?php
 declare(strict_types=1);
 
-namespace PersiaCoder\\PosV3\\Communications\\Sms;
+namespace PersiaCoder\PosV3\Communications\Sms;
 
 use PDO;
-use PersiaCoder\\PosV3\\Auth\\AuthenticatedPrincipal;
-use PersiaCoder\\PosV3\\Auth\\BusinessScope;
-use PersiaCoder\\PosV3\\Auth\\PermissionService;
-use PersiaCoder\\PosV3\\Http\\HttpException;
-use PersiaCoder\\PosV3\\Infrastructure\\Database\\AuditLogRepository;
-use PersiaCoder\\PosV3\\Infrastructure\\Database\\SmsMarketingCampaignRepository;
-use PersiaCoder\\PosV3\\Security\\AuditLogService;
-use PersiaCoder\\PosV3\\Security\\IdempotencyService;
+use PersiaCoder\PosV3\Auth\AuthenticatedPrincipal;
+use PersiaCoder\PosV3\Auth\BusinessScope;
+use PersiaCoder\PosV3\Auth\PermissionService;
+use PersiaCoder\PosV3\Http\HttpException;
+use PersiaCoder\PosV3\Infrastructure\Database\AuditLogRepository;
+use PersiaCoder\PosV3\Infrastructure\Database\SmsMarketingCampaignRepository;
+use PersiaCoder\PosV3\Security\AuditLogService;
+use PersiaCoder\PosV3\Security\IdempotencyService;
 
 final readonly class SmsMarketingCampaignService
 {
