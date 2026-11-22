@@ -1263,3 +1263,17 @@ KitchenBoard به‌روزرسانی خودکار ۱۵ ثانیه‌ای، جل�
 - refresh دستی و polling نیز پس از پایان fetch فعال به runner جاری واگذار می‌شوند؛ مسیرهای تکراری دریافت صف همچنان با یک قفل مشترک کنترل می‌شوند.
 - فایل: `v3/frontend/src/features/kitchen/KitchenBoard.tsx`؛ commits: `a3b978efbdd77e9b2c570b4e5b8d72e5afa4ab2d` و `95567711d3ed0632ecdb8ce18e09914d8f05bb6d`.
 - build/typecheck و تست چرخه mount/unmount هنوز اجرا نشده‌اند.
+
+
+## ORD-FULFILLMENT-01A — همگام‌سازی چرخه دریافت (2026-11-23)
+
+- تغییر وضعیت fulfillment در همان transaction سفارش انجام می‌شود و از order_status مستقل می‌ماند.
+- mapping فعلی: draft/awaiting_payment→pending، accepted→accepted، preparing→preparing، ready→ready، completed→completed، cancelled/rejected→cancelled.
+- completed_at فقط در اولین transition به completed ثبت می‌شود.
+- OrderService::get وضعیت fulfillment را برمی‌گرداند؛ OrderCenter آن را جداگانه نمایش می‌دهد. متن اقدام به «ثبت تکمیل سفارش» تغییر کرد؛ completed به معنی اثبات تحویل فیزیکی نیست.
+- commits: fec9947، 1149b8a، 1213e2e، 3dec79b، 70b4385.
+- تست‌ها اجرا نشده‌اند. ادامه گروهی: بررسی workflow مستقل dispatch/delivery، اطمینان از semantics وضعیت‌ها و اتصال به موجودی/رسپی؛ وضعیت dispatched هنوز عملیات اجرایی/endpoint ندارد.
+
+## قانون دائمی اجرای توسعه
+
+کارها را گروهی و زنجیره‌ای انجام بده؛ در هر نوبت بیشترین مجموعه تغییرات مرتبط و قابل‌اعتماد را جلو ببر، Backend/API/Frontend و مستندات وابسته را با هم هماهنگ کن و از بسته‌های بسیار کوچک و گزارش‌های طولانی دوری کن. تست‌های امنیتی، مالی و یکپارچگی و gate نهایی حذف نشوند؛ فاز فقط با تأیید صریح مالک بسته می‌شود.
