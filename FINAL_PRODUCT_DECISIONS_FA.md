@@ -625,3 +625,11 @@
 - کمپین در حالت draft ایجاد می‌شود؛ ایجاد کمپین یا snapshot مخاطب به‌تنهایی ارسال را مجاز نمی‌کند. وضعیت مخاطب و شناسه رخداد رضایت ثبت‌شده‌اند، اما eligibility باید هنگام آماده‌سازی و دوباره درست پیش از dispatch از آخرین رخداد consent، فعال‌بودن مشتری و تطابق شماره فعلی با recipient_phone_normalized احراز شود.
 - شماره موبایل خام در جداول کمپین/مخاطب ذخیره نمی‌شود. گیرنده باید در مرحله dispatch از پروفایل مشتری خوانده و با grant معتبر bind شود؛ ارسال به شماره قدیمی یا consent نامعتبر ممنوع است.
 - این بسته فقط schema foundation است؛ API، UI، audience builder، worker، provider dispatch، opt-out و suppression اجرایی هنوز ساخته نشده‌اند. Marketing dispatch باید غیرفعال بماند. پیامک transactional مستقل است.
+
+### وضعیت اجرایی API کمپین و آماده‌سازی مخاطب — 2026-11-22
+- API مستقل کمپین با permission جدید `communications.sms.marketing.manage` اضافه شد؛ migration 024 و clean-install schema این مجوز را برای manager seed می‌کنند.
+- ایجاد draft، فهرست کمپین‌ها و آماده‌سازی snapshot مخاطب از API محافظت‌شده با session، RBAC، CSRF، same-origin، business scope، idempotency و audit انجام می‌شود.
+- آماده‌سازی فقط آخرین رخداد رضایت هر مشتری را بررسی می‌کند؛ مشتری باید فعال، دارای موبایل معتبر و آخرین تصمیم او `granted` باشد و شماره فعلی دقیقاً با `recipient_phone_normalized` زمان grant تطابق داشته باشد. هیچ شماره خامی در snapshot کمپین ذخیره نمی‌شود.
+- مخاطبان غیرمجاز وارد جدول recipients نمی‌شوند و شمارش تفکیکی علت حذف در پاسخ آماده‌سازی ارائه می‌شود. کمپین پس از آماده‌سازی `prepared` می‌شود و قابل ویرایش/آماده‌سازی مجدد نیست.
+- این بسته هیچ endpoint یا worker ارسال ندارد. رضایت و snapshot آماده‌سازی جایگزین revalidation درست پیش از dispatch نیست؛ marketing send همچنان ممنوع است تا suppression، opt-out و کنترل لحظه ارسال تکمیل و آزموده شوند.
+- Static contract guard: `scripts/check-v3-sms-marketing-campaign-backend.php` افزوده شد؛ اجرا نشده است. migration، lint، DB integration و build نیز در این محیط اجرا نشده‌اند.
