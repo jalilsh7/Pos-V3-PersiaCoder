@@ -310,8 +310,9 @@ final readonly class OrderRepository
                     o.tax_amount, o.delivery_fee_amount, o.total_amount, o.created_at, o.accepted_at,
                     c.public_id AS customer_public_id, c.name AS customer_name,
                     ts.public_id AS table_session_public_id,
-                    f.method AS fulfillment_method, f.recipient_name_snapshot,
-                    f.recipient_phone_snapshot, f.address_snapshot, f.delivery_fee_amount AS fulfillment_fee
+                    f.method AS fulfillment_method, f.status AS fulfillment_status,
+                    f.recipient_name_snapshot, f.recipient_phone_snapshot,
+                    f.address_snapshot, f.delivery_fee_amount AS fulfillment_fee
              FROM pos_orders o
              LEFT JOIN pos_customers c ON c.id = o.customer_id AND c.business_id = o.business_id
              LEFT JOIN pos_table_sessions ts ON ts.id = o.table_session_id
