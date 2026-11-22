@@ -1228,3 +1228,13 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - فایل‌ها: `v3/frontend/src/features/orders/OrderCenter.tsx`، `v3/frontend/src/features/orders/orders.css`، `v3/frontend/src/features/pos/pos.css`.
 - commits: `594076fb69fe80521a3c722d1d70d65548008a9a`، `f2405b858ab85ef937bf0a2e2e89f6cfaa1c6bf3`، `b0d49b8e85664a7f3440ed728974a57542704baf`.
 - تست‌ها هنوز اجرا نشده‌اند. گام بعد: ادامه اتصال کامل جریان POS/انبار/رسپی و رفع gapهای فروش تا مرحله kitchen/fulfillment؛ تنظیمات مستقل چاپ و Bridge سخت‌افزاری به فازهای بعد موکول‌اند.
+
+
+## آخرین بسته گروهی — KDS-01A (2026-11-23)
+
+KitchenBoard به‌روزرسانی خودکار ۱۵ ثانیه‌ای، جلوگیری از refresh هم‌پوشان و صفحه‌بندی کامل برای هر سه صف accepted/preparing/ready دریافت کرد. جزئیات سفارش انتخاب‌شده پس از refresh به‌روز می‌شود و آخرین جزئیات موفق در خطای گذرا حفظ می‌شود.
+
+- فایل: `v3/frontend/src/features/kitchen/KitchenBoard.tsx`.
+- commit: `9a418e2d69add2aacadaf991c690472b1114cda4`.
+- تست‌ها اجرا نشده‌اند.
+- ادامه: تکمیل قرارداد عملیاتی آماده‌سازی/تحویل، سپس اتصال KDS به مصرف و آزادسازی موجودی با دقت؛ routing ایستگاه، KOT و سخت‌افزار چاپ فعلاً توسعه داده نشود مگر پس از تثبیت جریان اصلی.
