@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChefHat, Clock3, Eye, RefreshCw } from "lucide-react";
 import {
   ApiError,
@@ -35,12 +35,25 @@ const dateTime = (value: string, timeZone: string) => {
 };
 
 async function fetchKitchenOrders(): Promise<OrderSummary[]> {
-  const pages = await Promise.all(
-    (["accepted", "preparing", "ready"] as const).map((status) => getOrders({ status, limit: 100 })),
-  );
+  const statuses = ["accepted", "preparing", "ready"] as const;
+  const pages = await Promise.all(statuses.map(async (status) => {
+    const collected: OrderSummary[] = [];
+    let before: string | undefined;
+    let hasMore = true;
+    while (hasMore) {
+      const page = await getOrders({ status, limit: 100, before });
+      collected.push(...page.orders);
+      hasMore = page.has_more;
+      before = page.next_cursor ?? undefined;
+      if (hasMore && !before) {
+        throw new Error("ادامه صفحه‌بندی صف آشپزخانه نامعتبر است.");
+      }
+    }
+    return collected;
+  }));
   const unique = new Map<string, OrderSummary>();
   for (const page of pages) {
-    for (const order of page.orders) unique.set(order.id, order);
+    for (const order of page) unique.set(order.id, order);
   }
   return [...unique.values()].sort((left, right) => right.created_at.localeCompare(left.created_at));
 }
@@ -56,17 +69,49 @@ export function KitchenBoard({ timeZone }: { timeZone: string }) {
   const [transitioningId, setTransitioningId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const refreshInFlight = useRef(false);
 
   useEffect(() => {
     let active = true;
-    fetchKitchenOrders()
-      .then((items) => { if (active) setOrders(items); })
-      .catch((cause: unknown) => {
-        if (active) setError(cause instanceof ApiError ? cause.message : "دریافت صف آشپزخانه انجام نشد.");
-      })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, []);
+    const load = async (showError: boolean) => {
+      if (refreshInFlight.current) return;
+      refreshInFlight.current = true;
+      try {
+        const items = await fetchKitchenOrders();
+        if (active) {
+          setOrders(items);
+          setError(null);
+          if (selectedId) {
+            const stillActive = items.some((order) => order.id === selectedId);
+            if (stillActive) {
+              try {
+                const latestDetail = await getOrderDetails(selectedId);
+                if (active) setDetail(latestDetail);
+              } catch {
+                // Keep the last successfully loaded detail during a transient refresh failure.
+              }
+            } else if (active) {
+              setSelectedId(null);
+              setDetail(null);
+            }
+          }
+        }
+      } catch (cause) {
+        if (active && showError) {
+          setError(cause instanceof ApiError ? cause.message : cause instanceof Error ? cause.message : "دریافت صف آشپزخانه انجام نشد.");
+        }
+      } finally {
+        refreshInFlight.current = false;
+        if (active) setLoading(false);
+      }
+    };
+    void load(true);
+    const intervalId = window.setInterval(() => { void load(true); }, 15000);
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
+  }, [selectedId]);
 
   useEffect(() => {
     if (!selectedId) return;
@@ -93,13 +138,23 @@ export function KitchenBoard({ timeZone }: { timeZone: string }) {
   const readyCount = orders.filter((order) => order.order_status === "ready").length;
 
   async function refreshOrders() {
+    if (refreshInFlight.current) return;
     setRefreshing(true);
     setError(null);
+    refreshInFlight.current = true;
     try {
-      setOrders(await fetchKitchenOrders());
+      const latest = await fetchKitchenOrders();
+      setOrders(latest);
+      if (selectedId && latest.some((order) => order.id === selectedId)) {
+        try { setDetail(await getOrderDetails(selectedId)); } catch { /* retain last detail */ }
+      } else if (selectedId) {
+        setSelectedId(null);
+        setDetail(null);
+      }
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : "بروزرسانی صف آشپزخانه انجام نشد.");
+      setError(cause instanceof ApiError ? cause.message : cause instanceof Error ? cause.message : "بروزرسانی صف آشپزخانه انجام نشد.");
     } finally {
+      refreshInFlight.current = false;
       setRefreshing(false);
     }
   }
