@@ -1655,3 +1655,20 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - تعارض چند پایانه آفلاین از دامنه نسخه خارج است؛ تعارض stale data و replay همان یک پایانه همچنان باید مدیریت شود.
 - وضعیت: تصمیم و طراحی ثبت شد؛ پیاده‌سازی، تست مرورگر/چاپ و آزمون بازیابی هنوز انجام نشده‌اند. این مورد به‌عنوان معیار پذیرش بسته آفلاین در فازهای عملیاتی اضافه شود؛ فاز بسته نمی‌شود.
 
+
+
+## بسته‌های محصولی تکمیلی — POS-OPS-DELIVERY-2026-001 (2026-11-23)
+
+**وضعیت کلی: نیازها در سند تصمیمات ثبت شده‌اند؛ این بسته‌ها هنوز پیاده‌سازی‌شده یا پذیرفته‌شده نیستند.** ترتیب اجرایی باید با وابستگی‌های فازهای موجود هماهنگ شود.
+
+1. **OPS-INSTALL-UPDATE:** ZIP release و installer مرورگری؛ preflight، config امن، migration، health check، قفل installer؛ سپس update داخلی با امضای artifact، manifest/hash، backup gate، compatibility check و recovery.
+2. **OPS-BACKUP-RESTORE:** backup زمان‌بندی‌شده/دستی از DB و فایل‌های ضروری، integrity manifest، حفاظت secrets، restore کنترل‌شده و آزمون restore مستقل.
+3. **OPS-PRINTING:** قرارداد printer adapter، تنظیمات چاپگر و قالب، رسید مشتری/آشپزخانه، کاغذ ۵۸/۸۰، چاپ مجدد auditشده و ماتریس آزمون مدل/مرورگر/سیستم‌عامل.
+4. **OPS-OFFLINE:** specification عملیات مجاز، storage محلی پایدار، شناسه یکتا، recovery پس از restart، queue/sync idempotent، نمایش وضعیت sync، stale catalog/price و conflict handling. تعداد دستگاه‌های هم‌زمان آفلاین و مدت اعتبار همچنان تصمیم باز هستند.
+5. **POS-UX-PERFORMANCE:** بازبینی جریان اصلی فروش، کاهش کلیک و بارگذاری، رفتار لمس/RTL، جلوگیری از overfetch و تعیین معیار عددی performance و آزمون آن.
+6. **REPORTING-DASHBOARD:** تعریف KPI و بازه‌های زمانی، read model، فیلترها، timezone، مجوز و تطبیق ارقام با سفارش/پرداخت/صندوق مرجع.
+7. **AUDIT-ACTIVITY:** تکمیل فهرست رویدادهای حساس، actor/target/outcome/correlation، UI تاریخچه با RBAC و retention؛ عدم ثبت secrets و داده حساس غیرضروری.
+8. **BUSINESS-HOURS-ORDER-ACCEPTANCE:** برنامه هفتگی، exception، override، timezone و جداسازی پذیرش آنلاین از فروش حضوری؛ policy تعطیلی و پیش‌سفارش.
+9. **PAYMENT-SPLIT-UNKNOWN:** طراحی state machine پرداخت چندبخشی و unknown؛ قواعد partial/overpayment/refund/cash shift و reconciliation واقعی provider پیش از هر retry.
+
+**وابستگی‌ها و دروازه پذیرش:** بسته‌های installer/update/backup باید پیش از عرضه تجاری مشتری‌میزبان تکمیل شوند؛ offline و printing باید با سناریوهای قطع اینترنت و سخت‌افزار واقعی آزموده شوند؛ payment split/unknown در gate مالی/پرداخت قرار می‌گیرد. نوشتن تست بدون اجرای آن PASS نیست. فازها بدون تأیید صریح مالک بسته نمی‌شوند.
