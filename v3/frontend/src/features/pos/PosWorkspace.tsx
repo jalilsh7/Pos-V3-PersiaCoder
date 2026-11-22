@@ -433,8 +433,13 @@ export function PosWorkspace() {
       setCreatedOrder((current) => current && current.id === result.order_id
         ? { ...current, orderStatus: result.to_status }
         : current);
-      const details = await getOrderDetails(createdOrder.id);
-      setReceiptOrder(details);
+      try {
+        const details = await getOrderDetails(createdOrder.id);
+        setReceiptOrder(details);
+        setReceiptOrderError(null);
+      } catch {
+        setReceiptOrderError("سفارش پذیرفته شد؛ بروزرسانی جزئیات رسید انجام نشد.");
+      }
     } catch (cause) {
       setAcceptanceError(cause instanceof ApiError
         ? cause.message
