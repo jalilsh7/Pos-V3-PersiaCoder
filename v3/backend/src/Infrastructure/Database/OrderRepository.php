@@ -432,7 +432,7 @@ final readonly class OrderRepository
     ): array {
         $sql = 'SELECT o.public_id, o.order_number, o.source_channel, o.order_status, o.payment_status,
                        o.subtotal_amount, o.tax_amount, o.total_amount, o.currency_code,
-                       o.created_at, f.method AS fulfillment_method,
+                       o.created_at, f.method AS fulfillment_method, f.status AS fulfillment_status,
                        c.public_id AS customer_public_id, c.name AS customer_name
                 FROM pos_orders o
                 LEFT JOIN pos_order_fulfillments f ON f.order_id = o.id AND f.business_id = o.business_id AND f.branch_id = o.branch_id
@@ -504,6 +504,7 @@ final readonly class OrderRepository
             'currency_code' => (string) $row['currency_code'],
             'created_at' => (string) $row['created_at'],
             'fulfillment_method' => $row['fulfillment_method'] === null ? null : (string) $row['fulfillment_method'],
+            'fulfillment_status' => $row['fulfillment_status'] === null ? null : (string) $row['fulfillment_status'],
             'customer' => $row['customer_public_id'] === null ? null : [
                 'id' => (string) $row['customer_public_id'],
                 'name' => (string) $row['customer_name'],
