@@ -306,7 +306,20 @@ final readonly class OrderInventoryLifecycleService
         );
         $q->execute(['business'=>$businessId,'branch'=>$branchId,'order'=>$orderId]);
         $reservation = $q->fetch(PDO::FETCH_ASSOC);
-        if (!$reservation || (string)$reservation['status'] !== 'active') return;
+        if (!$reservation) {
+            $tracked = $this->db->prepare(
+                'SELECT 1 FROM pos_order_items
+                 WHERE business_id=:business AND branch_id=:branch AND order_id=:order
+                   AND recipe_version_id IS NOT NULL
+                 LIMIT 1'
+            );
+            $tracked->execute(['business'=>$businessId,'branch'=>$branchId,'order'=>$orderId]);
+            if ($tracked->fetchColumn() !== false) {
+                throw new HttpException(409, 'stock_reservation_missing', 'برای این سفارش رسپی ثبت شده اما رزرو مواد اولیه پیدا نشد؛ لغو سفارش متوقف شد.');
+            }
+            return;
+        }
+        if ((string)$reservation['status'] !== 'active') return;
         $lines = $this->db->prepare(
             'SELECT id,stock_item_id,location_id,base_quantity FROM pos_stock_reservation_lines
              WHERE business_id=:business AND branch_id=:branch AND reservation_id=:reservation
