@@ -569,3 +569,7 @@ Migration 022 و clean-install schema جدول `pos_customer_consent_events` ر�
 
 ### SMS-TEMPLATE-RECIPIENT-2026-001 — جداسازی شماره مشتری و پیامک تراکنشی (2026-11-22)
 در SmsServiceTemplateOutbox اگر customer_id متصل باشد، فقط مشتری فعال همان business با موبایل معتبر پذیرفته می‌شود؛ گیرنده از شماره پروفایل مشتری انتخاب می‌شود و recipient_phone override فقط در صورت تطابق نرمال‌شده مجاز است. customer_id نامعتبر/غیرفعال دیگر به شماره guest fallback نمی‌کند. پیامک رویداد سفارش تراکنشی است و مستقل از consent تبلیغاتی باقی می‌ماند. مسیر marketing campaign/outbox مستقل هنوز ساخته نشده و ارسال آن مسدود است تا suppression در enqueue و dispatch، بررسی شماره/رضایت در لحظه ارسال و opt-out پیاده شود. اسکریپت قراردادی scripts/check-v3-sms-template-recipient-isolation.php اضافه شد. commits: 13e8eb3, 516d582. تست/اجرای واقعی در این بسته انجام نشده است.
+
+
+### SMS-MARKETING-FOUNDATION-2026-001 — زیرساخت مستقل کمپین تبلیغاتی (2026-11-22)
+Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_campaign_recipients را به‌صورت business-scoped اضافه کرد و clean schema هم‌راستا شد. کمپین پیش‌فرض draft است؛ هر customer در هر campaign یک recipient دارد؛ recipient می‌تواند به consent event مرجع وصل شود، اما این snapshot به‌تنهایی مجوز ارسال نیست. شماره خام ذخیره نمی‌شود. Outbox/worker تراکنشی دست‌نخورده ماند. Static check scripts/check-v3-sms-marketing-campaign-schema.php افزوده شد، اما migration و تست‌ها اجرا نشده‌اند. commits: e970591, e7324be, 7d803f7. API/UI/audience preview/dispatch/opt-out/suppression هنوز باز است و ارسال marketing مسدود می‌ماند.
