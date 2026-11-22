@@ -585,3 +585,12 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 - API جزئیات کمپین اضافه شد. UI فارسی مدیریت draft/list/detail/audience preview در Communications ساخته و به ناوبری متصل شد.
 - کاربر مدیر می‌تواند عنوان، provider body ID و ترتیب متغیرها را ثبت کند؛ مخاطبان فقط پس از بررسی latest consent، شماره فعلی و فعال بودن مشتری وارد snapshot می‌شوند. UI علت‌های exclusion را نشان می‌دهد.
 - ارسال تبلیغاتی در هیچ endpoint یا UI ارائه نشده است. TypeScript/build و تست‌های قراردادی اجرا نشده‌اند؛ قابلیت هنوز runtime-verified نیست.
+
+
+## SMS-MARKETING-SUPPRESSION-2026-001 — بی‌اعتبارسازی مخاطبان آماده‌شده (2026-11-22)
+- CustomerRepository متد business/customer-scoped برای تبدیل recipientهای `eligible` به `suppressed` با reason و evaluated_at اضافه کرد.
+- CustomerService پس از هر consent event (grant/withdrawn)، تغییر شماره و غیرفعال‌شدن مشتری suppression را در همان transaction انجام می‌دهد؛ audit تغییر مشتری شمار recipientهای suppress‌شده را ثبت می‌کند.
+- grant مجدد، snapshot قدیمی را احیا نمی‌کند؛ کمپین جدید باید audience تازه بسازد. وضعیت‌های sent/failed/unknown/queued بازنویسی نمی‌شوند.
+- قرارداد هم‌زمانی: prepare-audience و mutation مشتری با قفل business serialize می‌شوند؛ dispatch آینده نیز باید همان قفل را در claim transaction رعایت و latest consent/phone/active را دوباره بررسی کند.
+- static contract در `scripts/check-v3-sms-marketing-suppression.php` اضافه شد، اما اجرا نشده است. PHP lint، DB integration و build نیز اجرا نشده‌اند.
+- queue/claim/worker، opt-out عمومی و ارسال marketing هنوز وجود ندارند؛ dispatch غیرفعال می‌ماند.
