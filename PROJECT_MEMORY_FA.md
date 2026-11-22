@@ -664,3 +664,17 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 - refresh دستی و polling نیز پس از پایان fetch فعال به runner جاری واگذار می‌شوند؛ مسیرهای تکراری دریافت صف همچنان با یک قفل مشترک کنترل می‌شوند.
 - فایل: `v3/frontend/src/features/kitchen/KitchenBoard.tsx`؛ commits: `a3b978efbdd77e9b2c570b4e5b8d72e5afa4ab2d` و `95567711d3ed0632ecdb8ce18e09914d8f05bb6d`.
 - build/typecheck و تست چرخه mount/unmount هنوز اجرا نشده‌اند.
+
+
+## ORD-FULFILLMENT-01A — همگام‌سازی چرخه دریافت با سفارش (2026-11-23)
+
+- وضعیت fulfillment در همان transaction تغییر وضعیت سفارش بروزرسانی می‌شود: pending، accepted، preparing، ready، completed و cancelled.
+- completed_at در اولین تکمیل ثبت می‌شود؛ سفارش فاقد fulfillment بدون ایجاد رکورد مصنوعی باقی می‌ماند.
+- Order detail، وضعیت fulfillment را از سرور می‌گیرد و OrderCenter آن را جدا از وضعیت سفارش نشان می‌دهد. متن دکمه تکمیل دیگر تحویل فیزیکی را القا نمی‌کند.
+- فایل‌ها: v3/backend/src/Infrastructure/Database/OrderRepository.php، v3/backend/src/Orders/OrderService.php، v3/frontend/src/shared/api/client.ts، v3/frontend/src/features/orders/OrderCenter.tsx.
+- commits: fec9947، 1149b8a، 1213e2e، 3dec79b، 70b4385.
+- تست/build اجرا نشده؛ workflow مستقل dispatch/delivery و پیک هنوز پیاده نشده است.
+
+## DEV-EXECUTION-RULE-2026-001 — قانون اجرای گروهی توسعه (2026-11-23)
+
+درخواست قطعی مالک: کدنویسی‌ها گروهی و زنجیره‌ای انجام شوند تا بیشترین پیشرفت واقعی در هر نوبت حاصل شود. تغییرات مرتبط Backend/API/Frontend و مستندات با هم هماهنگ شوند؛ از خردکردن بی‌دلیل کار و توقف برای تأییدهای کم‌اهمیت پرهیز شود. تست‌های ضروری امنیت، مالی و یکپارچگی و تست نهایی حذف نشوند. بستن فاز فقط با تأیید صریح مالک مجاز است.
