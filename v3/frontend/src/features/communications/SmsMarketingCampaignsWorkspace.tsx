@@ -99,9 +99,9 @@ export function SmsMarketingCampaignsWorkspace() {
       <div className="section-heading"><div><h2>{selected.title}</h2><p>کد قالب {selected.provider_body_id} · شناسه {selected.id}</p></div><StatusBadge variant={selected.status==="prepared"?"success":"warning"}>{statusLabels[selected.status]??selected.status}</StatusBadge></div>
       <div className="sms-marketing-metrics"><div><strong>{selected.recipients.eligible}</strong><span>مخاطب واجد شرایط</span></div><div><strong>{selected.recipients.sent}</strong><span>ارسال‌شده</span></div><div><strong>{selected.recipients.failed}</strong><span>ناموفق</span></div><div><strong>{selected.recipients.unknown}</strong><span>وضعیت نامشخص</span></div></div>
       {preview?<div className="sms-marketing-preview"><h3>نتیجه ارزیابی مخاطبان</h3><p>کل مشتریان بررسی‌شده: <strong>{preview.total_customers}</strong> · واجد شرایط: <strong>{preview.eligible}</strong></p>{exclusionLabels.map(([key,label])=><div key={key}><span>{label}</span><strong>{preview[key]}</strong></div>)}</div>:null}
-      {selected.status==="draft"?<Button onClick={prepareAudience} disabled={preparing}><ShieldCheck size={16}/>{preparing?"در حال بررسی رضایت‌ها…":"بررسی رضایت و آماده‌سازی مخاطبان"}</Button>:<Notice variant="success"><CheckCircle2 size={16}/>فهرست مخاطبان این کمپین آماده شده است؛ برای جلوگیری از تغییر ناخواسته، snapshot قابل بازسازی نیست.</Notice>}
+      {selected.status==="draft"?<Button onClick={prepareAudience} disabled={preparing}><ShieldCheck size={16}/>{preparing?"در حال بررسی رضایت‌ها…":"بررسی رضایت و آماده‌سازی مخاطبان"}</Button>:<Notice variant="info"><CheckCircle2 size={16}/>فهرست مخاطبان این کمپین آماده شده است؛ برای جلوگیری از تغییر ناخواسته، snapshot قابل بازسازی نیست.</Notice>}
     </Surface>:null}
     {error?<p className="sms-outbox-error" role="alert"><AlertCircle size={16}/>{error}</p>:null}
-    {notice?<Notice variant="success">{notice}</Notice>:null}
+    {notice?<Notice variant="info">{notice}</Notice>:null}
   </div>;
 }
