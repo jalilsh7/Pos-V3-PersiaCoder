@@ -144,6 +144,20 @@ try {
         return $customerController;
     };
 
+    $smsMarketingCampaignController = null;
+    $getSmsMarketingCampaignController = static function () use (&$smsMarketingCampaignController, $getConnection, $configuration): SmsMarketingCampaignController {
+        if (!$smsMarketingCampaignController instanceof SmsMarketingCampaignController) {
+            $smsMarketingCampaignController = new SmsMarketingCampaignController(
+                new SmsMarketingCampaignService(
+                    $getConnection(),
+                    $configuration->applicationKey,
+                    new PermissionService(new PermissionRepository($getConnection())),
+                ),
+            );
+        }
+        return $smsMarketingCampaignController;
+    };
+
     $orderPaymentController = null;
     $getOrderPaymentController = static function () use (&$orderPaymentController, $getConnection, $configuration): OrderPaymentController {
         if (!$orderPaymentController instanceof OrderPaymentController) {
@@ -732,6 +746,21 @@ try {
     $router->add('PATCH', '/api/v1/inventory/locations/{locationPublicId}',
         static fn (Request $request, array $parameters): Response => $getInventoryController()->updateLocation($request, $parameters),
         [$sessionMiddleware, $makePermissionMiddleware('inventory.manage', true), $csrfMiddleware, $originMiddleware],
+    );
+
+    $router->add('GET', '/api/v1/communications/sms/marketing/campaigns',
+        static fn (Request $request): Response => $getSmsMarketingCampaignController()->list($request),
+        [$sessionMiddleware, $makePermissionMiddleware('communications.sms.marketing.manage', false)],
+    );
+
+    $router->add('POST', '/api/v1/communications/sms/marketing/campaigns',
+        static fn (Request $request): Response => $getSmsMarketingCampaignController()->create($request),
+        [$sessionMiddleware, $makePermissionMiddleware('communications.sms.marketing.manage', false), $csrfMiddleware, $originMiddleware],
+    );
+
+    $router->add('POST', '/api/v1/communications/sms/marketing/campaigns/{campaignPublicId}/prepare-audience',
+        static fn (Request $request, array $parameters): Response => $getSmsMarketingCampaignController()->prepareAudience($request, $parameters),
+        [$sessionMiddleware, $makePermissionMiddleware('communications.sms.marketing.manage', false), $csrfMiddleware, $originMiddleware],
     );
 
     $router->add('GET', '/api/v1/audit-logs',
