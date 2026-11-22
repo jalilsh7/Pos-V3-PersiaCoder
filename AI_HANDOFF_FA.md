@@ -1135,3 +1135,10 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - آماده‌سازی idempotent است؛ campaign prepared دوباره recipient نمی‌سازد. endpoint ارسال وجود ندارد و transactional outbox دست‌نخورده است.
 - Contract script: `scripts/check-v3-sms-marketing-campaign-backend.php` اضافه شد اما اجرا نشده؛ PHP lint، DB migration/integration، build و تست runtime نیز اجرا نشده‌اند.
 - گام بعد: API جزئیات و UI draft/audience preview؛ سپس طراحی suppression/opt-out و queue مستقل. قبل از worker باید consent/phone revalidation در لحظه dispatch و claim رقابتی طراحی شود. ارسال تبلیغاتی فعلاً ممنوع است.
+
+## آخرین بسته — UI و جزئیات کمپین پیامکی (2026-11-22)
+- API جزئیات کمپین اضافه شد: GET `/api/v1/communications/sms/marketing/campaigns/{campaignPublicId}` با scope و permission.
+- Frontend فایل `v3/frontend/src/features/communications/SmsMarketingCampaignsWorkspace.tsx`، client API و ناوبری App اضافه شد. UI ایجاد draft، فهرست/جزئیات، ترتیب متغیرها، snapshot مخاطبان و دلایل exclusion را ارائه می‌دهد.
+- UI و API فاقد ارسال هستند؛ آماده‌سازی snapshot به معنی اجازه dispatch نیست.
+- Contract guard `scripts/check-v3-sms-marketing-campaign-backend.php` گسترش یافته، اما اجرا نشده. Build/typecheck، PHP lint، migrations و DB integration اجرا نشده‌اند.
+- گام بعدی: طراحی و پیاده‌سازی suppression/opt-out و queue مستقل، همراه revalidation و قفل/claim اتمیک درست قبل dispatch. تا آن زمان ارسال marketing خاموش بماند.
