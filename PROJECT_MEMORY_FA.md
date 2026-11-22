@@ -639,3 +639,7 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 - فایل: `v3/frontend/src/features/kitchen/KitchenBoard.tsx`.
 - commit: `9a418e2d69add2aacadaf991c690472b1114cda4`.
 - وضعیت: کدنویسی ثبت شده، build و runtime test اجرا نشده؛ فاز KDS بسته نیست.
+
+
+## KDS-01B — صف درخواست‌های بروزرسانی آشپزخانه (2026-11-23)
+در KitchenBoard درخواست refresh جدید هنگام اجرای دریافت قبلی دیگر حذف نمی‌شود؛ با ref معوق ثبت و پس از اتمام fetch فعال اجرا می‌شود. این اصلاح polling، refresh دستی و refresh پس از تغییر وضعیت را پوشش می‌دهد. commit: `5147c2e5ff3880c1fa4701eb3b5c656343a3e9a2`. تست build/typecheck/browser هنوز اجرا نشده است.
