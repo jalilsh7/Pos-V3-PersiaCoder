@@ -120,3 +120,11 @@ PHP 8.2+ / PDO، MySQL یا MariaDB، React/TypeScript/Vite، REST/JSON و adapt
 
 ---
 **PersiaCoder.ir — Powered by PersiaCoder.ir**
+
+## تصمیم استقرار — هاست مشتری بدون Node.js runtime
+
+- مطابق تصمیم `HOSTING-NO-NODE-RUNTIME-2026-001`، Node.js/npm فقط می‌توانند در محیط توسعه یا CI برای build artifact استفاده شوند؛ هاست مشتری نباید Node runtime یا process manager لازم داشته باشد.
+- خروجی Frontend در بسته release به‌صورت فایل‌های استاتیک آماده تحویل می‌شود؛ PHP 8.2+ و PDO/MySQL مسئول Backend/API هستند.
+- معماری jobهای زمان‌بندی‌شده/پس‌زمینه باید با cron و اجرای کوتاه‌عمر PHP در هاست‌های متداول سازگار طراحی شود؛ daemon دائمی Node الزام محصول نیست.
+- installer باید پیش‌نیازهای واقعی PHP، افزونه‌ها، DB، دسترسی فایل و امکانات cron را preflight کند. سازگاری هاست اشتراکی با تست ماتریس اثبات می‌شود، نه با ادعای عمومی.
+
