@@ -1301,8 +1301,8 @@ export async function getSmsMarketingCampaign(id: string): Promise<SmsMarketingC
 }
 export async function createSmsMarketingCampaign(payload: {
   title: string; provider_body_id: number; variable_keys: string[];
-}): Promise<SmsMarketingCampaignDetail> {
-  const data = await request<{ campaign: SmsMarketingCampaignDetail }>("/communications/sms/marketing/campaigns", {
+}): Promise<{ id: string; title: string; status: "draft" }> {
+  const data = await request<{ campaign: { id: string; title: string; status: "draft" } }>("/communications/sms/marketing/campaigns", {
     method: "POST",
     headers: { "Idempotency-Key": globalThis.crypto.randomUUID() },
     body: JSON.stringify(payload),
