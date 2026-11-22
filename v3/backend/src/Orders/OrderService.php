@@ -189,6 +189,7 @@ final readonly class OrderService
                 'table_session_id' => $order['table_session_public_id'] === null ? null : (string) $order['table_session_public_id'],
                 'fulfillment' => $order['fulfillment_method'] === null ? null : [
                     'method' => (string) $order['fulfillment_method'],
+                    'status' => (string) $order['fulfillment_status'],
                     'recipient_name' => $order['recipient_name_snapshot'] === null ? null : (string) $order['recipient_name_snapshot'],
                     'recipient_phone' => $order['recipient_phone_snapshot'] === null ? null : (string) $order['recipient_phone_snapshot'],
                     'address' => $address,
@@ -582,6 +583,25 @@ final readonly class OrderService
                     (int) $order['id'],
                     $targetStatus,
                 );
+
+                // Keep the fulfillment lifecycle in the same transaction as the order state.
+                $fulfillmentStatus = match ($targetStatus) {
+                    'draft', 'awaiting_payment' => 'pending',
+                    'accepted' => 'accepted',
+                    'preparing' => 'preparing',
+                    'ready' => 'ready',
+                    'completed' => 'completed',
+                    'cancelled', 'rejected' => 'cancelled',
+                    default => null,
+                };
+                if ($fulfillmentStatus !== null) {
+                    $this->orders->updateFulfillmentStatus(
+                        $scope->businessId,
+                        (int) $scope->branchId,
+                        (int) $order['id'],
+                        $fulfillmentStatus,
+                    );
+                }
                 $this->orders->createStatusEvent(
                     $scope->businessId,
                     (int) $scope->branchId,
