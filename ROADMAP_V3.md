@@ -1584,3 +1584,11 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - static contract guard: scripts/check-v3-sms-marketing-campaign-schema.php (افزوده شد، اجرا نشده).
 - commits: e970591 migration، e7324be clean schema، 7d803f7 static check.
 - باز: campaign API/UI، audience filters/preview، consent+phone revalidation در enqueue و dispatch، opt-out، encrypted queue payload، worker مستقل، rate limits، delivery reconciliation و تست‌های concurrency. ارسال بازاریابی تا تکمیل و آزمون این کنترل‌ها ممنوع است.
+
+## SMS-MARKETING-API-2026-001 — Backend کمپین و آماده‌سازی مخاطب (2026-11-22)
+- Migration 024 مجوز مستقل `communications.sms.marketing.manage` را اضافه و برای manager seed می‌کند؛ clean-install schema هم‌راستا شد.
+- Backend repository/service/controller و routeهای فهرست، ایجاد draft و prepare-audience اضافه شدند. نوشتن‌ها با session، permission، CSRF، same-origin، business scope، idempotency و audit محافظت می‌شوند.
+- Audience preparation آخرین consent event را بر اساس id انتخاب می‌کند؛ فقط مشتری فعال با شماره ایرانی معتبر و latest decision=granted که recipient_phone_normalized با شماره فعلی یکسان باشد وارد snapshot می‌شود. مشتریان حذف‌شده بر اساس علت شمارش می‌شوند؛ شماره خام ذخیره نمی‌شود.
+- کمپین بعد از prepare به prepared می‌رود؛ عملیات ارسال/dispatch وجود ندارد و مسیر transactional SMS تغییر نکرده است.
+- Contract script: `scripts/check-v3-sms-marketing-campaign-backend.php` اضافه شد، اما اجرا نشده است. PHP lint، migration، DB integration و build نیز اجرا نشده‌اند.
+- باقی‌مانده: جزئیات کمپین در API، UI مدیریت/پیش‌نمایش، سیاست opt-out/suppression، queue رمزگذاری‌شده مستقل، revalidation و lock/claim لحظه dispatch، worker، rate limit و delivery reconciliation. ارسال marketing همچنان غیرفعال.
