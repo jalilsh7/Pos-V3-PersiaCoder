@@ -165,6 +165,21 @@ final readonly class CustomerRepository
         ];
     }
 
+    /** Suppresses prepared marketing recipients after a consent/profile change. Must run inside the caller's business-locked transaction. */
+    public function suppressEligibleMarketingRecipients(int $businessId, int $customerId, string $reason): int
+    {
+        if (!in_array($reason, ['consent_changed', 'customer_phone_changed', 'customer_inactive'], true)) {
+            throw new \\InvalidArgumentException('Unsupported marketing suppression reason.');
+        }
+        $statement = $this->connection->prepare(
+            "UPDATE pos_sms_marketing_campaign_recipients
+             SET status = 'suppressed', suppression_reason = ?, evaluated_at = CURRENT_TIMESTAMP(3)
+             WHERE business_id = ? AND customer_id = ? AND status = 'eligible'"
+        );
+        $statement->execute([$reason, $businessId, $customerId]);
+        return $statement->rowCount();
+    }
+
     /** @return array<string,mixed>|null */
     public function latestConsent(int $businessId, int $customerId, string $purpose = 'marketing', string $channel = 'sms'): ?array
     {
