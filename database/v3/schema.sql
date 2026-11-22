@@ -1148,3 +1148,12 @@ CREATE TABLE pos_discount_redemptions (
   CONSTRAINT fk_discount_redemptions_customer FOREIGN KEY (customer_id) REFERENCES pos_customers(id) ON DELETE RESTRICT,
   CONSTRAINT chk_discount_redemption_status CHECK (status IN ('applied','reversed'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO app_permissions (code, description)
+VALUES ('communications.sms.marketing.manage', 'Create and prepare SMS marketing campaigns');
+
+INSERT IGNORE INTO app_role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM app_roles r
+INNER JOIN app_permissions p ON p.code = 'communications.sms.marketing.manage'
+WHERE r.code = 'manager';
