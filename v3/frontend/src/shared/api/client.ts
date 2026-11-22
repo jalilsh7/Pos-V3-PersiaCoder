@@ -1259,3 +1259,62 @@ export async function getSmsServiceOutboxMessages(filters: { status?: string; li
   query.set("limit", String(filters.limit ?? 50));
   return request<{ messages: SmsServiceOutboxMessage[] }>(`/communications/sms/service-outbox?${query.toString()}`);
 }
+
+export type SmsMarketingCampaignSummary = {
+  id: string;
+  title: string;
+  provider_body_id: number;
+  status: "draft" | "prepared" | "paused" | "cancelled" | "completed";
+  created_at: string;
+  updated_at: string;
+  eligible_count: number;
+};
+export type SmsMarketingCampaignDetail = {
+  id: string;
+  title: string;
+  provider_code: string;
+  provider_body_id: number;
+  variable_keys: string[];
+  status: SmsMarketingCampaignSummary["status"];
+  scheduled_at: string | null;
+  created_at: string;
+  updated_at: string;
+  recipients: { eligible: number; queued: number; sent: number; failed: number; unknown: number; suppressed: number };
+};
+export type SmsMarketingAudiencePreview = {
+  total_customers: number;
+  eligible: number;
+  inactive: number;
+  no_phone: number;
+  no_consent: number;
+  withdrawn: number;
+  invalidated: number;
+  stale_phone: number;
+};
+export async function getSmsMarketingCampaigns(): Promise<SmsMarketingCampaignSummary[]> {
+  const data = await request<{ campaigns: SmsMarketingCampaignSummary[] }>("/communications/sms/marketing/campaigns");
+  return data.campaigns;
+}
+export async function getSmsMarketingCampaign(id: string): Promise<SmsMarketingCampaignDetail> {
+  const data = await request<{ campaign: SmsMarketingCampaignDetail }>(`/communications/sms/marketing/campaigns/${encodeURIComponent(id)}`);
+  return data.campaign;
+}
+export async function createSmsMarketingCampaign(payload: {
+  title: string; provider_body_id: number; variable_keys: string[];
+}): Promise<SmsMarketingCampaignDetail> {
+  const data = await request<{ campaign: SmsMarketingCampaignDetail }>("/communications/sms/marketing/campaigns", {
+    method: "POST",
+    headers: { "Idempotency-Key": globalThis.crypto.randomUUID() },
+    body: JSON.stringify(payload),
+  });
+  return data.campaign;
+}
+export async function prepareSmsMarketingAudience(id: string): Promise<{
+  campaign: { id: string; status: "prepared"; audience?: SmsMarketingAudiencePreview; recipients?: SmsMarketingCampaignDetail["recipients"] };
+}> {
+  return request(`/communications/sms/marketing/campaigns/${encodeURIComponent(id)}/prepare-audience`, {
+    method: "POST",
+    headers: { "Idempotency-Key": globalThis.crypto.randomUUID() },
+    body: "{}",
+  });
+}
