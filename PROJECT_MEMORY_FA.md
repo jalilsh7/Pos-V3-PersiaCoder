@@ -621,3 +621,12 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 - فایل‌ها: `v3/frontend/src/features/pos/PosWorkspace.tsx`، `v3/frontend/src/features/pos/pos.css`.
 - commits: `27685ec7ea7916af8ab40b54b580cc7cfdcff43a`، `773b41693e127d19b1cc318977ace9534fe75f3a`، `569b8ba773baca783a0dd929f9910389c7378f95`.
 - وضعیت: کدنویسی انجام شده؛ تست build/typecheck و مرورگر/چاپ و پذیرش موجودی هنوز انجام نشده‌اند. این مورد تکمیل‌شده تجاری یا بسته‌شدن فاز ۴ محسوب نمی‌شود.
+
+
+## POS-01C — چاپ مجدد رسید از مرکز سفارش‌ها (2026-11-23)
+
+- OrderCenter برای هر سفارش بازشده امکان چاپ مجدد رسید دارد؛ رسید از جزئیات سفارش و گردش پرداخت/بازپرداخت سرور تولید می‌شود و snapshot اقلام/گزینه‌ها، مبلغ کل، وضعیت‌های مستقل و مانده را نشان می‌دهد.
+- چاپ از طریق print مرورگر و قالب ۸۰ میلی‌متری است؛ تضمین چاپ بی‌صدا، انتخاب چاپگر، چاپ ۵۸ میلی‌متری یا KOT در این بسته نیست.
+- فایل‌ها: `v3/frontend/src/features/orders/OrderCenter.tsx`، `v3/frontend/src/features/orders/orders.css`، `v3/frontend/src/features/pos/pos.css`.
+- commits: `594076fb69fe80521a3c722d1d70d65548008a9a`، `f2405b858ab85ef937bf0a2e2e89f6cfaa1c6bf3`، `b0d49b8e85664a7f3440ed728974a57542704baf`.
+- وضعیت: کدنویسی انجام شده؛ build و چاپ واقعی آزموده نشده و فاز ۴/۸ بسته نشده است.
