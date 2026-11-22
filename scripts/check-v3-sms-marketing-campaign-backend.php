@@ -32,7 +32,9 @@ $checks = [
         str_contains($repository, 'insertEligibleRecipient')
         && !str_contains($repository, 'phone_normalized, status'),
     'API routes require session, dedicated permission, CSRF and same-origin on writes' =>
-        str_contains($routes, '/api/v1/communications/sms/marketing/campaigns')
+        str_contains($routes, 'use PersiaCoder\\\\PosV3\\\\Communications\\\\Sms\\\\SmsMarketingCampaignController;')
+        && str_contains($routes, 'use PersiaCoder\\\\PosV3\\\\Communications\\\\Sms\\\\SmsMarketingCampaignService;')
+        && str_contains($routes, '/api/v1/communications/sms/marketing/campaigns')
         && str_contains($routes, "\$csrfMiddleware")
         && str_contains($routes, "\$originMiddleware"),
     'campaign feature has no send or dispatch action' =>
