@@ -12,8 +12,11 @@ import {
   ApiError,
   captureCashPayment,
   createPosOrder,
+  getOrderDetails,
   getOpenCashPaymentSessions,
   getPosCatalogProductDetails,
+  transitionOrder,
+  type OrderDetail,
   searchPosCustomers,
   getPosCatalogProducts,
   type OpenCashPaymentSession,
@@ -136,8 +139,13 @@ export function PosWorkspace() {
   const [submitting, setSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [createdOrder, setCreatedOrder] = useState<{
-    number: number; total: number; id: string; paymentStatus: string; capturedAmount: number; dueAmount: number;
+    number: number; total: number; id: string; orderStatus: string; paymentStatus: string; capturedAmount: number; dueAmount: number;
   } | null>(null);
+  const [receiptOrder, setReceiptOrder] = useState<OrderDetail | null>(null);
+  const [receiptOrderLoading, setReceiptOrderLoading] = useState(false);
+  const [receiptOrderError, setReceiptOrderError] = useState<string | null>(null);
+  const [acceptingOrder, setAcceptingOrder] = useState(false);
+  const [acceptanceError, setAcceptanceError] = useState<string | null>(null);
   const [openCashSessions, setOpenCashSessions] = useState<OpenCashPaymentSession[]>([]);
   const [cashSessionId, setCashSessionId] = useState("");
   const [paymentAmount, setPaymentAmount] = useState("");
@@ -148,6 +156,7 @@ export function PosWorkspace() {
   } | null>(null);
   const idempotencyAttempt = useRef<{ signature: string; key: string } | null>(null);
   const cashPaymentAttempt = useRef<{ signature: string; key: string } | null>(null);
+  const receiptRequestVersion = useRef(0);
 
   useEffect(() => {
     let active = true;
@@ -263,6 +272,10 @@ export function PosWorkspace() {
     setSelectedOptions([]);
     setSelectedVariantId("");
     setCreatedOrder(null);
+    setReceiptOrder(null);
+    setReceiptOrderError(null);
+    setAcceptanceError(null);
+    receiptRequestVersion.current += 1;
     setActionError(null);
   }
 
@@ -321,6 +334,10 @@ export function PosWorkspace() {
   function clearCart() {
     setCart([]);
     setCreatedOrder(null);
+    setReceiptOrder(null);
+    setReceiptOrderError(null);
+    setAcceptanceError(null);
+    receiptRequestVersion.current += 1;
     setActionError(null);
     idempotencyAttempt.current = null;
   }
@@ -361,10 +378,28 @@ export function PosWorkspace() {
         number: order.order_number,
         total: order.total_amount,
         id: order.id,
+        orderStatus: order.order_status,
         paymentStatus: order.payment_status,
         capturedAmount: 0,
         dueAmount: order.total_amount,
       });
+      setReceiptOrder(null);
+      setReceiptOrderError(null);
+      setAcceptanceError(null);
+      const receiptVersion = ++receiptRequestVersion.current;
+      setReceiptOrderLoading(true);
+      void getOrderDetails(order.id)
+        .then((details) => {
+          if (receiptRequestVersion.current === receiptVersion) setReceiptOrder(details);
+        })
+        .catch((cause: unknown) => {
+          if (receiptRequestVersion.current === receiptVersion) {
+            setReceiptOrderError(cause instanceof ApiError ? cause.message : "جزئیات رسید دریافت نشد؛ سفارش ثبت‌شده محفوظ است.");
+          }
+        })
+        .finally(() => {
+          if (receiptRequestVersion.current === receiptVersion) setReceiptOrderLoading(false);
+        });
       setPaymentAmount(String(order.total_amount));
       setPaymentError(null);
       setLastReceipt(null);
@@ -386,6 +421,26 @@ export function PosWorkspace() {
       setActionError(message);
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function acceptOrderForPreparation() {
+    if (!createdOrder || createdOrder.dueAmount !== 0 || createdOrder.orderStatus !== "draft" || acceptingOrder) return;
+    setAcceptingOrder(true);
+    setAcceptanceError(null);
+    try {
+      const result = await transitionOrder(createdOrder.id, "accepted");
+      setCreatedOrder((current) => current && current.id === result.order_id
+        ? { ...current, orderStatus: result.to_status }
+        : current);
+      const details = await getOrderDetails(createdOrder.id);
+      setReceiptOrder(details);
+    } catch (cause) {
+      setAcceptanceError(cause instanceof ApiError
+        ? cause.message
+        : cause instanceof Error ? cause.message : "پذیرش سفارش انجام نشد.");
+    } finally {
+      setAcceptingOrder(false);
     }
   }
 
@@ -452,9 +507,8 @@ export function PosWorkspace() {
         </div>
       </div>
 
-      <Notice variant="warning">
-        ثبت سفارش و محاسبه قیمت در سرور انجام می‌شود. سفارش ابتدا به‌صورت «پیش‌نویس» و پرداخت‌نشده ثبت می‌شود؛
-        پس از ثبت، دریافت نقدی از طریق شیفت باز صندوق امکان‌پذیر است. تخفیف و ثبت مشتری هنوز در این صفحه فعال نیست.
+      <Notice variant="info">
+        قیمت و ثبت سفارش در سرور اعتبارسنجی می‌شود. پس از تسویه کامل، می‌توانید سفارش را صریحاً بپذیرید تا برای آماده‌سازی ارسال و موجودی مواد اولیه رزرو شود.
       </Notice>
       {catalogError ? <div className="auth-error" role="alert">{catalogError}</div> : null}
       {actionError ? <div className="auth-error" role="alert">{actionError}</div> : null}
@@ -464,6 +518,21 @@ export function PosWorkspace() {
           مبلغ کل: {money(createdOrder.total)} تومان · دریافت‌شده: {money(createdOrder.capturedAmount)} تومان · مانده: {money(createdOrder.dueAmount)} تومان
           · وضعیت پرداخت: {createdOrder.paymentStatus === "paid" ? "تسویه‌شده" : createdOrder.paymentStatus === "partially_paid" ? "پرداخت جزئی" : "پرداخت‌نشده"}
         </div>
+      ) : null}
+      {acceptanceError ? <div className="auth-error" role="alert">{acceptanceError}</div> : null}
+      {createdOrder && createdOrder.dueAmount === 0 && createdOrder.orderStatus === "draft" ? (
+        <Surface padding="md" className="pos-payment-panel">
+          <div className="pos-payment-heading">
+            <div><h2>تسویه کامل شد</h2><p>برای ارسال سفارش به صف آماده‌سازی، پذیرش را تأیید کنید. این کار موجودی مواد اولیه رسپی را رزرو می‌کند.</p></div>
+            <StatusBadge variant="success">پرداخت کامل</StatusBadge>
+          </div>
+          <Button onClick={() => { void acceptOrderForPreparation(); }} disabled={acceptingOrder}>
+            {acceptingOrder ? "در حال پذیرش..." : "پذیرش سفارش و ارسال به آماده‌سازی"}
+          </Button>
+        </Surface>
+      ) : null}
+      {createdOrder && createdOrder.orderStatus === "accepted" ? (
+        <Notice variant="success">سفارش پذیرفته شد و برای آماده‌سازی در مرکز سفارش‌ها قرار گرفت.</Notice>
       ) : null}
       {createdOrder && createdOrder.dueAmount > 0 ? (
         <Surface padding="md" className="pos-payment-panel">
@@ -510,16 +579,42 @@ export function PosWorkspace() {
         </Surface>
       ) : null}
 
-      {lastReceipt ? (
-        <section className="pos-receipt" aria-label="رسید دریافت وجه">
+      {createdOrder ? (
+        <section className="pos-receipt" aria-label="رسید سفارش">
           <div className="pos-receipt-brand">PersiaCoder.ir</div>
-          <h2>رسید دریافت وجه</h2>
-          <div className="pos-receipt-row"><span>شماره سفارش</span><strong>{money(lastReceipt.orderNumber)}</strong></div>
-          <div className="pos-receipt-row"><span>روش پرداخت</span><strong>نقدی</strong></div>
-          <div className="pos-receipt-row"><span>مبلغ این دریافت</span><strong>{money(lastReceipt.amount)} تومان</strong></div>
-          <div className="pos-receipt-row"><span>مانده سفارش</span><strong>{money(lastReceipt.dueAmount)} تومان</strong></div>
-          <div className="pos-receipt-meta">شناسه پرداخت: {lastReceipt.paymentId}</div>
-          <div className="pos-receipt-meta">زمان ثبت: {lastReceipt.capturedAt}</div>
+          <h2>{createdOrder.dueAmount === 0 ? "رسید فروش" : "رسید سفارش"}</h2>
+          <div className="pos-receipt-row"><span>شماره سفارش</span><strong>{money(createdOrder.number)}</strong></div>
+          <div className="pos-receipt-row"><span>وضعیت سفارش</span><strong>{createdOrder.orderStatus === "accepted" ? "پذیرفته‌شده" : "در انتظار پذیرش"}</strong></div>
+          <div className="pos-receipt-row"><span>وضعیت پرداخت</span><strong>{createdOrder.dueAmount === 0 ? "تسویه‌شده" : createdOrder.capturedAmount > 0 ? "پرداخت بخشی" : "پرداخت‌نشده"}</strong></div>
+          {receiptOrderLoading ? <div className="pos-receipt-meta">در حال دریافت اقلام سفارش...</div> : null}
+          {receiptOrderError ? <div className="pos-receipt-meta">{receiptOrderError}</div> : null}
+          {receiptOrder?.order.id === createdOrder.id ? (
+            <>
+              <div className="pos-receipt-divider" />
+              {receiptOrder.items.map((item, index) => (
+                <div className="pos-receipt-item" key={`${createdOrder.id}-${index}`}>
+                  <div><strong>{item.name}{item.variant_name ? ` · ${item.variant_name}` : ""}</strong><small>{item.quantity} × {money(item.unit_price_amount)} تومان</small></div>
+                  <b>{money(item.line_total_amount)} تومان</b>
+                  {item.options.length ? <small className="pos-receipt-options">{item.options.map((option) => `${option.group_name}: ${option.name}`).join("، ")}</small> : null}
+                </div>
+              ))}
+              <div className="pos-receipt-divider" />
+              <div className="pos-receipt-row"><span>جمع جزء</span><strong>{money(receiptOrder.order.subtotal_amount)} تومان</strong></div>
+              {receiptOrder.order.discount_amount > 0 ? <div className="pos-receipt-row"><span>تخفیف</span><strong>−{money(receiptOrder.order.discount_amount)} تومان</strong></div> : null}
+              {receiptOrder.order.tax_amount > 0 ? <div className="pos-receipt-row"><span>مالیات</span><strong>{money(receiptOrder.order.tax_amount)} تومان</strong></div> : null}
+              <div className="pos-receipt-row"><strong>مبلغ کل</strong><strong>{money(receiptOrder.order.total_amount)} تومان</strong></div>
+            </>
+          ) : null}
+          {lastReceipt && lastReceipt.orderNumber === createdOrder.number ? (
+            <>
+              <div className="pos-receipt-divider" />
+              <h3>آخرین دریافت نقدی</h3>
+              <div className="pos-receipt-row"><span>مبلغ این دریافت</span><strong>{money(lastReceipt.amount)} تومان</strong></div>
+              <div className="pos-receipt-row"><span>مانده سفارش</span><strong>{money(lastReceipt.dueAmount)} تومان</strong></div>
+              <div className="pos-receipt-meta">شناسه پرداخت: {lastReceipt.paymentId}</div>
+              <div className="pos-receipt-meta">زمان ثبت: {lastReceipt.capturedAt}</div>
+            </>
+          ) : null}
           <div className="pos-receipt-footer">Powered by PersiaCoder.ir</div>
           <Button className="pos-receipt-print" onClick={() => window.print()}>چاپ رسید</Button>
         </section>
