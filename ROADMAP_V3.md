@@ -1592,3 +1592,10 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - کمپین بعد از prepare به prepared می‌رود؛ عملیات ارسال/dispatch وجود ندارد و مسیر transactional SMS تغییر نکرده است.
 - Contract script: `scripts/check-v3-sms-marketing-campaign-backend.php` اضافه شد، اما اجرا نشده است. PHP lint، migration، DB integration و build نیز اجرا نشده‌اند.
 - باقی‌مانده: جزئیات کمپین در API، UI مدیریت/پیش‌نمایش، سیاست opt-out/suppression، queue رمزگذاری‌شده مستقل، revalidation و lock/claim لحظه dispatch، worker، rate limit و delivery reconciliation. ارسال marketing همچنان غیرفعال.
+
+## تکمیل بسته رابط کمپین پیامکی — 2026-11-22
+- API جزئیات کمپین `GET /communications/sms/marketing/campaigns/{campaignPublicId}` اضافه شد؛ فهرست، ایجاد draft و prepare-audience از بسته قبلی حفظ شدند.
+- Frontend: `SmsMarketingCampaignsWorkspace.tsx`، توابع client، استایل واکنش‌گرا و گزینه ناوبری «کمپین تبلیغاتی پیامک» اضافه شدند.
+- مدیر می‌تواند draft بسازد، کمپین را باز کند، وضعیت و شمارنده‌ها را ببیند و مخاطبان را آماده کند؛ علت‌های حذف رضایت/شماره/فعال‌بودن نمایش داده می‌شود.
+- هیچ عملیات ارسال در API یا UI وجود ندارد. snapshot مخاطب، رضایت را فقط در زمان آماده‌سازی نشان می‌دهد؛ revalidation در زمان ارسال همچنان الزام قطعی است.
+- Static contract guard گسترش یافت ولی اجرا نشده؛ TypeScript/build، PHP lint، migration و DB integration نیز اجرا نشده‌اند.
