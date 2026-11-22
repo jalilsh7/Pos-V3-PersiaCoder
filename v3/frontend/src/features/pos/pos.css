@@ -136,6 +136,14 @@
 .pos-receipt-row span { color: var(--pc-muted); }
 .pos-receipt-row strong { text-align: left; }
 .pos-receipt-meta { overflow-wrap: anywhere; color: var(--pc-muted); font-size: 8px; direction: ltr; text-align: left; }
+.pos-receipt-divider { border-top: 1px dashed #aebbb7; margin: 8px 0; }
+.pos-receipt-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 8px; padding: 5px 0; border-bottom: 1px dotted #d7dfdc; }
+.pos-receipt-item > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pos-receipt-item strong { font-size: 10px; line-height: 1.7; overflow-wrap: anywhere; }
+.pos-receipt-item small, .pos-receipt-options { color: #596963; font-size: 8px; line-height: 1.7; }
+.pos-receipt-item > b { font-size: 9px; white-space: nowrap; }
+.pos-receipt-options { grid-column: 1 / -1; }
+.pos-receipt h3 { margin: 8px 0 4px; font-size: 10px; color: #33423d; }
 .pos-receipt-footer { padding-top: 10px; border-top: 1px dashed var(--pc-line); color: var(--pc-muted); text-align: center; font-size: 8px; }
 .pos-receipt-print { width: 100%; }
 @media print {
