@@ -32,6 +32,8 @@ use PersiaCoder\PosV3\Communications\Sms\SmsOutboxReadController;
 use PersiaCoder\PosV3\Communications\Sms\SmsOutboxReadService;
 use PersiaCoder\PosV3\Communications\Sms\SmsServiceTemplateOutboxReadController;
 use PersiaCoder\PosV3\Communications\Sms\SmsServiceTemplateOutboxReadService;
+use PersiaCoder\PosV3\Communications\Sms\SmsMarketingCampaignController;
+use PersiaCoder\PosV3\Communications\Sms\SmsMarketingCampaignService;
 use PersiaCoder\PosV3\Auth\BranchManagementController;
 use PersiaCoder\PosV3\Auth\BranchManagementService;
 use PersiaCoder\PosV3\Auth\BusinessSetupService;
