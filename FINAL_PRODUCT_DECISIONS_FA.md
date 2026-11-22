@@ -639,3 +639,12 @@
 - رابط فارسی مدیریت کمپین به ناوبری ارتباطات افزوده شد: ایجاد draft، فهرست، مشاهده جزئیات، انتخاب ترتیب متغیرها و آماده‌سازی snapshot مخاطبان با نمایش علت‌های حذف.
 - UI عمداً هیچ دکمه ارسال ندارد؛ وضعیت prepared فقط به معنی snapshot است و ارسال مجاز نیست.
 - نوع پاسخ client برای ایجاد کمپین با قرارداد واقعی API همسان شد. Contract guard توسعه یافت اما هنوز اجرا نشده است.
+
+
+## SMS-MARKETING-SUPPRESSION-2026-001 — بی‌اعتبارسازی snapshot کمپین پس از تغییر رضایت یا پروفایل (2026-11-22)
+- recipient آماده‌شده فقط snapshot تاریخی است و مجوز دائمی ارسال محسوب نمی‌شود.
+- هر رخداد جدید رضایت SMS بازاریابی، چه grant و چه withdrawn، تمام recipientهای هنوز در وضعیت `eligible` کمپین‌های آماده‌شده همان مشتری را به `suppressed` تغییر می‌دهد؛ حتی grant مجدد، snapshot قدیمی را احیا نمی‌کند و برای کمپین جدید باید audience دوباره آماده شود.
+- تغییر شماره مشتری، یا غیرفعال‌کردن مشتری، recipientهای eligible را suppress می‌کند. تغییر شماره در صورت وجود grant قبلی همچنان رخداد append-only از نوع invalidated و audit مستقل ایجاد می‌کند.
+- suppression فقط recipientهای هنوز eligible را تغییر می‌دهد؛ وضعیت‌های نهایی مانند sent/failed/unknown نباید بازنویسی شوند. شماره خام در recipient ذخیره نمی‌شود.
+- consent/profile mutation و prepare-audience از قفل ردیف business مشترک استفاده می‌کنند تا ترتیب تغییرات در transaction مشخص باشد. هر worker/dispatch آینده نیز باید همین قفل business را در transaction claim رعایت کند و latest consent event، وضعیت فعال مشتری و تطابق شماره را دوباره بررسی کند؛ بدون این قرارداد ارسال ممنوع می‌ماند.
+- پیاده‌سازی فعلی فقط suppression در سطح snapshot آماده‌شده را انجام می‌دهد؛ هنوز queue، claim، worker، opt-out عمومی و ارسال تبلیغاتی وجود ندارد.
