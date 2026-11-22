@@ -207,13 +207,20 @@ final readonly class CustomerService
                     $customer['phone_normalized'] === null ? null : (string) $customer['phone_normalized'],
                     $actor->userId,
                 );
+                // A prepared campaign is tied to the exact consent event it previewed.
+                // Any newer event (including a fresh grant) requires a new audience snapshot.
+                $suppressedRecipients = $this->customers->suppressEligibleMarketingRecipients(
+                    $scope->businessId,
+                    (int) $customer['id'],
+                    'consent_changed',
+                );
                 $this->audit->record(
                     $actor->userId,
                     $decision === 'granted' ? 'customer.marketing_consent.granted' : 'customer.marketing_consent.withdrawn',
                     'customer',
                     $publicId,
                     ['decision' => $before['decision'] ?? 'unknown'],
-                    ['decision' => $decision, 'channel' => 'sms', 'purpose' => 'marketing'],
+                    ['decision' => $decision, 'channel' => 'sms', 'purpose' => 'marketing', 'suppressed_prepared_recipients' => $suppressedRecipients],
                     null,
                     $requestId,
                     $ipAddress,
@@ -282,7 +289,9 @@ final readonly class CustomerService
                     $input['notes'],
                     $input['is_active'],
                 );
+                $suppressionReason = null;
                 if (($existing['phone_normalized'] ?? null) !== $input['phone_normalized']) {
+                    $suppressionReason = 'customer_phone_changed';
                     $priorConsent = $this->customers->latestConsent($scope->businessId, (int) $existing['id']);
                     if (($priorConsent['decision'] ?? null) === 'granted') {
                         $this->customers->appendConsentEvent(
@@ -311,13 +320,23 @@ final readonly class CustomerService
                         );
                     }
                 }
+                if (!(bool) $input['is_active']) {
+                    $suppressionReason = 'customer_inactive';
+                }
+                $suppressedRecipients = $suppressionReason === null
+                    ? 0
+                    : $this->customers->suppressEligibleMarketingRecipients(
+                        $scope->businessId,
+                        (int) $existing['id'],
+                        $suppressionReason,
+                    );
                 $this->audit->record(
                     $actor->userId,
                     'customer.updated',
                     'customer',
                     $publicId,
                     ['is_active' => (bool) $existing['is_active'], 'has_phone' => $existing['phone_normalized'] !== null],
-                    ['is_active' => $input['is_active'], 'has_phone' => $input['phone_normalized'] !== null],
+                    ['is_active' => $input['is_active'], 'has_phone' => $input['phone_normalized'] !== null, 'suppressed_prepared_recipients' => $suppressedRecipients],
                     null,
                     $requestId,
                     $ipAddress,
