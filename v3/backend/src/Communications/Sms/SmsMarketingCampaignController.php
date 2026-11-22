@@ -18,6 +18,15 @@ final readonly class SmsMarketingCampaignController
         return Response::success($this->service->list($this->principal($request), $this->scope($request)));
     }
 
+    public function detail(Request $request, array $parameters): Response
+    {
+        return Response::success($this->service->detail(
+            $this->principal($request),
+            $this->scope($request),
+            (string) ($parameters['campaignPublicId'] ?? ''),
+        ));
+    }
+
     public function create(Request $request): Response
     {
         $this->assertJson($request);
