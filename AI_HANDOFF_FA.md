@@ -1117,3 +1117,13 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - commits: 13e8eb3, 516d582.
 - اجرا نشده: static script، PHP lint، migration، DB integration، TypeScript/build و ارسال واقعی provider.
 - گام بعد: طراحی و پیاده‌سازی مسیر مستقل کمپین بازاریابی (audience snapshot، consent/phone revalidation در enqueue و dispatch، opt-out و suppression) بدون استفاده مجدد از مسیر تراکنشی.
+
+
+## ادامه پس از SMS-MARKETING-FOUNDATION-2026-001 (2026-11-22)
+
+- Migration 023 و clean-install schema دو جدول مستقل pos_sms_marketing_campaigns و pos_sms_marketing_campaign_recipients را اضافه کردند؛ outbox تراکنشی تغییر نکرد.
+- کمپین پیش‌فرض draft است؛ recipient یکتا به ازای campaign/customer و FKهای business scope دارد. consent_event_id صرفاً مرجع رخداد است و اثبات eligibility لحظه ارسال نیست. شماره خام در جدول کمپین ذخیره نمی‌شود.
+- Static guard: scripts/check-v3-sms-marketing-campaign-schema.php؛ هنوز اجرا نشده است.
+- commits: e970591, e7324be, 7d803f7.
+- اجرا نشده: migration، MySQL/MariaDB، PHP lint، static script، integration و build.
+- گام بعد: پیاده‌سازی service/repository برای ایجاد کمپین draft و audience preview، انتخاب فقط مشتریان دارای grant معتبر و شماره منطبق در لحظه preview؛ سپس طراحی مسیر enqueue و dispatch مجزا با revalidation اجباری در لحظه ارسال. هیچ send endpoint/worker را تا تکمیل suppression فعال نکن.
