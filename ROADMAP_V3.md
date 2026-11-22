@@ -1672,3 +1672,11 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 9. **PAYMENT-SPLIT-UNKNOWN:** طراحی state machine پرداخت چندبخشی و unknown؛ قواعد partial/overpayment/refund/cash shift و reconciliation واقعی provider پیش از هر retry.
 
 **وابستگی‌ها و دروازه پذیرش:** بسته‌های installer/update/backup باید پیش از عرضه تجاری مشتری‌میزبان تکمیل شوند؛ offline و printing باید با سناریوهای قطع اینترنت و سخت‌افزار واقعی آزموده شوند؛ payment split/unknown در gate مالی/پرداخت قرار می‌گیرد. نوشتن تست بدون اجرای آن PASS نیست. فازها بدون تأیید صریح مالک بسته نمی‌شوند.
+
+
+
+### POS-PAYMENT-BRIDGE — اتصال کارتخوان به وب‌اپلیکیشن
+- **تصمیم معماری ثبت‌شده:** Local Payment Bridge مستقل روی کامپیوتر صندوق؛ ارتباط Browser POS با localhost و Bridge با کارتخوان از طریق adapterهای پروتکل‌محور LAN/Wi-Fi/USB/Serial.
+- **قیود:** بدون Node runtime روی هاست مشتری؛ امنیت origin/pairing و درخواست‌ها، idempotency و جلوگیری از replay؛ timeout/قطع ارتباط با وضعیت unknown و reconciliation پیش از retry.
+- **سناریوی قطعی:** قطع اینترنت POS به‌تنهایی پرداخت را ناممکن نمی‌کند، اگر کارتخوان اینترنت مستقل داشته باشد و Bridge نتیجه واقعی را محلی دریافت کند.
+- **مانده:** انتخاب OS هدف و فناوری Bridge، چرخه نصب/آپدیت، انتخاب مدل‌ها و SDK/protocol و آزمون واقعی. این بسته هنوز پیاده‌سازی یا تست نشده است.
