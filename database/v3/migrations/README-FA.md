@@ -133,3 +133,13 @@ MySQL/MariaDB برای بسیاری از دستورات DDL implicit commit ان
 - Migration 021 ستون‌های nullable `source_document_id` و `source_document_line_id` و FK مرکب business/branch را فراهم می‌کند؛ سابقه‌های قدیمی بدون حدس‌زدن NULL می‌مانند.
 - Backend از این مراجع برای برگشت جزئی سندهای خروجی posted (adjustment_out، consumption، waste) استفاده می‌کند. بهای برگشت از ledger تاریخی همان source line است و posting با قفل سند مبدأ از over-return جلوگیری می‌کند.
 - Migration 021 در این نشست اجرا نشده و DB integration نیز اجرا نشده است. migration جدیدی برای این بسته لازم نشد.
+
+
+### Migration 023 — زیرساخت کمپین پیامکی بازاریابی
+
+- دو جدول business-scoped برای کمپین و snapshot مخاطبان ایجاد می‌شود؛ FK مرکب از اتصال مشتری/کمپین به کسب‌وکار دیگر جلوگیری می‌کند.
+- unique (business_id, campaign_id, customer_id) از تکرار مخاطب در یک کمپین جلوگیری می‌کند.
+- consent_event_id فقط به رخداد رضایت مرجع اشاره می‌کند؛ worker آینده باید آخرین رخداد، وضعیت فعال مشتری و تطابق شماره فعلی با شماره زمان grant را درست پیش از ارسال مجدداً بررسی کند.
+- شماره خام مشتری در این دو جدول ذخیره نمی‌شود. وضعیت اولیه کمپین draft است و migration به‌تنهایی هیچ ارسال تبلیغاتی را فعال نمی‌کند.
+- Static contract guard: scripts/check-v3-sms-marketing-campaign-schema.php.
+- migration در این محیط اجرا نشده است؛ سازگاری واقعی MySQL 8.0.16+ و MariaDB 10.6 باید در DB validation تأیید شود.
