@@ -1749,7 +1749,7 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - وضعیت: کدنویسی ثبت شد؛ build، PHP lint و DB integration هنوز اجرا نشده‌اند.
 - وضعیت fulfillment اکنون در همان transaction تغییر وضعیت سفارش به‌روزرسانی می‌شود: pending، accepted، preparing، ready، completed و cancelled.
 - زمان completed شدن fulfillment فقط یک‌بار ثبت می‌شود؛ سفارش‌های بدون رکورد fulfillment همچنان بدون ساخت رکورد مصنوعی مدیریت می‌شوند.
-- جزئیات سفارش، status واقعی fulfillment را از سرور برمی‌گرداند و OrderCenter آن را جدا از وضعیت کلی سفارش نمایش می‌دهد.
+- جزئیات سفارش، status واقعی fulfillment را از سرور برمی‌گرداند و OrderCenter آن را جدا از وضعیت کلی سفارش و روی رسید چاپی نیز نمایش می‌دهد.
 - متن اقدام نهایی به «ثبت تکمیل سفارش» تغییر کرد تا completed به‌اشتباه معادل اثبات تحویل فیزیکی نمایش داده نشود.
 - فایل‌ها: OrderRepository.php، OrderService.php، client.ts و OrderCenter.tsx.
 - commits: fec9947، 1149b8a، 1213e2e، 3dec79b، 70b4385.
