@@ -21,3 +21,15 @@
 @media(max-width:720px){.sms-outbox-item{grid-template-columns:1fr}.sms-outbox-details{border-top:1px solid var(--border);padding-top:10px}.sms-outbox-count{width:100%;margin-inline-start:0}}
 
 .sms-template-field{display:grid;gap:8px;margin:16px 0;font-weight:600}.sms-template-field input,.sms-template-field select{min-height:44px;border:1px solid var(--border,#d9e1e1);border-radius:10px;padding:8px 12px;background:var(--surface,#fff);color:inherit}.sms-template-toggle{display:flex;align-items:center;gap:10px;margin:16px 0}.sms-template-variable-list{display:grid;gap:8px;margin:12px 0}.sms-template-variable{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border,#d9e1e1);border-radius:10px}.sms-template-variable span{display:grid;gap:4px;flex:1}.sms-template-variable small{color:var(--muted,#687878)}.sms-template-preview{padding:14px;margin:16px 0;background:var(--surface-muted,#f5f8f7);border-radius:10px}.sms-template-preview p{margin:8px 0}.sms-template-success{display:flex;align-items:center;gap:8px;color:#167447}
+
+.sms-marketing-layout{display:grid;grid-template-columns:minmax(280px,.9fr) minmax(320px,1.1fr);gap:16px;align-items:start}
+.sms-marketing-campaign-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:inherit;text-align:start;cursor:pointer}
+.sms-marketing-campaign-row:hover{border-color:var(--accent,#167c72)}
+.sms-marketing-campaign-row>span{display:grid;gap:7px}.sms-marketing-campaign-row small{color:var(--text-muted);font-size:12px}
+.sms-marketing-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.sms-marketing-metrics>div{display:grid;gap:6px;padding:14px;border:1px solid var(--border);border-radius:12px}
+.sms-marketing-metrics strong{font-size:22px;font-variant-numeric:tabular-nums}.sms-marketing-metrics span{font-size:12px;color:var(--text-muted)}
+.sms-marketing-preview{padding:14px;border:1px solid var(--border);border-radius:12px}.sms-marketing-preview h3{margin-top:0}
+.sms-marketing-preview>div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--border);font-size:13px}
+@media(max-width:850px){.sms-marketing-layout{grid-template-columns:1fr}}
+@media(max-width:520px){.sms-marketing-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.sms-marketing-campaign-row{align-items:flex-start;flex-direction:column}}
