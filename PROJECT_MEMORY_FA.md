@@ -630,3 +630,12 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 - فایل‌ها: `v3/frontend/src/features/orders/OrderCenter.tsx`، `v3/frontend/src/features/orders/orders.css`، `v3/frontend/src/features/pos/pos.css`.
 - commits: `594076fb69fe80521a3c722d1d70d65548008a9a`، `f2405b858ab85ef937bf0a2e2e89f6cfaa1c6bf3`، `b0d49b8e85664a7f3440ed728974a57542704baf`.
 - وضعیت: کدنویسی انجام شده؛ build و چاپ واقعی آزموده نشده و فاز ۴/۸ بسته نشده است.
+
+
+## KDS-01A — صف زنده آشپزخانه (2026-11-23)
+
+- KitchenBoard صف‌های accepted/preparing/ready را با صفحه‌بندی کامل دریافت می‌کند؛ refresh خودکار هر ۱۵ ثانیه و جلوگیری از درخواست‌های هم‌زمان اضافه شده است.
+- جزئیات سفارش انتخاب‌شده پس از refresh به‌روز می‌شود؛ در خطای موقت آخرین جزئیات موفق حفظ می‌شود.
+- فایل: `v3/frontend/src/features/kitchen/KitchenBoard.tsx`.
+- commit: `9a418e2d69add2aacadaf991c690472b1114cda4`.
+- وضعیت: کدنویسی ثبت شده، build و runtime test اجرا نشده؛ فاز KDS بسته نیست.
