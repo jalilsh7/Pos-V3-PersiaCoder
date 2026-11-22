@@ -905,6 +905,7 @@ export type OrderSummary = {
   currency_code: string;
   created_at: string;
   fulfillment_method: "dine_in" | "takeaway" | "delivery" | null;
+  fulfillment_status: "pending" | "accepted" | "preparing" | "ready" | "dispatched" | "completed" | "cancelled" | null;
   customer: { id: string; name: string } | null;
 };
 export type OrderDetail = {
