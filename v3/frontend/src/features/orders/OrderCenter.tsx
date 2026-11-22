@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Eye, FilterX, PackageCheck, RefreshCw } from "lucide-react";
+import { Eye, FilterX, PackageCheck, Printer, RefreshCw } from "lucide-react";
 import {
   ApiError,
   getOrderDetails,
@@ -509,7 +509,14 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
               <span className="ui-eyebrow">ORDER DETAIL</span>
               <h2>{selectedOrder ? `جزئیات سفارش #${selectedOrder.order_number}` : "جزئیات سفارش"}</h2>
             </div>
-            <Button size="sm" variant="ghost" onClick={() => setSelectedId(null)}>بستن</Button>
+            <div className="orders-detail-heading-actions">
+              {selectedOrder && detail ? (
+                <Button size="sm" variant="secondary" onClick={() => window.print()}>
+                  <Printer size={14} /> چاپ مجدد رسید
+                </Button>
+              ) : null}
+              <Button size="sm" variant="ghost" onClick={() => setSelectedId(null)}>بستن</Button>
+            </div>
           </div>
           {detailLoading ? <Notice variant="info">در حال دریافت جزئیات سفارش...</Notice> : null}
           {detailError ? <Notice variant="warning">{detailError}</Notice> : null}
@@ -626,6 +633,56 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
                 <span>جمع جزء {money(selectedOrder.subtotal_amount)} · مالیات {money(selectedOrder.tax_amount)}</span>
                 <strong>{money(selectedOrder.total_amount)} تومان</strong>
               </div>
+              <section className="orders-print-receipt" aria-label="رسید سفارش برای چاپ">
+                <div className="orders-print-brand">PersiaCoder.ir</div>
+                <h1>رسید سفارش</h1>
+                <div className="orders-print-row"><span>شماره سفارش</span><strong>#{money(selectedOrder.order_number)}</strong></div>
+                <div className="orders-print-row"><span>تاریخ</span><strong>{dateTime(selectedOrder.created_at, timeZone)}</strong></div>
+                <div className="orders-print-row"><span>مشتری</span><strong>{selectedOrder.customer?.name ?? "مشتری مهمان"}</strong></div>
+                <div className="orders-print-row"><span>کانال</span><strong>{channelLabels[selectedOrder.source_channel] ?? selectedOrder.source_channel}</strong></div>
+                <div className="orders-print-row"><span>نوع دریافت</span><strong>{fulfillmentLabels[selectedOrder.fulfillment_method ?? ""] ?? "ثبت نشده"}</strong></div>
+                {selectedOrder.fulfillment?.method === "delivery" ? (
+                  <>
+                    <div className="orders-print-row"><span>تحویل‌گیرنده</span><strong>{selectedOrder.fulfillment.recipient_name ?? "—"}</strong></div>
+                    <div className="orders-print-row"><span>تماس</span><strong>{selectedOrder.fulfillment.recipient_phone ?? "—"}</strong></div>
+                    <div className="orders-print-address">{selectedOrder.fulfillment.address ? Object.values(selectedOrder.fulfillment.address).join("، ") : "نشانی ثبت نشده"}</div>
+                  </>
+                ) : null}
+                <div className="orders-print-divider" />
+                {detail.items.map((item, index) => (
+                  <div className="orders-print-item" key={`${selectedOrder.id}-print-${index}`}>
+                    <div><strong>{item.name}{item.variant_name ? ` · ${item.variant_name}` : ""}</strong><small>{item.quantity} × {money(item.unit_price_amount)} تومان</small></div>
+                    <b>{money(item.line_total_amount)} تومان</b>
+                    {item.options.length ? <small className="orders-print-options">{item.options.map((option) => `${option.group_name}: ${option.name}`).join("، ")}</small> : null}
+                  </div>
+                ))}
+                <div className="orders-print-divider" />
+                <div className="orders-print-row"><span>جمع جزء</span><strong>{money(selectedOrder.subtotal_amount)} تومان</strong></div>
+                {selectedOrder.discount_amount > 0 ? <div className="orders-print-row"><span>تخفیف</span><strong>−{money(selectedOrder.discount_amount)} تومان</strong></div> : null}
+                {selectedOrder.tax_amount > 0 ? <div className="orders-print-row"><span>مالیات</span><strong>{money(selectedOrder.tax_amount)} تومان</strong></div> : null}
+                {selectedOrder.delivery_fee_amount > 0 ? <div className="orders-print-row"><span>هزینه ارسال</span><strong>{money(selectedOrder.delivery_fee_amount)} تومان</strong></div> : null}
+                <div className="orders-print-row orders-print-grand-total"><strong>مبلغ کل</strong><strong>{money(selectedOrder.total_amount)} تومان</strong></div>
+                <div className="orders-print-divider" />
+                <div className="orders-print-row"><span>وضعیت سفارش</span><strong>{statusLabels[selectedOrder.order_status]?.label ?? selectedOrder.order_status}</strong></div>
+                <div className="orders-print-row"><span>وضعیت پرداخت</span><strong>{paymentLabels[selectedOrder.payment_status]?.label ?? selectedOrder.payment_status}</strong></div>
+                {paymentSummary ? (
+                  <>
+                    {paymentSummary.payments.map((payment) => (
+                      <div className="orders-print-row" key={payment.id}>
+                        <span>{payment.method === "cash" ? "دریافت نقدی" : payment.method === "bank_terminal" ? "کارتخوان" : payment.method}</span>
+                        <strong>{money(payment.amount)} تومان</strong>
+                      </div>
+                    ))}
+                    {paymentSummary.refunds.map((refund) => (
+                      <div className="orders-print-row" key={refund.id}>
+                        <span>بازپرداخت · {refund.status}</span><strong>−{money(refund.amount)} تومان</strong>
+                      </div>
+                    ))}
+                    <div className="orders-print-row"><span>مانده قابل پرداخت</span><strong>{money(paymentSummary.due_amount)} تومان</strong></div>
+                  </>
+                ) : <div className="orders-print-note">گردش پرداخت در دسترس نیست.</div>}
+                <div className="orders-print-footer">Powered by PersiaCoder.ir</div>
+              </section>
               {showCancelForm ? (
                 <div className="orders-cancel-form">
                   <label htmlFor="order-cancel-reason">دلیل لغو سفارش (اجباری)</label>
