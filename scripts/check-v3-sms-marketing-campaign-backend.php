@@ -9,6 +9,8 @@ $routes = file_get_contents($root . '/v3/backend/public/index.php');
 $migration = file_get_contents($root . '/database/v3/migrations/024_sms-marketing-campaign-permission.sql');
 $schema = file_get_contents($root . '/database/v3/schema.sql');
 $transactional = file_get_contents($root . '/v3/backend/src/Communications/Sms/SmsServiceTemplateOutbox.php');
+$workspace = file_get_contents($root . '/v3/frontend/src/features/communications/SmsMarketingCampaignsWorkspace.tsx');
+$client = file_get_contents($root . '/v3/frontend/src/shared/api/client.ts');
 $checks = [
     'campaign management has dedicated permission' =>
         str_contains($service, 'communications.sms.marketing.manage')
@@ -36,6 +38,11 @@ $checks = [
     'campaign feature has no send or dispatch action' =>
         !str_contains($controller, 'send(')
         && !str_contains($service, 'dispatch('),
+    'campaign detail and frontend workspace are connected' =>
+        str_contains($routes, '/{campaignPublicId}\'')
+        && str_contains($workspace, 'prepareSmsMarketingAudience')
+        && str_contains($workspace, 'رضایت')
+        && str_contains($client, 'getSmsMarketingCampaign'),
     'transactional SMS implementation remains separate' =>
         !str_contains($transactional, 'pos_sms_marketing_campaign'),
 ];
