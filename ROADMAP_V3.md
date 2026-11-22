@@ -1692,3 +1692,13 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - فایل‌ها: `v3/frontend/src/features/pos/PosWorkspace.tsx` و `v3/frontend/src/features/pos/pos.css`.
 - commits: `27685ec7ea7916af8ab40b54b580cc7cfdcff43a`، `773b41693e127d19b1cc318977ace9534fe75f3a`، `569b8ba773baca783a0dd929f9910389c7378f95`.
 - تست‌ها عمداً در میانه بسته اجرا نشده‌اند؛ typecheck/build، PHP/DB integration، browser print و سناریوی stock reservation برای gate پایان فاز باقی‌اند. این بسته یا فاز ۴ هنوز پذیرفته/بسته نشده است.
+
+
+## POS-01C — چاپ مجدد رسید از مرکز سفارش‌ها (2026-11-23)
+
+- وضعیت: **کدنویسی ثبت شد؛ چاپگر/مرورگر واقعی و build هنوز آزموده نشده‌اند.**
+- در جزئیات هر سفارش، دکمه «چاپ مجدد رسید» اضافه شد. رسید چاپی از snapshot سرور ساخته می‌شود و اقلام، تنوع/افزودنی، مبلغ‌ها، نوع دریافت، وضعیت سفارش و پرداخت، گردش پرداخت و بازپرداخت و مانده را نمایش می‌دهد.
+- قالب چاپی از نمای مدیریتی و تاریخچه جداست؛ هنگام print فقط رسید ۸۰ میلی‌متری نمایش داده می‌شود. این قابلیت چاپ مرورگر است و چاپ بی‌صدا یا سازگاری همه چاپگرها را تضمین نمی‌کند.
+- فایل‌ها: `v3/frontend/src/features/orders/OrderCenter.tsx`، `v3/frontend/src/features/orders/orders.css`، `v3/frontend/src/features/pos/pos.css`.
+- commits: `594076fb69fe80521a3c722d1d70d65548008a9a`، `f2405b858ab85ef937bf0a2e2e89f6cfaa1c6bf3`، `b0d49b8e85664a7f3440ed728974a57542704baf`.
+- تست build/browser و چاپ روی سیستم‌عامل/چاپگر واقعی اجرا نشده؛ تنظیمات مستقل چاپگر، ۵۸/۸۰ قابل انتخاب، KOT و چاپ مجدد auditشده همچنان در بسته OPS-PRINTING باقی‌اند.
