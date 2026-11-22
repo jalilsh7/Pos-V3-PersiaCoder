@@ -651,6 +651,7 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
                 <div className="orders-print-row"><span>مشتری</span><strong>{selectedOrder.customer?.name ?? "مشتری مهمان"}</strong></div>
                 <div className="orders-print-row"><span>کانال</span><strong>{channelLabels[selectedOrder.source_channel] ?? selectedOrder.source_channel}</strong></div>
                 <div className="orders-print-row"><span>نوع دریافت</span><strong>{fulfillmentLabels[selectedOrder.fulfillment_method ?? ""] ?? "ثبت نشده"}</strong></div>
+                {selectedOrder.fulfillment ? <div className="orders-print-row"><span>وضعیت دریافت</span><strong>{fulfillmentStatusLabels[selectedOrder.fulfillment.status] ?? selectedOrder.fulfillment.status}</strong></div> : null}
                 {selectedOrder.fulfillment?.method === "delivery" ? (
                   <>
                     <div className="orders-print-row"><span>تحویل‌گیرنده</span><strong>{selectedOrder.fulfillment.recipient_name ?? "—"}</strong></div>
