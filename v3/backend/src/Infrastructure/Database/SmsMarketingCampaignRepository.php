@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PersiaCoder\\PosV3\\Infrastructure\\Database;
+namespace PersiaCoder\PosV3\Infrastructure\Database;
 
 use PDO;
 
@@ -13,7 +13,7 @@ final readonly class SmsMarketingCampaignRepository
     {
         $q = $this->connection->prepare('SELECT id FROM pos_businesses WHERE id = ? LIMIT 1 FOR UPDATE');
         $q->execute([$businessId]);
-        if ($q->fetchColumn() === false) throw new \\RuntimeException('Marketing business scope no longer exists.');
+        if ($q->fetchColumn() === false) throw new \RuntimeException('Marketing business scope no longer exists.');
     }
 
     public function create(int $businessId, string $publicId, string $title, int $bodyId, array $keys, int $actorId): int
