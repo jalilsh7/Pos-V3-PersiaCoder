@@ -143,3 +143,8 @@ MySQL/MariaDB برای بسیاری از دستورات DDL implicit commit ان
 - شماره خام مشتری در این دو جدول ذخیره نمی‌شود. وضعیت اولیه کمپین draft است و migration به‌تنهایی هیچ ارسال تبلیغاتی را فعال نمی‌کند.
 - Static contract guard: scripts/check-v3-sms-marketing-campaign-schema.php.
 - migration در این محیط اجرا نشده است؛ سازگاری واقعی MySQL 8.0.16+ و MariaDB 10.6 باید در DB validation تأیید شود.
+
+### Migration 024 — مجوز مدیریت کمپین پیامکی
+- permission مستقل `communications.sms.marketing.manage` برای ساخت کمپین و آماده‌سازی مخاطبان ایجاد و به نقش manager متصل می‌شود؛ clean-install schema نیز همین seed را دارد.
+- این مجوز ارسال پیامک ایجاد نمی‌کند؛ endpoint/worker dispatch در این مرحله وجود ندارد.
+- migration هنوز روی MySQL/MariaDB اجرا نشده است.
