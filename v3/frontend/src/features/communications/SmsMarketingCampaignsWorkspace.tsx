@@ -69,8 +69,8 @@ export function SmsMarketingCampaignsWorkspace() {
     setError(null); setNotice(null); setPreparing(true);
     try {
       const result = await prepareSmsMarketingAudience(selected.id);
-      setPreview(result.campaign.audience ?? null);
       await openCampaign(selected.id);
+      setPreview(result.campaign.audience ?? null);
       setNotice("فهرست مخاطبان واجد شرایط آماده شد. هیچ پیامکی ارسال نشده است.");
       await refresh();
     } catch (cause) { setError(cause instanceof Error ? cause.message : "آماده‌سازی مخاطبان انجام نشد."); }
