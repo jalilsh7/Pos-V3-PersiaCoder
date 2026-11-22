@@ -32,6 +32,26 @@ final readonly class SmsMarketingCampaignService
         return ['campaigns' => $this->campaigns->list($scope->businessId)];
     }
 
+    public function detail(AuthenticatedPrincipal $actor, BusinessScope $scope, string $publicId): array
+    {
+        $this->assertPermission($actor, $scope);
+        if (!self::isUuid($publicId)) throw new HttpException(400, 'sms_campaign_id_invalid', 'Campaign identifier is invalid.');
+        $campaign = $this->campaigns->find($scope->businessId, $publicId);
+        if ($campaign === null) throw new HttpException(404, 'sms_campaign_not_found', 'Campaign was not found.');
+        return ['campaign' => [
+            'id' => $campaign['public_id'],
+            'title' => $campaign['title'],
+            'provider_code' => $campaign['provider_code'],
+            'provider_body_id' => (int) $campaign['provider_body_id'],
+            'variable_keys' => json_decode((string) $campaign['variable_keys_json'], true) ?: [],
+            'status' => $campaign['status'],
+            'scheduled_at' => $campaign['scheduled_at'],
+            'created_at' => $campaign['created_at'],
+            'updated_at' => $campaign['updated_at'],
+            'recipients' => $this->campaigns->recipientCounts($scope->businessId, (int) $campaign['id']),
+        ]];
+    }
+
     public function create(
         AuthenticatedPrincipal $actor, BusinessScope $scope, array $payload,
         string $key, string $requestId, string $ip
