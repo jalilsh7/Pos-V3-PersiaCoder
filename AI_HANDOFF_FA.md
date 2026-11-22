@@ -1270,7 +1270,7 @@ KitchenBoard به‌روزرسانی خودکار ۱۵ ثانیه‌ای، جل�
 - تغییر وضعیت fulfillment در همان transaction سفارش انجام می‌شود و از order_status مستقل می‌ماند.
 - mapping فعلی: draft/awaiting_payment→pending، accepted→accepted، preparing→preparing، ready→ready، completed→completed، cancelled/rejected→cancelled.
 - completed_at فقط در اولین transition به completed ثبت می‌شود.
-- OrderService::get وضعیت fulfillment را برمی‌گرداند؛ OrderCenter آن را جداگانه نمایش می‌دهد. متن اقدام به «ثبت تکمیل سفارش» تغییر کرد؛ completed به معنی اثبات تحویل فیزیکی نیست.
+- OrderService::get وضعیت fulfillment را برمی‌گرداند؛ OrderCenter آن را جداگانه و در رسید چاپی نمایش می‌دهد. متن اقدام به «ثبت تکمیل سفارش» تغییر کرد؛ completed به معنی اثبات تحویل فیزیکی نیست.
 - commits: fec9947، 1149b8a، 1213e2e، 3dec79b، 70b4385.
 - تست‌ها اجرا نشده‌اند. ادامه گروهی: بررسی workflow مستقل dispatch/delivery، اطمینان از semantics وضعیت‌ها و اتصال به موجودی/رسپی؛ وضعیت dispatched هنوز عملیات اجرایی/endpoint ندارد.
 
