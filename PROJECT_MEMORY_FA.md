@@ -670,7 +670,7 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 
 - وضعیت fulfillment در همان transaction تغییر وضعیت سفارش بروزرسانی می‌شود: pending، accepted، preparing، ready، completed و cancelled.
 - completed_at در اولین تکمیل ثبت می‌شود؛ سفارش فاقد fulfillment بدون ایجاد رکورد مصنوعی باقی می‌ماند.
-- Order detail، وضعیت fulfillment را از سرور می‌گیرد و OrderCenter آن را جدا از وضعیت سفارش نشان می‌دهد. متن دکمه تکمیل دیگر تحویل فیزیکی را القا نمی‌کند.
+- Order detail، وضعیت fulfillment را از سرور می‌گیرد و OrderCenter آن را جدا از وضعیت سفارش و روی رسید چاپی نشان می‌دهد. متن دکمه تکمیل دیگر تحویل فیزیکی را القا نمی‌کند.
 - فایل‌ها: v3/backend/src/Infrastructure/Database/OrderRepository.php، v3/backend/src/Orders/OrderService.php، v3/frontend/src/shared/api/client.ts، v3/frontend/src/features/orders/OrderCenter.tsx.
 - commits: fec9947، 1149b8a، 1213e2e، 3dec79b، 70b4385.
 - تست/build اجرا نشده؛ workflow مستقل dispatch/delivery و پیک هنوز پیاده نشده است.
