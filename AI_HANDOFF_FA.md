@@ -1127,3 +1127,11 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - commits: e970591, e7324be, 7d803f7.
 - اجرا نشده: migration، MySQL/MariaDB، PHP lint، static script، integration و build.
 - گام بعد: پیاده‌سازی service/repository برای ایجاد کمپین draft و audience preview، انتخاب فقط مشتریان دارای grant معتبر و شماره منطبق در لحظه preview؛ سپس طراحی مسیر enqueue و dispatch مجزا با revalidation اجباری در لحظه ارسال. هیچ send endpoint/worker را تا تکمیل suppression فعال نکن.
+
+## آخرین بسته گروهی — Backend کمپین پیامکی و snapshot مخاطب (2026-11-22)
+- Migration 024 و clean schema مجوز `communications.sms.marketing.manage` را اضافه کردند.
+- فایل‌ها: `SmsMarketingCampaignRepository.php`، `SmsMarketingCampaignService.php`، `SmsMarketingCampaignController.php` و routeهای `GET/POST /api/v1/communications/sms/marketing/campaigns` و `POST .../{campaignPublicId}/prepare-audience`.
+- Create draft با IdempotencyService و audit انجام می‌شود. Prepare زیر قفل business، آخرین consent event را برای هر مشتری می‌خواند؛ فقط active + valid Iranian mobile + latest granted + exact phone snapshot match وارد recipients می‌شود. هیچ شماره خامی ذخیره نمی‌شود؛ علت‌های حذف به‌صورت count برگردانده می‌شوند.
+- آماده‌سازی idempotent است؛ campaign prepared دوباره recipient نمی‌سازد. endpoint ارسال وجود ندارد و transactional outbox دست‌نخورده است.
+- Contract script: `scripts/check-v3-sms-marketing-campaign-backend.php` اضافه شد اما اجرا نشده؛ PHP lint، DB migration/integration، build و تست runtime نیز اجرا نشده‌اند.
+- گام بعد: API جزئیات و UI draft/audience preview؛ سپس طراحی suppression/opt-out و queue مستقل. قبل از worker باید consent/phone revalidation در لحظه dispatch و claim رقابتی طراحی شود. ارسال تبلیغاتی فعلاً ممنوع است.
