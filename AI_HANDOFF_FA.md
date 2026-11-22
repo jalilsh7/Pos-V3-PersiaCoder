@@ -1142,3 +1142,13 @@ PersiaCoder POS V3 باید یک سامانه یکپارچه با چهار ست�
 - UI و API فاقد ارسال هستند؛ آماده‌سازی snapshot به معنی اجازه dispatch نیست.
 - Contract guard `scripts/check-v3-sms-marketing-campaign-backend.php` گسترش یافته، اما اجرا نشده. Build/typecheck، PHP lint، migrations و DB integration اجرا نشده‌اند.
 - گام بعدی: طراحی و پیاده‌سازی suppression/opt-out و queue مستقل، همراه revalidation و قفل/claim اتمیک درست قبل dispatch. تا آن زمان ارسال marketing خاموش بماند.
+
+
+## آخرین بسته — SMS Marketing suppression (2026-11-22)
+- آخرین کار: تغییر رضایت، تغییر شماره یا غیرفعال‌کردن مشتری اکنون recipientهای `eligible` در snapshot کمپین‌های آماده‌شده را در همان transaction به `suppressed` تغییر می‌دهد.
+- فایل‌ها: `CustomerService.php`، `CustomerRepository.php`، `scripts/check-v3-sms-marketing-suppression.php` و سند تصمیمات/roadmap/memory.
+- هر consent event جدید (حتی grant مجدد) snapshot قدیمی را بی‌اعتبار می‌کند؛ کمپین قدیمی دوباره eligible نمی‌شود.
+- هر دو مسیر mutation مشتری و آماده‌سازی audience از قفل business استفاده می‌کنند. worker آینده باید همان قفل را در claim transaction بگیرد و latest consent، active state و شماره جاری را مجدداً بررسی کند.
+- هنوز queue/claim/worker، opt-out عمومی و ارسال تبلیغاتی وجود ندارد؛ ارسال همچنان disabled است.
+- تست قراردادی اضافه شده اما اجرا نشده؛ PHP lint، migration، DB integration و build اجرا نشده‌اند.
+- گام بعد: بررسی چرخه opt-out عمومی و سپس طراحی claim/queue مستقل با revalidation اتمیک پیش از ارسال؛ از ارسال واقعی یا provider call تا اثبات این gate خودداری شود.
