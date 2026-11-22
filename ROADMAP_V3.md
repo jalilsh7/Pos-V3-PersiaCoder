@@ -1574,3 +1574,13 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - اسکریپت قراردادی scripts/check-v3-sms-template-recipient-isolation.php افزوده شد. این اسکریپت و تست‌های DB/build در این محیط اجرا نشده‌اند.
 - commits: 13e8eb3 (recipient isolation)، 516d582 (static contract check).
 - محدودیت: این تغییر، marketing suppression در worker نیست و نباید به‌عنوان تکمیل consent/marketing dispatch گزارش شود.
+
+
+## SMS-MARKETING-FOUNDATION-2026-001 — زیرساخت داده کمپین (2026-11-22)
+
+- Migration 023 (023_sms-marketing-campaign-foundation.sql) دو جدول business-scoped برای کمپین و مخاطبان ایجاد می‌کند؛ clean-install database/v3/schema.sql نیز هم‌راستا شد.
+- هر مشتری در هر کمپین یک ردیف دارد؛ مخاطب به customer و در صورت ارزیابی رضایت، به consent event متصل می‌شود. شماره خام در این ساختار ذخیره نمی‌شود.
+- کمپین به‌صورت پیش‌فرض draft است؛ هیچ API یا worker ارسال با این migration فعال نشده است.
+- static contract guard: scripts/check-v3-sms-marketing-campaign-schema.php (افزوده شد، اجرا نشده).
+- commits: e970591 migration، e7324be clean schema، 7d803f7 static check.
+- باز: campaign API/UI، audience filters/preview، consent+phone revalidation در enqueue و dispatch، opt-out، encrypted queue payload، worker مستقل، rate limits، delivery reconciliation و تست‌های concurrency. ارسال بازاریابی تا تکمیل و آزمون این کنترل‌ها ممنوع است.
