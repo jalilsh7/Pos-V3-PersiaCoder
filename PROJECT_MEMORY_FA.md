@@ -594,3 +594,7 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 - قرارداد هم‌زمانی: prepare-audience و mutation مشتری با قفل business serialize می‌شوند؛ dispatch آینده نیز باید همان قفل را در claim transaction رعایت و latest consent/phone/active را دوباره بررسی کند.
 - static contract در `scripts/check-v3-sms-marketing-suppression.php` اضافه شد، اما اجرا نشده است. PHP lint، DB integration و build نیز اجرا نشده‌اند.
 - queue/claim/worker، opt-out عمومی و ارسال marketing هنوز وجود ندارند؛ dispatch غیرفعال می‌ماند.
+
+
+## PRIORITY-DEFER-CRM-LOYALTY-2026-001 — تعویق توسعه باشگاه مشتریان (2026-11-22)
+به درخواست مالک، باشگاه مشتریان و توسعه تکمیلی وفاداری تا رسیدن هسته اصلی POS V3 به سطح عملیاتی منسجم از اولویت فعال خارج شد. کدها، migrationها و تصمیم‌های قبلی حفظ می‌شوند و rollback یا حذف نداریم. CRM پایه موردنیاز سفارش و فروش ادامه می‌یابد. پیامک تراکنشی مستقل است؛ کمپین تبلیغاتی و dispatch/worker آن غیرفعال می‌ماند. تمرکز توسعه به قابلیت‌های اصلی POS، سفارش، کاتالوگ/انبار، پرداخت/صندوق، تنظیمات/RBAC، نصب/پایداری و storefront منتقل می‌شود. بازگشت وفاداری به اولویت نیازمند درخواست بعدی مالک است.
