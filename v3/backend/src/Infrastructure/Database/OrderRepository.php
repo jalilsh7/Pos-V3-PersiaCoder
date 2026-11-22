@@ -552,6 +552,28 @@ final readonly class OrderRepository
         return is_array($row) ? $row : null;
     }
 
+    public function updateFulfillmentStatus(int $businessId, int $branchId, int $orderId, string $status): void
+    {
+        $statement = $this->connection->prepare(
+            'UPDATE pos_order_fulfillments
+             SET status = :status,
+                 completed_at = CASE
+                     WHEN :completed_status = 1 THEN COALESCE(completed_at, UTC_TIMESTAMP(3))
+                     ELSE completed_at
+                 END
+             WHERE business_id = :business_id
+               AND branch_id = :branch_id
+               AND order_id = :order_id'
+        );
+        $statement->execute([
+            'status' => $status,
+            'completed_status' => $status === 'completed' ? 1 : 0,
+            'business_id' => $businessId,
+            'branch_id' => $branchId,
+            'order_id' => $orderId,
+        ]);
+    }
+
     public function updateOrderStatus(int $businessId, int $branchId, int $orderId, string $status): void
     {
         $statement = $this->connection->prepare(
