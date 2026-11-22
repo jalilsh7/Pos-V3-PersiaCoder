@@ -73,6 +73,7 @@ export function KitchenBoard({ timeZone }: { timeZone: string }) {
   const [actionError, setActionError] = useState<string | null>(null);
   const refreshInFlight = useRef(false);
   const refreshQueued = useRef(false);
+  const refreshRunner = useRef<((showError: boolean) => Promise<void>) | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -110,17 +111,21 @@ export function KitchenBoard({ timeZone }: { timeZone: string }) {
         refreshInFlight.current = false;
         if (active) {
           setLoading(false);
-          if (refreshQueued.current) {
-            refreshQueued.current = false;
-            void load(true);
-          }
+        }
+        if (refreshQueued.current) {
+          refreshQueued.current = false;
+          const runLatest = refreshRunner.current;
+          if (runLatest) void runLatest(true);
+        }
         }
       }
     };
+    refreshRunner.current = load;
     void load(true);
     const intervalId = window.setInterval(() => { void load(true); }, 15000);
     return () => {
       active = false;
+      if (refreshRunner.current === load) refreshRunner.current = null;
       window.clearInterval(intervalId);
     };
   }, [selectedId]);
@@ -173,7 +178,8 @@ export function KitchenBoard({ timeZone }: { timeZone: string }) {
       setRefreshing(false);
       if (refreshQueued.current) {
         refreshQueued.current = false;
-        void refreshOrders();
+        const runLatest = refreshRunner.current;
+        if (runLatest) void runLatest(true);
       }
     }
   }
