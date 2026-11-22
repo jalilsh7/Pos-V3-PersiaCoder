@@ -51,6 +51,15 @@ const channelLabels: Record<string, string> = {
 const fulfillmentLabels: Record<string, string> = {
   dine_in: "سرو داخل", takeaway: "بیرون‌بر", delivery: "ارسال",
 };
+const fulfillmentStatusLabels: Record<string, string> = {
+  pending: "در انتظار پذیرش",
+  accepted: "پذیرفته‌شده",
+  preparing: "در حال آماده‌سازی",
+  ready: "آماده دریافت",
+  dispatched: "ارسال‌شده",
+  completed: "تکمیل‌شده",
+  cancelled: "لغوشده",
+};
 const paymentLabels: Record<string, { label: string; variant: "success" | "warning" | "danger" | "neutral" }> = {
   unpaid: { label: "پرداخت‌نشده", variant: "warning" },
   partially_paid: { label: "پرداخت بخشی", variant: "warning" },
@@ -527,6 +536,7 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
                 <div><span>مشتری</span><strong>{selectedOrder.customer?.name ?? "مشتری مهمان"}</strong></div>
                 <div><span>کانال ثبت</span><strong>{channelLabels[selectedOrder.source_channel] ?? selectedOrder.source_channel}</strong></div>
                 <div><span>نوع دریافت</span><strong>{fulfillmentLabels[selectedOrder.fulfillment_method ?? ""] ?? "ثبت نشده"}</strong></div>
+                {selectedOrder.fulfillment ? <div><span>وضعیت دریافت</span><strong>{fulfillmentStatusLabels[selectedOrder.fulfillment.status] ?? selectedOrder.fulfillment.status}</strong></div> : null}
                 <div><span>زمان ثبت</span><strong>{dateTime(selectedOrder.created_at, timeZone)}</strong></div>
                 <div><span>وضعیت سفارش</span><StatusBadge variant={statusLabels[selectedOrder.order_status]?.variant ?? "neutral"}>{statusLabels[selectedOrder.order_status]?.label ?? selectedOrder.order_status}</StatusBadge></div>
                 <div><span>وضعیت پرداخت</span>{paymentBadge(selectedOrder.payment_status)}</div>
@@ -715,7 +725,7 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
                 {selectedOrder.order_status === "accepted" ? <span>برای شروع آماده‌سازی، این سفارش در برد آشپزخانه قرار دارد.</span> : null}
                 {selectedOrder.order_status === "ready" ? (
                   <Button variant="primary" disabled={transitioning} onClick={() => { void changeOrderStatus("completed"); }}>
-                    {transitioning ? "در حال ثبت..." : "تکمیل و تحویل سفارش"}
+                    {transitioning ? "در حال ثبت..." : "ثبت تکمیل سفارش"}
                   </Button>
                 ) : null}
                 {!showCancelForm && !["completed", "cancelled", "rejected"].includes(selectedOrder.order_status)
