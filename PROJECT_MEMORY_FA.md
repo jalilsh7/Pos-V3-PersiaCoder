@@ -580,3 +580,8 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 - آماده‌سازی فقط latest consent event را بررسی می‌کند؛ مشتری active، موبایل معتبر، آخرین تصمیم granted و تطابق دقیق شماره جاری با recipient_phone_normalized لازم است. فقط شناسه مشتری و consent event در recipients ذخیره می‌شود؛ شماره خام ذخیره نمی‌شود.
 - علت‌های حذف به‌صورت شمارش aggregate بازگردانده می‌شوند. کمپین بعد از آماده‌سازی prepared است؛ هیچ send/dispatch یا worker اضافه نشده و transactional SMS مستقل باقی مانده است.
 - Static contract guard افزوده شد اما اجرا نشده؛ migration، PHP lint، DB integration و frontend build اجرا نشده‌اند. ارسال marketing ممنوع تا suppression/opt-out و revalidation در لحظه dispatch.
+
+## SMS-MARKETING-UI-2026-001 — رابط مدیریت کمپین (2026-11-22)
+- API جزئیات کمپین اضافه شد. UI فارسی مدیریت draft/list/detail/audience preview در Communications ساخته و به ناوبری متصل شد.
+- کاربر مدیر می‌تواند عنوان، provider body ID و ترتیب متغیرها را ثبت کند؛ مخاطبان فقط پس از بررسی latest consent، شماره فعلی و فعال بودن مشتری وارد snapshot می‌شوند. UI علت‌های exclusion را نشان می‌دهد.
+- ارسال تبلیغاتی در هیچ endpoint یا UI ارائه نشده است. TypeScript/build و تست‌های قراردادی اجرا نشده‌اند؛ قابلیت هنوز runtime-verified نیست.
