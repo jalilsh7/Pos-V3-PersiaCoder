@@ -388,6 +388,15 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
       },
     },
     {
+      key: "fulfillment",
+      header: "وضعیت دریافت",
+      render: (order: OrderSummary) => order.fulfillment_status
+        ? <StatusBadge variant={order.fulfillment_status === "completed" ? "success" : order.fulfillment_status === "cancelled" ? "danger" : order.fulfillment_status === "ready" ? "info" : "neutral"}>
+            {fulfillmentStatusLabels[order.fulfillment_status] ?? order.fulfillment_status}
+          </StatusBadge>
+        : <span>—</span>,
+    },
+    {
       key: "payment",
       header: "وضعیت پرداخت",
       render: (order: OrderSummary) => paymentBadge(order.payment_status),
