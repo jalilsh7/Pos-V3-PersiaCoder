@@ -607,3 +607,8 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 
 ## POS-OPS-DELIVERY-2026-001 (2026-11-23)
 نیازهای محصول ثبت شد: ZIP و installer مرورگری بدون Node runtime روی هاست؛ update داخلی با امضای artifact/manifest/hash و backup/compatibility gate؛ backup/restore واقعی با integrity و آزمون restore؛ چاپ مستقل adapter-based با تنظیمات ۵۸/۸۰ و محدودیت صریح چاپ بی‌صدا؛ آفلاین محدود local-first با sync idempotent؛ UX سریع/کم‌کلیک POS؛ داشبورد read-model نقش‌محور؛ audit history با actor/action/target/outcome و بدون secrets؛ ساعات هفتگی/استثنا/override و جداسازی پذیرش آنلاین از فروش حضوری؛ split tender به‌عنوان نیاز محصولی و unknown transaction با reconciliation قبل از retry. تعداد دستگاه‌های هم‌زمان آفلاین، مدت آفلاین، policy تعارض، مدل چاپگر، KPI، retention و قواعد دقیق split/refund/overpayment باز هستند. ثبت سندی به معنی پیاده‌سازی/تست نیست. مرجع تفصیلی: FINAL_PRODUCT_DECISIONS_FA.md، تصمیم POS-OPS-DELIVERY-2026-001.
+
+
+
+## LOCAL-PAYMENT-BRIDGE-2026-001 — تصمیم اتصال کارتخوان (2026-11-23)
+اتصال کارتخوان به POS تحت وب از طریق برنامه واسط محلی مستقل روی کامپیوتر صندوق انجام می‌شود: Browser POS ↔ localhost ↔ Local Payment Bridge ↔ adapter ↔ کارتخوان. اتصال کارتخوان بسته به پروتکل مدل می‌تواند LAN/Wi-Fi/USB/Serial باشد. این Bridge نباید به Node.js روی هاست مشتری وابسته باشد. قطع اینترنت صندوق، در صورت اتصال بانکی مستقل کارتخوان و برگشت نتیجه معتبر از مسیر محلی، لزوماً مانع پرداخت نیست. timeout/قطع ارتباط وضعیت unknown دارد و تا inquiry/reconciliation شارژ مجدد ممنوع است. سیستم‌عامل و فناوری Bridge، مدل‌ها و SDK/protocolهای پشتیبانی‌شده هنوز تعیین نشده‌اند. تصمیم ثبت شده؛ پیاده‌سازی و تست نشده است.
