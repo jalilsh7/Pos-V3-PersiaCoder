@@ -36,8 +36,9 @@ import { AccessManagementWorkspace } from "../features/access/AccessManagementWo
 import { StorefrontWorkspace } from "../features/storefront/StorefrontWorkspace";
 import { SmsOutboxWorkspace } from "../features/communications/SmsOutboxWorkspace";
 import { SmsServiceTemplatesWorkspace } from "../features/communications/SmsServiceTemplatesWorkspace";
+import { SmsMarketingCampaignsWorkspace } from "../features/communications/SmsMarketingCampaignsWorkspace";
 
-type ViewId = "overview" | "pos" | "orders" | "kitchen" | "catalog" | "inventory" | "recipes" | "customers" | "finance" | "settings" | "storefront" | "access" | "communications" | "smsTemplates";
+type ViewId = "overview" | "pos" | "orders" | "kitchen" | "catalog" | "inventory" | "recipes" | "customers" | "finance" | "settings" | "storefront" | "access" | "communications" | "smsTemplates" | "smsMarketing";
 
 type NavigationItem = {
   id: ViewId;
@@ -71,6 +72,7 @@ const navigation: NavigationGroup[] = [
       { id: "customers", label: "مشتریان", icon: Users, description: "پروفایل مشتری و وفاداری" },
       { id: "communications", label: "گزارش پیامک", icon: MessageSquare, description: "صف و گزارش تحویل پیامک" },
       { id: "smsTemplates", label: "قالب خدماتی پیامک", icon: MessageSquare, description: "کد قالب و راهنمای متغیرهای ملی‌پیامک" },
+      { id: "smsMarketing", label: "کمپین تبلیغاتی پیامک", icon: MessageSquare, description: "مدیریت کمپین و رضایت مخاطبان" },
     ],
   },
   {
@@ -225,7 +227,7 @@ function AuthenticatedWorkspace({ user, business, branch, onLogout, actionError 
 
         <div className="content-area">
           {actionError ? <div className="auth-error" role="alert">{actionError}</div> : null}
-          {activeView === "overview" ? <Overview /> : activeView === "pos" ? <PosWorkspace /> : activeView === "orders" ? <OrderCenter timeZone={branch.timezone ?? business.timezone} /> : activeView === "kitchen" ? <KitchenBoard timeZone={branch.timezone ?? business.timezone} /> : activeView === "catalog" ? <CatalogWorkspace /> : activeView === "inventory" ? <InventoryWorkspace /> : activeView === "recipes" ? <RecipeWorkspace /> : activeView === "customers" ? <CustomersWorkspace /> : activeView === "finance" ? <FinanceWorkspace /> : activeView === "settings" ? <BusinessSettingsWorkspace /> : activeView === "storefront" ? <StorefrontWorkspace /> : activeView === "access" ? <AccessManagementWorkspace /> : activeView === "communications" ? <SmsOutboxWorkspace /> : activeView === "smsTemplates" ? <SmsServiceTemplatesWorkspace /> : (
+          {activeView === "overview" ? <Overview /> : activeView === "pos" ? <PosWorkspace /> : activeView === "orders" ? <OrderCenter timeZone={branch.timezone ?? business.timezone} /> : activeView === "kitchen" ? <KitchenBoard timeZone={branch.timezone ?? business.timezone} /> : activeView === "catalog" ? <CatalogWorkspace /> : activeView === "inventory" ? <InventoryWorkspace /> : activeView === "recipes" ? <RecipeWorkspace /> : activeView === "customers" ? <CustomersWorkspace /> : activeView === "finance" ? <FinanceWorkspace /> : activeView === "settings" ? <BusinessSettingsWorkspace /> : activeView === "storefront" ? <StorefrontWorkspace /> : activeView === "access" ? <AccessManagementWorkspace /> : activeView === "communications" ? <SmsOutboxWorkspace /> : activeView === "smsTemplates" ? <SmsServiceTemplatesWorkspace /> : activeView === "smsMarketing" ? <SmsMarketingCampaignsWorkspace /> : (
             <div className="page-stack">
               <PageHeader
                 eyebrow={activeItem.description}
