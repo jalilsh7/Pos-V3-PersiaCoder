@@ -634,7 +634,7 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 
 ## KDS-01A — صف زنده آشپزخانه (2026-11-23)
 
-- KitchenBoard صف‌های accepted/preparing/ready را با صفحه‌بندی کامل دریافت می‌کند؛ refresh خودکار هر ۱۵ ثانیه و جلوگیری از درخواست‌های هم‌زمان اضافه شده است.
+- KitchenBoard صف‌های accepted/preparing/ready را با صفحه‌بندی کامل دریافت می‌کند؛ refresh خودکار هر ۱۵ ثانیه و جلوگیری از درخواست‌های هم‌زمان اضافه شده است. ترتیب نمایش از قدیمی‌ترین سفارش فعال به جدیدترین است.
 - جزئیات سفارش انتخاب‌شده پس از refresh به‌روز می‌شود؛ در خطای موقت آخرین جزئیات موفق حفظ می‌شود.
 - فایل: `v3/frontend/src/features/kitchen/KitchenBoard.tsx`.
 - commit: `9a418e2d69add2aacadaf991c690472b1114cda4`.
