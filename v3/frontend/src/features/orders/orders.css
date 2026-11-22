@@ -103,3 +103,22 @@
   .orders-payment-row > div { flex-basis: calc(100% - 100px); }
   .orders-payment-row > .ui-button { width: 100%; }
 }
+
+
+.orders-detail-heading-actions { display: flex; align-items: center; gap: 8px; }
+.orders-print-receipt { display: none; }
+.orders-print-brand { text-align: center; color: #022f2e; font-size: 14px; font-weight: 900; }
+.orders-print-receipt h1 { margin: 5px 0 10px; text-align: center; color: #182521; font-size: 14px; }
+.orders-print-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; padding: 3px 0; font-size: 9px; }
+.orders-print-row > :last-child { text-align: left; }
+.orders-print-item { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 3px 8px; padding: 5px 0; border-bottom: 1px dotted #d7dfdc; }
+.orders-print-item > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.orders-print-item strong { font-size: 9px; line-height: 1.7; overflow-wrap: anywhere; }
+.orders-print-item small, .orders-print-options { color: #596963; font-size: 8px; line-height: 1.7; }
+.orders-print-item > b { font-size: 9px; white-space: nowrap; }
+.orders-print-options { grid-column: 1 / -1; }
+.orders-print-divider { margin: 7px 0; border-top: 1px dashed #aebbb7; }
+.orders-print-grand-total { margin-top: 4px; padding-top: 7px; border-top: 1px solid #aebbb7; font-size: 11px; font-weight: 900; }
+.orders-print-address, .orders-print-note { padding: 4px 0; color: #596963; font-size: 8px; line-height: 1.8; }
+.orders-print-footer { margin-top: 12px; padding-top: 7px; border-top: 1px dashed #aebbb7; text-align: center; color: #596963; font-size: 8px; }
+@media (max-width: 560px) { .orders-detail-heading-actions { flex-wrap: wrap; justify-content: flex-end; } }
