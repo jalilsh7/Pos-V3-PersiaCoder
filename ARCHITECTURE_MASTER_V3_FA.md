@@ -169,3 +169,19 @@ PHP 8.2+ / PDO، MySQL یا MariaDB، React/TypeScript/Vite، REST/JSON و adapt
 - انتقال پایانه فقط آنلاین؛ failover خودکار در قطعی ممنوع. در صورت گم‌شدن دستگاه، بازیابی صف/تعیین تکلیف پیش از handover الزامی است.
 - تست پذیرش: ثبت سفارش هنگام قطعی؛ جلوگیری از ثبت در دستگاه دوم؛ refresh و restart؛ چاپ محلی؛ retry بعد از timeout؛ sync ترتیبی؛ replay بدون duplicate؛ stale price/catalog؛ و handover/revoke پایانه.
 
+
+
+## الزامات عملیاتی تکمیلی — POS-OPS-DELIVERY-2026-001 (2026-11-23)
+
+- **ZIP/Browser installer:** release ZIP شامل frontend build استاتیک، PHP backend و migrationهاست؛ نصب مرورگری با preflight واقعی، config امن، migration نسخه‌دار، health check و قفل/حذف امن installer پس از موفقیت. Node.js روی هاست مشتری ممنوع/غیرلازم است. اجرای دوباره installer نباید دیتای موجود را بازنویسی کند.
+- **In-app update:** فقط artifact دارای manifest، hash و امضای معتبر پذیرفته شود؛ preflight نسخه/runtime/DB، backup قبل از update، migration سازگار، audit و recovery plan الزامی است. rollback برای migration غیرقابل برگشت تضمین نمی‌شود.
+- **Backup/restore:** DB و فایل‌های ضروری، manifest/schema version و integrity metadata؛ حفاظت secrets؛ restore با validation و جلوگیری از overwrite ناخواسته. معیار پذیرش، restore آزمایشی و بررسی صحت داده است، نه صرفاً تولید dump.
+- **Printing:** Integration مستقل و adapter-based برای رسید مشتری/آشپزخانه؛ تنظیم چاپگر، کاغذ ۵۸/۸۰، قالب، نسخه و چاپ مجدد auditشده. چاپ بی‌صدا و پشتیبانی مدل خاص تا آزمون واقعی تضمین نمی‌شود؛ daemon Node روی هاست الزام نیست.
+- **Offline:** local-first محدود برای سفارش حضوری با storage پایدار، idempotent sync و وضعیت آشکار؛ عدم جعل پرداخت/موجودی/تأیید سرور. تعداد دستگاه‌های هم‌زمان، اعتبار آفلاین، stale data و conflict policy باز هستند.
+- **POS UX:** مسیر فروش پرتکرار باید سریع، کم‌کلیک، touch-friendly و RTL باشد؛ معیار عددی performance باید جداگانه تعیین و اندازه‌گیری شود.
+- **Dashboard/Reporting:** داشبورد read model نقش‌محور، scoped و قابل ردیابی به داده مرجع؛ شاخص‌ها با تعریف، timezone و وضعیت مالی روشن.
+- **Audit:** تاریخچه عملیات با actor، timestamp، business/branch scope، action، target، outcome و correlation؛ append-only برای رخدادهای حساس؛ حذف secrets/tokens/card data از log و اعمال retention policy.
+- **Business hours:** برنامه هفتگی، استثنا و override دستی؛ open/closed، online order acceptance و حضوری POS مستقل؛ timezone کسب‌وکار مرجع. سیاست سفارش در تعطیلی قابل تنظیم.
+- **Payments:** split tender به‌عنوان نیاز ثبت شده ولی قواعد جزئی پرداخت/بازپرداخت باز است. timeout/unknown با state مستقل، idempotency و reconciliation قبل از retry؛ retry کور و ثبت دوباره وجه ممنوع.
+
+این الزامات دامنه طراحی را روشن می‌کنند و ادعای پیاده‌سازی یا سازگاری آزموده‌شده نیستند. جزئیات باز در بخش پرسش‌های باز و roadmap باقی می‌مانند.
