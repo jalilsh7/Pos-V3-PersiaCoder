@@ -55,7 +55,9 @@ async function fetchKitchenOrders(): Promise<OrderSummary[]> {
   for (const page of pages) {
     for (const order of page) unique.set(order.id, order);
   }
-  return [...unique.values()].sort((left, right) => right.created_at.localeCompare(left.created_at));
+  return [...unique.values()].sort((left, right) =>
+    left.created_at.localeCompare(right.created_at) || left.order_number - right.order_number
+  );
 }
 
 export function KitchenBoard({ timeZone }: { timeZone: string }) {
