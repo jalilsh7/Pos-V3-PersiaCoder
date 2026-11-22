@@ -117,7 +117,6 @@ export function KitchenBoard({ timeZone }: { timeZone: string }) {
           const runLatest = refreshRunner.current;
           if (runLatest) void runLatest(true);
         }
-        }
       }
     };
     refreshRunner.current = load;
