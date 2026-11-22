@@ -72,11 +72,15 @@ export function KitchenBoard({ timeZone }: { timeZone: string }) {
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const refreshInFlight = useRef(false);
+  const refreshQueued = useRef(false);
 
   useEffect(() => {
     let active = true;
     const load = async (showError: boolean) => {
-      if (refreshInFlight.current) return;
+      if (refreshInFlight.current) {
+        refreshQueued.current = true;
+        return;
+      }
       refreshInFlight.current = true;
       try {
         const items = await fetchKitchenOrders();
@@ -104,7 +108,13 @@ export function KitchenBoard({ timeZone }: { timeZone: string }) {
         }
       } finally {
         refreshInFlight.current = false;
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+          if (refreshQueued.current) {
+            refreshQueued.current = false;
+            void load(true);
+          }
+        }
       }
     };
     void load(true);
@@ -140,7 +150,10 @@ export function KitchenBoard({ timeZone }: { timeZone: string }) {
   const readyCount = orders.filter((order) => order.order_status === "ready").length;
 
   async function refreshOrders() {
-    if (refreshInFlight.current) return;
+    if (refreshInFlight.current) {
+      refreshQueued.current = true;
+      return;
+    }
     setRefreshing(true);
     setError(null);
     refreshInFlight.current = true;
@@ -158,6 +171,10 @@ export function KitchenBoard({ timeZone }: { timeZone: string }) {
     } finally {
       refreshInFlight.current = false;
       setRefreshing(false);
+      if (refreshQueued.current) {
+        refreshQueued.current = false;
+        void refreshOrders();
+      }
     }
   }
 
