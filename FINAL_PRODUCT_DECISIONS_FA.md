@@ -616,3 +616,12 @@
 - مرز شواهد تست: سناریوی فعلی Integration، over-return بین دو پیش‌نویس مستقل را با posting ترتیبی بررسی می‌کند؛ تست واقعی دو connection هم‌زمان برای برگشت هنوز انجام نشده و باید جداگانه اجرا شود. قفل source document در پیاده‌سازی برای serialization طراحی شده، اما این ادعا تا اجرای race test اثبات عملیاتی نشده است.
 
 - Integration test واقعی دو process/connection برای رقابت دو برگشت که هرکدام تمام مانده نهایی را درخواست می‌کنند اضافه شد؛ انتظار یک posting موفق و یک رد over-return است. این تست هنوز اجرا نشده و تا اجرای موفق روی MySQL و MariaDB شواهد پذیرش محسوب نمی‌شود.
+
+
+## SMS-MARKETING-FOUNDATION-2026-001 — جداسازی ساختار کمپین تبلیغاتی از پیامک تراکنشی (2026-11-22)
+
+- کمپین بازاریابی SMS باید از outbox و worker پیامک تراکنشی سفارش جدا باشد؛ هیچ جدول، worker یا trigger تراکنشی نباید برای ارسال کمپین reuse یا تغییر رفتار داده شود.
+- Migration 023 دو جدول مستقل pos_sms_marketing_campaigns و pos_sms_marketing_campaign_recipients ایجاد می‌کند. هر دو business-scoped هستند؛ مخاطب هر کمپین برای هر مشتری حداکثر یک‌بار ثبت می‌شود.
+- کمپین در حالت draft ایجاد می‌شود؛ ایجاد کمپین یا snapshot مخاطب به‌تنهایی ارسال را مجاز نمی‌کند. وضعیت مخاطب و شناسه رخداد رضایت ثبت‌شده‌اند، اما eligibility باید هنگام آماده‌سازی و دوباره درست پیش از dispatch از آخرین رخداد consent، فعال‌بودن مشتری و تطابق شماره فعلی با recipient_phone_normalized احراز شود.
+- شماره موبایل خام در جداول کمپین/مخاطب ذخیره نمی‌شود. گیرنده باید در مرحله dispatch از پروفایل مشتری خوانده و با grant معتبر bind شود؛ ارسال به شماره قدیمی یا consent نامعتبر ممنوع است.
+- این بسته فقط schema foundation است؛ API، UI، audience builder، worker، provider dispatch، opt-out و suppression اجرایی هنوز ساخته نشده‌اند. Marketing dispatch باید غیرفعال بماند. پیامک transactional مستقل است.
