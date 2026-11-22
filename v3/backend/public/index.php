@@ -753,6 +753,11 @@ try {
         [$sessionMiddleware, $makePermissionMiddleware('communications.sms.marketing.manage', false)],
     );
 
+    $router->add('GET', '/api/v1/communications/sms/marketing/campaigns/{campaignPublicId}',
+        static fn (Request $request, array $parameters): Response => $getSmsMarketingCampaignController()->detail($request, $parameters),
+        [$sessionMiddleware, $makePermissionMiddleware('communications.sms.marketing.manage', false)],
+    );
+
     $router->add('POST', '/api/v1/communications/sms/marketing/campaigns',
         static fn (Request $request): Response => $getSmsMarketingCampaignController()->create($request),
         [$sessionMiddleware, $makePermissionMiddleware('communications.sms.marketing.manage', false), $csrfMiddleware, $originMiddleware],
