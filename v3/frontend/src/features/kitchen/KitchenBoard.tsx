@@ -186,7 +186,6 @@ export function KitchenBoard({ timeZone }: { timeZone: string }) {
     try {
       await transitionKitchenOrder(order.id, nextStatus);
       await refreshOrders();
-      if (selectedId === order.id) setDetail(await getOrderDetails(order.id));
     } catch (cause) {
       setActionError(cause instanceof ApiError ? cause.message : cause instanceof Error ? cause.message : "تغییر وضعیت آماده‌سازی انجام نشد.");
     } finally {
