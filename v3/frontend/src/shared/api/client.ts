@@ -915,6 +915,7 @@ export type OrderDetail = {
     table_session_id: string | null;
     fulfillment: {
       method: "dine_in" | "takeaway" | "delivery";
+      status: "pending" | "accepted" | "preparing" | "ready" | "dispatched" | "completed" | "cancelled";
       recipient_name: string | null;
       recipient_phone: string | null;
       address: Record<string, string | number> | null;
