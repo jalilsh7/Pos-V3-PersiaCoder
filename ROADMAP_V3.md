@@ -1599,3 +1599,12 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - مدیر می‌تواند draft بسازد، کمپین را باز کند، وضعیت و شمارنده‌ها را ببیند و مخاطبان را آماده کند؛ علت‌های حذف رضایت/شماره/فعال‌بودن نمایش داده می‌شود.
 - هیچ عملیات ارسال در API یا UI وجود ندارد. snapshot مخاطب، رضایت را فقط در زمان آماده‌سازی نشان می‌دهد؛ revalidation در زمان ارسال همچنان الزام قطعی است.
 - Static contract guard گسترش یافت ولی اجرا نشده؛ TypeScript/build، PHP lint، migration و DB integration نیز اجرا نشده‌اند.
+
+
+### SMS Marketing — suppression پس از تغییر رضایت/پروفایل (2026-11-22)
+- [x] هر رخداد consent جدید، recipientهای eligible کمپین‌های قبلی همان مشتری را suppress می‌کند؛ grant مجدد snapshot قبلی را احیا نمی‌کند.
+- [x] تغییر شماره یا غیرفعال‌شدن مشتری، recipientهای eligible را با علت مشخص suppress می‌کند.
+- [x] تغییر وضعیت فقط در محدوده business/customer است و فقط eligible را تغییر می‌دهد؛ وضعیت‌های نهایی دست‌نخورده می‌مانند.
+- [x] شمار recipientهای suppress‌شده در audit عملیات مشتری ثبت می‌شود.
+- [ ] اجرای static contract، PHP lint و DB integration.
+- [ ] ساخت claim/queue امن با آخرین اعتبارسنجی consent/phone در لحظه dispatch و هماهنگی قفل business؛ تا قبل از آن ارسال تبلیغاتی ممنوع است.
