@@ -1256,3 +1256,10 @@ KitchenBoard به‌روزرسانی خودکار ۱۵ ثانیه‌ای، جل�
 - اگر اقلام سفارش به نسخه رسپی متصل باشند ولی رکورد رزرو موجودی وجود نداشته باشد، عملیات لغو با خطای 409 متوقف می‌شود تا وضعیت انبار به‌صورت بی‌صدا ناسازگار نشود. سفارش‌های بدون رسپی/ردیابی موجودی همچنان بدون رزرو قابل لغو هستند.
 - فایل: `v3/backend/src/Orders/OrderInventoryLifecycleService.php`؛ commit: `8955b8a0122ab91fb250fcc93d22b0536107eee2`.
 - تست PHP/DB integration و سناریوهای لغو هنوز اجرا نشده‌اند.
+
+
+## KDS-01D — اجرای refresh معوق با آخرین چرخه کامپوننت (2026-11-23)
+- صف refresh اکنون از طریق reference چرخه effect فعال اجرا می‌شود؛ اگر انتخاب سفارش تغییر کند یا effect قبلی cleanup شود، درخواست معوق به callback قدیمی متکی نمی‌ماند.
+- refresh دستی و polling نیز پس از پایان fetch فعال به runner جاری واگذار می‌شوند؛ مسیرهای تکراری دریافت صف همچنان با یک قفل مشترک کنترل می‌شوند.
+- فایل: `v3/frontend/src/features/kitchen/KitchenBoard.tsx`؛ commits: `a3b978efbdd77e9b2c570b4e5b8d72e5afa4ab2d` و `95567711d3ed0632ecdb8ce18e09914d8f05bb6d`.
+- build/typecheck و تست چرخه mount/unmount هنوز اجرا نشده‌اند.
