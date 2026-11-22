@@ -573,3 +573,10 @@ Migration 022 و clean-install schema جدول `pos_customer_consent_events` ر�
 
 ### SMS-MARKETING-FOUNDATION-2026-001 — زیرساخت مستقل کمپین تبلیغاتی (2026-11-22)
 Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_campaign_recipients را به‌صورت business-scoped اضافه کرد و clean schema هم‌راستا شد. کمپین پیش‌فرض draft است؛ هر customer در هر campaign یک recipient دارد؛ recipient می‌تواند به consent event مرجع وصل شود، اما این snapshot به‌تنهایی مجوز ارسال نیست. شماره خام ذخیره نمی‌شود. Outbox/worker تراکنشی دست‌نخورده ماند. Static check scripts/check-v3-sms-marketing-campaign-schema.php افزوده شد، اما migration و تست‌ها اجرا نشده‌اند. commits: e970591, e7324be, 7d803f7. API/UI/audience preview/dispatch/opt-out/suppression هنوز باز است و ارسال marketing مسدود می‌ماند.
+
+## SMS-MARKETING-API-2026-001 — کمپین و آماده‌سازی مخاطب (2026-11-22)
+- مجوز مستقل `communications.sms.marketing.manage` در migration 024 و clean schema ثبت شد.
+- Backend کمپین: create draft، list و prepare-audience؛ با RBAC، session، CSRF، same-origin، business scope، idempotency و audit.
+- آماده‌سازی فقط latest consent event را بررسی می‌کند؛ مشتری active، موبایل معتبر، آخرین تصمیم granted و تطابق دقیق شماره جاری با recipient_phone_normalized لازم است. فقط شناسه مشتری و consent event در recipients ذخیره می‌شود؛ شماره خام ذخیره نمی‌شود.
+- علت‌های حذف به‌صورت شمارش aggregate بازگردانده می‌شوند. کمپین بعد از آماده‌سازی prepared است؛ هیچ send/dispatch یا worker اضافه نشده و transactional SMS مستقل باقی مانده است.
+- Static contract guard افزوده شد اما اجرا نشده؛ migration، PHP lint، DB integration و frontend build اجرا نشده‌اند. ارسال marketing ممنوع تا suppression/opt-out و revalidation در لحظه dispatch.
