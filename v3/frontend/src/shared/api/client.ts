@@ -917,6 +917,7 @@ export type OrderDetail = {
     fulfillment: {
       method: "dine_in" | "takeaway" | "delivery";
       status: "pending" | "accepted" | "preparing" | "ready" | "dispatched" | "completed" | "cancelled";
+      dispatched_at: string | null;
       recipient_name: string | null;
       recipient_phone: string | null;
       address: Record<string, string | number> | null;
