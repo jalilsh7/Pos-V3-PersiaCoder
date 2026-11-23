@@ -190,6 +190,7 @@ final readonly class OrderService
                 'fulfillment' => $order['fulfillment_method'] === null ? null : [
                     'method' => (string) $order['fulfillment_method'],
                     'status' => (string) $order['fulfillment_status'],
+                    'dispatched_at' => $order['fulfillment_dispatched_at'] === null ? null : (string) $order['fulfillment_dispatched_at'],
                     'recipient_name' => $order['recipient_name_snapshot'] === null ? null : (string) $order['recipient_name_snapshot'],
                     'recipient_phone' => $order['recipient_phone_snapshot'] === null ? null : (string) $order['recipient_phone_snapshot'],
                     'address' => $address,
