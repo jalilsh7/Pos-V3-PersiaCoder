@@ -662,6 +662,97 @@ final readonly class OrderService
         );
     }
 
+    public function dispatchDelivery(
+        AuthenticatedPrincipal $actor,
+        BusinessScope $scope,
+        string $orderPublicId,
+        string $idempotencyKey,
+        string $requestId,
+        string $ipAddress,
+    ): array {
+        if (!self::isUuid($orderPublicId)) {
+            throw new HttpException(400, 'invalid_order_id', 'The order identifier is invalid.');
+        }
+        if (!$this->permissions->allows($actor, 'orders.update', $scope)) {
+            throw new HttpException(403, 'permission_denied', 'Order update permission is required to dispatch a delivery.');
+        }
+
+        $fingerprint = self::fingerprint([
+            'order_id' => $orderPublicId,
+            'action' => 'delivery.dispatch',
+        ]);
+
+        return $this->idempotency->execute(
+            $actor->userId,
+            $scope,
+            'orders.delivery.dispatch',
+            $idempotencyKey,
+            $fingerprint,
+            function (PDO $connection) use ($actor, $scope, $orderPublicId, $requestId, $ipAddress): array {
+                $order = $this->orders->findOrderForUpdate(
+                    $scope->businessId,
+                    (int) $scope->branchId,
+                    $orderPublicId,
+                );
+                if ($order === null) {
+                    throw new HttpException(404, 'order_not_found', 'The order was not found in this branch.');
+                }
+                $fulfillment = $this->orders->findFulfillmentForUpdate(
+                    $scope->businessId,
+                    (int) $scope->branchId,
+                    (int) $order['id'],
+                );
+                if ($fulfillment === null || $fulfillment['method'] !== 'delivery') {
+                    throw new HttpException(409, 'delivery_fulfillment_required', 'Only delivery orders can be dispatched.');
+                }
+                if ($order['order_status'] !== 'ready' || $fulfillment['status'] !== 'ready') {
+                    if ($fulfillment['status'] === 'dispatched') {
+                        throw new HttpException(409, 'delivery_already_dispatched', 'This delivery has already been dispatched.');
+                    }
+                    throw new HttpException(409, 'delivery_not_ready', 'The order and delivery must both be ready before dispatch.');
+                }
+
+                $this->orders->updateFulfillmentStatus(
+                    $scope->businessId,
+                    (int) $scope->branchId,
+                    (int) $order['id'],
+                    'dispatched',
+                );
+                $this->audit->record(
+                    $actor->userId,
+                    'order.delivery_dispatched',
+                    'order',
+                    $orderPublicId,
+                    ['fulfillment_status' => 'ready'],
+                    [
+                        'fulfillment_status' => 'dispatched',
+                        'order_number' => (int) $order['order_number'],
+                        'order_status' => (string) $order['order_status'],
+                    ],
+                    null,
+                    $requestId,
+                    $ipAddress,
+                    $scope->businessId,
+                    $scope->branchId,
+                );
+
+                return [
+                    'status' => 200,
+                    'body' => [
+                        'data' => [
+                            'order_id' => $orderPublicId,
+                            'order_number' => (int) $order['order_number'],
+                            'order_status' => (string) $order['order_status'],
+                            'from_fulfillment_status' => 'ready',
+                            'to_fulfillment_status' => 'dispatched',
+                        ],
+                        'meta' => (object) [],
+                    ],
+                ];
+            },
+        );
+    }
+
     public function transitionKitchen(
         AuthenticatedPrincipal $actor,
         BusinessScope $scope,
