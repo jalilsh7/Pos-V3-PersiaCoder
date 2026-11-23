@@ -969,6 +969,19 @@ export async function transitionOrder(
   return data;
 }
 
+export async function dispatchDeliveryOrder(orderId: string): Promise<{
+  order_id: string;
+  order_number: number;
+  order_status: OrderStatus;
+  from_fulfillment_status: "ready";
+  to_fulfillment_status: "dispatched";
+}> {
+  return request(`/orders/${encodeURIComponent(orderId)}/dispatch`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+}
+
 export async function transitionKitchenOrder(
   orderId: string,
   toStatus: "preparing" | "ready",
