@@ -509,6 +509,7 @@ CREATE TABLE pos_order_fulfillments (
   address_snapshot JSON NULL,
   delivery_fee_amount BIGINT UNSIGNED NOT NULL DEFAULT 0,
   scheduled_for DATETIME(3) NULL,
+  dispatched_at DATETIME(3) NULL,
   completed_at DATETIME(3) NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uq_order_fulfillment_order (order_id),
