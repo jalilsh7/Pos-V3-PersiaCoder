@@ -515,6 +515,11 @@ try {
         [$sessionMiddleware, $makePermissionMiddleware('orders.update', true), $csrfMiddleware, $originMiddleware],
     );
 
+    $router->add('POST', '/api/v1/orders/{orderPublicId}/dispatch', 
+        static fn (Request $request, array $parameters): Response => $getOrderController()->dispatchDelivery($request, $parameters),
+        [$sessionMiddleware, $makePermissionMiddleware('orders.update', true), $csrfMiddleware, $originMiddleware],
+    );
+
     $router->add('PATCH', '/api/v1/orders/{orderPublicId}/kitchen-status',
         static fn (Request $request, array $parameters): Response => $getOrderController()->transitionKitchen($request, $parameters),
         [$sessionMiddleware, $makePermissionMiddleware('kitchen.update', true), $csrfMiddleware, $originMiddleware],
