@@ -6,6 +6,7 @@ import {
   getOpenCashRefundSessions,
   getOrderPayments,
   getOrders,
+  dispatchDeliveryOrder,
   refundCashPayment,
   transitionOrder,
   type OpenCashPaymentSession,
@@ -284,6 +285,27 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
       setTransitioning(false);
     }
   }
+  async function dispatchSelectedDelivery() {
+    if (!selectedOrder || transitioning
+      || selectedOrder.fulfillment?.method !== "delivery"
+      || selectedOrder.order_status !== "ready"
+      || selectedOrder.fulfillment.status !== "ready") return;
+    setTransitioning(true);
+    setActionError(null);
+    try {
+      await dispatchDeliveryOrder(selectedOrder.id);
+      await fetchOrders();
+      const updated = await getOrderDetails(selectedOrder.id);
+      setDetail(updated);
+    } catch (cause) {
+      setActionError(cause instanceof ApiError
+        ? cause.message
+        : cause instanceof Error ? cause.message : "ثبت اعزام سفارش انجام نشد.");
+    } finally {
+      setTransitioning(false);
+    }
+  }
+
   function refundableAmount(paymentId: string, amount: number): number {
     const refunded = paymentSummary?.refunds
       .filter((refund) => refund.payment_id === paymentId && refund.status === "succeeded")
@@ -733,6 +755,13 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
                   </Button>
                 ) : null}
                 {selectedOrder.order_status === "accepted" ? <span>برای شروع آماده‌سازی، این سفارش در برد آشپزخانه قرار دارد.</span> : null}
+                {selectedOrder.order_status === "ready"
+                  && selectedOrder.fulfillment?.method === "delivery"
+                  && selectedOrder.fulfillment.status === "ready" ? (
+                  <Button variant="primary" disabled={transitioning} onClick={() => { void dispatchSelectedDelivery(); }}>
+                    {transitioning ? "در حال ثبت..." : "ثبت اعزام برای ارسال"}
+                  </Button>
+                ) : null}
                 {selectedOrder.order_status === "ready" ? (
                   <Button variant="primary" disabled={transitioning} onClick={() => { void changeOrderStatus("completed"); }}>
                     {transitioning ? "در حال ثبت..." : "ثبت تکمیل سفارش"}
