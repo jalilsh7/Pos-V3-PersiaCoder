@@ -311,6 +311,7 @@ final readonly class OrderRepository
                     c.public_id AS customer_public_id, c.name AS customer_name,
                     ts.public_id AS table_session_public_id,
                     f.method AS fulfillment_method, f.status AS fulfillment_status,
+                    f.dispatched_at AS fulfillment_dispatched_at,
                     f.recipient_name_snapshot, f.recipient_phone_snapshot,
                     f.address_snapshot, f.delivery_fee_amount AS fulfillment_fee
              FROM pos_orders o
@@ -558,7 +559,7 @@ final readonly class OrderRepository
     public function findFulfillmentForUpdate(int $businessId, int $branchId, int $orderId): ?array
     {
         $statement = $this->connection->prepare(
-            'SELECT method, status
+            'SELECT method, status, dispatched_at
              FROM pos_order_fulfillments
              WHERE business_id = :business_id AND branch_id = :branch_id AND order_id = :order_id
              LIMIT 1 FOR UPDATE'
@@ -577,6 +578,10 @@ final readonly class OrderRepository
         $statement = $this->connection->prepare(
             'UPDATE pos_order_fulfillments
              SET status = :status,
+                 dispatched_at = CASE
+                     WHEN :dispatched_status = 1 THEN COALESCE(dispatched_at, UTC_TIMESTAMP(3))
+                     ELSE dispatched_at
+                 END,
                  completed_at = CASE
                      WHEN :completed_status = 1 THEN COALESCE(completed_at, UTC_TIMESTAMP(3))
                      ELSE completed_at
@@ -587,6 +592,7 @@ final readonly class OrderRepository
         );
         $statement->execute([
             'status' => $status,
+            'dispatched_status' => $status === 'dispatched' ? 1 : 0,
             'completed_status' => $status === 'completed' ? 1 : 0,
             'business_id' => $businessId,
             'branch_id' => $branchId,
