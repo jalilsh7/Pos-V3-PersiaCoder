@@ -554,6 +554,24 @@ final readonly class OrderRepository
         return is_array($row) ? $row : null;
     }
 
+    /** @return array<string,mixed>|null */
+    public function findFulfillmentForUpdate(int $businessId, int $branchId, int $orderId): ?array
+    {
+        $statement = $this->connection->prepare(
+            'SELECT method, status
+             FROM pos_order_fulfillments
+             WHERE business_id = :business_id AND branch_id = :branch_id AND order_id = :order_id
+             LIMIT 1 FOR UPDATE'
+        );
+        $statement->execute([
+            'business_id' => $businessId,
+            'branch_id' => $branchId,
+            'order_id' => $orderId,
+        ]);
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
+        return is_array($row) ? $row : null;
+    }
+
     public function updateFulfillmentStatus(int $businessId, int $branchId, int $orderId, string $status): void
     {
         $statement = $this->connection->prepare(
