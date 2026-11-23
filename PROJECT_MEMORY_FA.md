@@ -698,3 +698,11 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 - commits: b062cf2، 0f6ab20، fcfb396، a068e64، 39563ab، aabd4cd.
 - محدودیت فعلی: زمان مستقل اعزام و مشخصات/تخصیص پیک هنوز مدل نشده؛ زمان رخداد در audit قابل پیگیری است. لغو اعزام/بازگشت به صف، تحویل فیزیکی و proof-of-delivery در این بسته پیاده نشده‌اند.
 - تست PHP/DB، migration/schema validation و frontend build/typecheck اجرا نشده‌اند؛ فاز تحویل بسته نیست.
+
+
+## ORD-DISPATCH-01B — ثبت زمان اعزام ارسال (2026-11-23)
+- ستون nullable `dispatched_at` به fulfillment اضافه شد؛ Migration 025 برای نصب‌های موجود و clean schema هم‌زمان به‌روزرسانی شدند.
+- اولین انتقال به `dispatched` زمان UTC را فقط یک‌بار ثبت می‌کند؛ تغییرات بعدی وضعیت آن را بازنویسی نمی‌کنند.
+- جزئیات سفارش و رسید چاپی زمان اعزام را در منطقه زمانی کسب‌وکار نمایش می‌دهند. این timestamp ثبت سیستمی اعزام است و اثبات تحویل فیزیکی یا هویت پیک نیست.
+- فایل‌ها: `database/v3/migrations/025_order-fulfillment-dispatched-at.sql`، `database/v3/schema.sql`، `v3/backend/src/Infrastructure/Database/OrderRepository.php`، `v3/backend/src/Orders/OrderService.php`، `v3/frontend/src/shared/api/client.ts`، `v3/frontend/src/features/orders/OrderCenter.tsx`.
+- تست migration، PHP lint، DB integration و frontend build هنوز اجرا نشده‌اند.
