@@ -1767,3 +1767,15 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - سفارش فاقد رکورد fulfillment با خط تیره نمایش داده می‌شود و وضعیت ساختگی نمی‌گیرد.
 - commits: 62d0a55، af6de06، c551e1a.
 - build/typecheck و تست SQL اجرا نشده‌اند.
+
+
+## ORD-DISPATCH-01A — اعزام مستقل سفارش ارسال (2026-11-23)
+
+- Backend endpoint `POST /api/v1/orders/{orderPublicId}/dispatch` با session/CSRF/same-origin و مجوز `orders.update` اضافه شد.
+- عملیات در idempotency transaction اجرا می‌شود؛ سفارش با قفل ردیف خوانده می‌شود و فقط وقتی `order_status=ready`، روش دریافت `delivery` و وضعیت fulfillment نیز `ready` باشد، آن را به `dispatched` می‌برد.
+- وضعیت اصلی سفارش و پرداخت تغییر نمی‌کند؛ موجودی نیز دوباره مصرف/آزاد نمی‌شود. رویداد audit با before/after ثبت می‌شود.
+- OrderCenter فقط برای سفارش ارسال آماده، دکمه «ثبت اعزام برای ارسال» نشان می‌دهد و پس از موفقیت جزئیات/فهرست را از سرور تازه‌سازی می‌کند.
+- فایل‌ها: OrderService.php، OrderRepository.php، OrderController.php، public/index.php، client.ts، OrderCenter.tsx.
+- commits: b062cf2، 0f6ab20، fcfb396، a068e64، 39563ab، aabd4cd.
+- محدودیت فعلی: زمان مستقل اعزام و مشخصات/تخصیص پیک هنوز مدل نشده؛ زمان رخداد در audit قابل پیگیری است. لغو اعزام/بازگشت به صف، تحویل فیزیکی و proof-of-delivery در این بسته پیاده نشده‌اند.
+- تست PHP/DB، migration/schema validation و frontend build/typecheck اجرا نشده‌اند؛ فاز تحویل بسته نیست.
