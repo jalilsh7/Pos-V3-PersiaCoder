@@ -81,6 +81,20 @@ final readonly class OrderController
         return $this->idempotentResponse($result);
     }
 
+    public function dispatchDelivery(Request $request, array $parameters): Response
+    {
+        $this->assertJson($request);
+        $result = $this->orders->dispatchDelivery(
+            $this->principal($request),
+            $this->scope($request),
+            $parameters['orderPublicId'],
+            $request->header('idempotency-key') ?? '',
+            $request->requestId,
+            $this->ipAddress($request),
+        );
+        return $this->idempotentResponse($result);
+    }
+
     public function transitionKitchen(Request $request, array $parameters): Response
     {
         $this->assertJson($request);
