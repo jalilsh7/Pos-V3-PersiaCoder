@@ -569,6 +569,7 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
                 <div><span>نوع دریافت</span><strong>{fulfillmentLabels[selectedOrder.fulfillment_method ?? ""] ?? "ثبت نشده"}</strong></div>
                 {selectedOrder.fulfillment ? <div><span>وضعیت دریافت</span><strong>{fulfillmentStatusLabels[selectedOrder.fulfillment.status] ?? selectedOrder.fulfillment.status}</strong></div> : null}
                 <div><span>زمان ثبت</span><strong>{dateTime(selectedOrder.created_at, timeZone)}</strong></div>
+                {selectedOrder.fulfillment?.dispatched_at ? <div><span>زمان اعزام</span><strong>{dateTime(selectedOrder.fulfillment.dispatched_at, timeZone)}</strong></div> : null}
                 <div><span>وضعیت سفارش</span><StatusBadge variant={statusLabels[selectedOrder.order_status]?.variant ?? "neutral"}>{statusLabels[selectedOrder.order_status]?.label ?? selectedOrder.order_status}</StatusBadge></div>
                 <div><span>وضعیت پرداخت</span>{paymentBadge(selectedOrder.payment_status)}</div>
               </div>
@@ -682,7 +683,8 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
                 <div className="orders-print-row"><span>مشتری</span><strong>{selectedOrder.customer?.name ?? "مشتری مهمان"}</strong></div>
                 <div className="orders-print-row"><span>کانال</span><strong>{channelLabels[selectedOrder.source_channel] ?? selectedOrder.source_channel}</strong></div>
                 <div className="orders-print-row"><span>نوع دریافت</span><strong>{fulfillmentLabels[selectedOrder.fulfillment_method ?? ""] ?? "ثبت نشده"}</strong></div>
-                {selectedOrder.fulfillment ? <div className="orders-print-row"><span>وضعیت دریافت</span><strong>{fulfillmentStatusLabels[selectedOrder.fulfillment.status] ?? selectedOrder.fulfillment.status}</strong></div> : null}
+                {selectedOrder.fulfillment ? <div className="orders-print-row"><span>وضعیت دریافت</span><strong>{fulfillmentStatusLabels[selectedOrder.fulfillment.status] ?? selectedOrder.fulfillment.status}</strong></div>
+                {selectedOrder.fulfillment.dispatched_at ? <div className="orders-print-row"><span>زمان اعزام</span><strong>{dateTime(selectedOrder.fulfillment.dispatched_at, timeZone)}</strong></div> : null} : null}
                 {selectedOrder.fulfillment?.method === "delivery" ? (
                   <>
                     <div className="orders-print-row"><span>تحویل‌گیرنده</span><strong>{selectedOrder.fulfillment.recipient_name ?? "—"}</strong></div>
