@@ -52,7 +52,7 @@ $checks = [
         str_contains($service, '$refundable = (int) $payment[\'amount\'] - $refundedBefore') &&
         str_contains($service, '$amount > $refundable || $refundable < 1'),
     'cash refund cannot exceed the expected balance of the selected open drawer' =>
-        str_contains($service, "['expected_cash_amount'] < $amount") &&
+        str_contains($service, "['expected_cash_amount'] < \$amount") &&
         str_contains($service, "'cash_balance_insufficient'"),
     'order cancellation requires refund for net-paid or partially refunded orders while fully refunded orders remain cancellable' =>
         str_contains($orderService, "['paid', 'partially_paid', 'partially_refunded']") &&
