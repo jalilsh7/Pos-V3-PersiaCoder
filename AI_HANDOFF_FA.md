@@ -1355,3 +1355,11 @@ KitchenBoard به‌روزرسانی خودکار ۱۵ ثانیه‌ای، جل�
 - `CatalogWorkspace.tsx`: الگوی حذف فاصله در normalizeDigits اصلاح شد تا whitespace واقعی را با `\s` حذف کند، نه backslash و حرف s را.
 - commit: `063aa7b75c91b37e1fdb22ff16f4005e1983c44a`.
 - frontend typecheck و production build هنوز اجرا نشده‌اند.
+
+
+## INV-UX-04 — ورودی فارسی/عربی در مقدار انبار و رسپی (2026-11-26)
+- `InventoryWorkspace.tsx`: quantity در سند و ردیف، و cost در رسید خرید/تعدیل افزایشی، ارقام فارسی و عربی-هندی را normalize می‌کنند؛ decimal separator `٫` به `.` تبدیل می‌شود.
+- `RecipeWorkspace.tsx` و `ProductRecipeEditor.tsx`: مقدار مواد و درصد ضایعات با ارقام محلی پذیرفته می‌شود.
+- regex whitespace بعد از بازبینی به escape صحیح `\s` تغییر یافت.
+- commits: `d782d51b72e6f6c2c...`، `ae29c8398254ef61c2b346dc1b689f8efdb0105a`، `22d84aef21fec0451c21d21b7e7e723bb4123fb3`، `165a725fc9fc6b9fd1b36723b7e09d82c5477b2b`، `b36f863da0fd41f8d360a5a95a91ec4c928a7783`، `aaf8977446dcd65d204d67fa2cd6de9e44914774`.
+- frontend build/typecheck اجرا نشده است.
