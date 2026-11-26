@@ -146,7 +146,7 @@ export function FinanceWorkspace() {
         <div><span className="ui-eyebrow">CASH & SHIFT CONTROL</span><h1>مالی و صندوق‌ها</h1><p>مدیریت صندوق‌ها و شیفت‌های واقعی ثبت‌شده در سرور</p></div>
         <Button variant="secondary" onClick={() => void refresh()} disabled={loading || busy}><RefreshCw size={14} /> به‌روزرسانی</Button>
       </div>
-      <Notice variant="info">این بخش اکنون به API صندوق V3 متصل است. ثبت دریافت/پرداخت دستی، هزینه‌ها و گزارش مالی در بسته‌های بعدی همین ماژول تکمیل می‌شوند.</Notice>
+      <Notice variant="info">مدیریت صندوق، باز و بسته‌کردن شیفت، ثبت دریافت و پرداخت نقدی و بررسی اختلاف شمارش در این بخش فعال است؛ ثبت هزینه‌ها و گزارش‌های مالی تفصیلی در بسته‌های بعدی تکمیل می‌شوند.</Notice>
       {error ? <Notice variant="warning">{error}</Notice> : null}
       {notice ? <Notice variant="info">{notice}</Notice> : null}
       <div className="finance-metrics">
