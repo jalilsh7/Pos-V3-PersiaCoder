@@ -147,6 +147,7 @@ export function PosWorkspace() {
   const [acceptingOrder, setAcceptingOrder] = useState(false);
   const [acceptanceError, setAcceptanceError] = useState<string | null>(null);
   const [openCashSessions, setOpenCashSessions] = useState<OpenCashPaymentSession[]>([]);
+  const [loadingCashSessions, setLoadingCashSessions] = useState(false);
   const [cashSessionId, setCashSessionId] = useState("");
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
@@ -168,6 +169,22 @@ export function PosWorkspace() {
       setCatalogError(cause instanceof Error ? cause.message : "دریافت منوی محصولات انجام نشد.");
     } finally {
       setLoadingCatalog(false);
+    }
+  }
+
+  async function loadCashSessions() {
+    setLoadingCashSessions(true);
+    setPaymentError(null);
+    try {
+      const sessions = await getOpenCashPaymentSessions();
+      setOpenCashSessions(sessions);
+      setCashSessionId((current) => sessions.some((session) => session.id === current)
+        ? current
+        : sessions[0]?.id ?? "");
+    } catch (cause) {
+      setPaymentError(cause instanceof Error ? cause.message : "دریافت شیفت‌های صندوق انجام نشد.");
+    } finally {
+      setLoadingCashSessions(false);
     }
   }
 
@@ -594,10 +611,17 @@ export function PosWorkspace() {
                 {paymentSubmitting ? "در حال ثبت دریافت..." : "ثبت دریافت نقدی"}
               </Button>
             </>
+          ) : loadingCashSessions ? (
+            <Notice variant="info">در حال دریافت شیفت‌های باز صندوق...</Notice>
           ) : (
-            <Notice variant="warning">
-              شیفت صندوق باز پیدا نشد. ابتدا از بخش مدیریت صندوق یک صندوق فعال و شیفت باز ایجاد کنید؛ سفارش ثبت‌شده محفوظ است و پرداخت هنوز انجام نشده.
-            </Notice>
+            <div className="page-stack">
+              <Notice variant="warning">
+                شیفت صندوق باز پیدا نشد. ابتدا از بخش مدیریت صندوق یک صندوق فعال و شیفت باز ایجاد کنید؛ سفارش ثبت‌شده محفوظ است و پرداخت هنوز انجام نشده.
+              </Notice>
+              <Button variant="secondary" size="sm" onClick={() => { void loadCashSessions(); }} disabled={loadingCashSessions}>
+                تلاش دوباره برای دریافت شیفت‌های صندوق
+              </Button>
+            </div>
           )}
         </Surface>
       ) : null}
