@@ -1386,3 +1386,10 @@ KitchenBoard به‌روزرسانی خودکار ۱۵ ثانیه‌ای، جل�
 - متد `variantSkuExists` یکپارچه شد تا هم create (بدون except ID) و هم update (با except ID) را پوشش دهد؛ تعریف تکراری PHP حذف شد.
 - commit: `a31e9de0f59070ec3b20be439492652de4d69a42`.
 - بررسی متنی نشان داد یک تعریف باقی مانده؛ lint هنوز لازم است.
+
+
+## CAT-SKU-SCOPE-03 — رفع conflict اشتباه SKU بین کسب‌وکارها (2026-11-26)
+- Migration 006 قید SKU را per-business می‌کند؛ Repository قبلاً lookup سراسری انجام می‌داد. این ناسازگاری اصلاح شد.
+- `findProductSkuConflict` اکنون businessId می‌گیرد و query را با business_id محدود می‌کند؛ CatalogService نیز scope جاری را پاس می‌دهد.
+- static contract اضافه شد؛ lint/integration اجرا نشده.
+- commits: `f14d382faf576a0bb05762f2dbb6b160e759b835`، `fbbd92249952aed69ceecfaf07c3a122ce2ace84`، `7982ca321397fad6fd3db875f06408edf1ed3049`.
