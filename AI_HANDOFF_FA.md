@@ -1333,3 +1333,11 @@ KitchenBoard به‌روزرسانی خودکار ۱۵ ثانیه‌ای، جل�
 - تست اجرا نشده؛ PASS یا پذیرش فاز اعلام نمی‌شود.
 - commit: `19db134b357a0380b548026e18b7b324338a8a4b`.
 - ادامه: مرور مسیرهای fulfillment و order state، سپس اجرای یکپارچه scriptهای سفارش/انبار در gate پایان بسته.
+
+
+## FIN-PAY-02 — سقف بازپرداخت و سیاست لغو (2026-11-26)
+- در `scripts/check-v3-order-payment-integration.php` سناریوی بازپرداخت بیش از مانده قابل‌بازپرداخت یک پرداخت نقدی اضافه شد؛ انتظار خطای 422 با کد `refund_exceeds_refundable_amount`.
+- در `scripts/check-v3-order-payments.php` قراردادهای کنترل مبلغ بازپرداخت در سطح هر پرداخت، کف موجودی مورد انتظار صندوق و guard لغو سفارش ثبت شد.
+- سیاست فعلی کد: سفارش با وضعیت پرداخت `paid`، `partially_paid` یا `partially_refunded` قبل از لغو/رد نیازمند گردش refund است؛ `refunded` در این guard نیست.
+- commits: `26c64e23a4912e2ec50d424e2e64a382730646b6` و `8374ca41e29e683b53ea7fdd4bc71ccb4f3eb274`.
+- هشدار: اسکریپت‌ها صرفاً ویرایش شده‌اند و اجرا نشده‌اند؛ PASS، صحت runtime یا بسته‌شدن فاز اعلام نشود.
