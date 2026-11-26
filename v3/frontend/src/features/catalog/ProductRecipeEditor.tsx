@@ -18,7 +18,7 @@ const normalizeDecimalInput = (value: string) => {
     .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
     .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
     .replace(/٫/g, ".")
-    .replace(/[٬،,\\s]/g, "")
+    .replace(/[٬،,\s]/g, "")
     .replace(/[^0-9.]/g, "");
   const [whole, ...fraction] = normalized.split(".");
   return fraction.length ? `${whole}.${fraction.join("")}` : whole;
