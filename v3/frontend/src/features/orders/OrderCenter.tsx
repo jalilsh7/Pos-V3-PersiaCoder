@@ -30,7 +30,7 @@ const parseMoneyInput = (value: string) => {
   const normalized = value
     .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
     .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
-    .replace(/[،,٬\\s]/g, "")
+    .replace(/[،,٬\s]/g, "")
     .replace(/[^0-9]/g, "");
   return normalized ? Number(normalized) : 0;
 };
