@@ -782,3 +782,9 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 - استفاده از SKU یکسان در دو کسب‌وکار مجاز است؛ تکرار داخل یک کسب‌وکار همچنان conflict است.
 - static contract اضافه شده، اجرا نشده.
 - commits: `f14d382faf576a0bb05762f2dbb6b160e759b835`، `fbbd92249952aed69ceecfaf07c3a122ce2ace84`، `7982ca321397fad6fd3db875f06408edf1ed3049`.
+
+
+## CAT-HIERARCHY-04 — جلوگیری از چرخه در دسته‌بندی (2026-11-26)
+- در ویرایش دسته، اگر دستهٔ والد پیشنهادی خود دسته یا یکی از descendants آن باشد، Backend با 409 و کد `category_hierarchy_cycle` رد می‌کند؛ بررسی recursive در Repository انجام می‌شود.
+- Contract check در `scripts/check-v3-backend-recipe-routes.php` اضافه شد. این assertion اجرا نشده؛ CTE، lint و integration test هنوز اعتبارسنجی نشده‌اند.
+- commits: `4a7ee16ff8a87909437c3a734f754c7695ae39da`، `2a84a803c813666ac3530b101b1dd57903bff04a`، `b618b5e83927c17900422a945884b53660fd7072`.
