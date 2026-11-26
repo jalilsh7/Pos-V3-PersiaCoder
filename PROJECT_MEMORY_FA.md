@@ -775,3 +775,10 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 - امضای lookup SKU تنوع به یک متد با `?int $exceptVariantId = null` تبدیل شد تا ایجاد و ویرایش هر دو را پوشش دهد.
 - تعریف تکراری حذف شد؛ lint و تست اجرا نشده‌اند.
 - commit: `a31e9de0f59070ec3b20be439492652de4d69a42`.
+
+
+## CAT-SKU-SCOPE-03 — SKU مستقل در هر کسب‌وکار
+- lookup تعارض SKU محصول با business_id محدود شد تا با قید دیتابیس Migration 006 (`business_id, sku`) هم‌راستا باشد.
+- استفاده از SKU یکسان در دو کسب‌وکار مجاز است؛ تکرار داخل یک کسب‌وکار همچنان conflict است.
+- static contract اضافه شده، اجرا نشده.
+- commits: `f14d382faf576a0bb05762f2dbb6b160e759b835`، `fbbd92249952aed69ceecfaf07c3a122ce2ace84`، `7982ca321397fad6fd3db875f06408edf1ed3049`.
