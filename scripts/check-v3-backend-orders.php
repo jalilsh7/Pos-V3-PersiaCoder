@@ -81,8 +81,8 @@ $assert(str_contains($orderCenter, 'changeOrderStatus("cancelled", cancelReason.
 $assert(str_contains($orderCenter, '!["paid", "partially_paid", "partially_refunded"].includes(selectedOrder.payment_status)'), 'Order center should not offer direct cancellation for paid/partially paid orders.');
 $orderService = file_get_contents(__DIR__ . '/../v3/backend/src/Orders/OrderService.php');
 $assert(str_contains($orderService, "'pos_payment_required_before_acceptance'")
-    && str_contains($orderService, "(string) $order['source_channel'] === 'pos'")
-    && str_contains($orderService, "(string) $order['payment_status'] !== 'paid'"),
+    && str_contains($orderService, "(string) \$order['source_channel'] === 'pos'")
+    && str_contains($orderService, "(string) \$order['payment_status'] !== 'paid'"),
     'POS orders must be fully paid before acceptance into preparation.');
 
 fwrite(STDOUT, "V3 order pagination, timezone filters and POS order submission contract checks passed.\n");
