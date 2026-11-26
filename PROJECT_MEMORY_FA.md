@@ -764,3 +764,9 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 - guard فقط کانال POS را پوشش می‌دهد و پیش از رزرو موجودی اجرا می‌شود.
 - static contract اضافه شده؛ lint و integration test هنوز اجرا نشده‌اند.
 - commits: `8fb7d339a4e4efeb775e236dcbc222d81c5e8d49`، `b097f5f900fca3d1f8e66135a62baecc1d292fc2`.
+
+## CAT-VARIANT-SKU-02 — SKU تنوع محصول
+- بررسی SKU تکراری در محدوده همان محصول و کسب‌وکار به Repository اضافه شد.
+- سرویس ساخت تنوع در تکرار، خطای 409 `variant_sku_exists` می‌دهد؛ unique دیتابیس برای race حفظ است.
+- static contract اضافه شده، ولی اجرا نشده است.
+- commits: `f214248fbdcf28fabd805067b0d1d12b9ac3cd7f`، `cbf26cfe8a53a175b60ca3140b77a91d21165ff3`، `fa337d3fe102068ab6513a91241c6cefd6680ea8`.
