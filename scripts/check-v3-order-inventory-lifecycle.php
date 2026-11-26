@@ -55,6 +55,7 @@ $assert(str_contains($lifecycle, 'takeRemaining'), 'Snapshot allocation must pre
 $integration = file_get_contents(__DIR__ . '/check-v3-order-inventory-integration.php');
 $assert(str_contains($integration, '$otherBranchOrderId') && str_contains($integration, 'source_order') && str_contains($integration, 'crossBranchRejected'), 'Database integration test must reject cross-branch source order references.');
 
+$assert(str_contains($service, 'delivery_dispatch_required') && str_contains($service, "(string) $fulfillment['status'] !== 'dispatched'"), 'Delivery orders must not complete before explicit dispatch.');
 $assert(str_contains($lifecycle, 'stock_reservation_missing') && str_contains($lifecycle, 'recipe_version_id IS NOT NULL'), 'Recipe-tracked orders must not complete without their stock reservation.');
 $assert(str_contains($lifecycle, 'one-time lifecycle record per order') && !str_contains($lifecycle, 'AND idempotency_key = :idempotency_key'), 'Reservation replay must be guarded by order identity, not only the request key.');
 $assert(str_contains($reservationMigration, 'DROP INDEX uq_stock_reservations_order_key') && str_contains($reservationMigration, 'uq_stock_reservations_order_once (business_id, branch_id, order_id)'), 'Database must enforce exactly one reservation per business/branch/order.');
