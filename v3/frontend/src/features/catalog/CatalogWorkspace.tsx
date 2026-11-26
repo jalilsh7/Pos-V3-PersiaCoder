@@ -23,7 +23,7 @@ const money = (value: number) => new Intl.NumberFormat("fa-IR").format(value);
 const normalizeDigits = (value: string) => value
   .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
   .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
-  .replace(/[،,٬\\s]/g, "");
+  .replace(/[،,٬\s]/g, "");
 const parsePrice = (value: string) => {
   const normalized = normalizeDigits(value).replace(/[^0-9]/g, "");
   return normalized ? Number(normalized) : 0;
