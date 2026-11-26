@@ -327,6 +327,10 @@ final readonly class RecipeService
                     throw new HttpException(409, 'recipe_version_not_draft', 'Only a draft recipe version can be activated.');
                 }
                 $recipeId = (int) $locked['recipe_id'];
+                // Serialize activation across all draft versions belonging to this recipe.
+                if (!$this->recipes->lockRecipeForVersionActivation($scope->businessId, $recipeId)) {
+                    throw new HttpException(409, 'recipe_activation_conflict', 'The recipe could not be locked for version activation.');
+                }
                 $this->recipes->retireActiveVersions($scope->businessId, $recipeId);
                 if (!$this->recipes->activateVersion($scope->businessId, (int) $locked['id'])) {
                     throw new HttpException(409, 'recipe_version_activation_conflict', 'The recipe version could not be activated.');
