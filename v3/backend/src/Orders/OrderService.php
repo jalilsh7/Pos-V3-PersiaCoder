@@ -566,6 +566,11 @@ final readonly class OrderService
                         throw new HttpException(409, 'delivery_dispatch_required', 'A delivery order must be dispatched before it can be completed.');
                     }
                 }
+                if ($targetStatus === 'accepted'
+                    && (string) $order['source_channel'] === 'pos'
+                    && (string) $order['payment_status'] !== 'paid') {
+                    throw new HttpException(409, 'pos_payment_required_before_acceptance', 'A POS order must be fully paid before it can be accepted for preparation.');
+                }
                 if (in_array($targetStatus, ['cancelled', 'rejected'], true)
                     && in_array((string) $order['payment_status'], ['paid', 'partially_paid', 'partially_refunded'], true)) {
                     throw new HttpException(409, 'refund_required_before_cancellation', 'A paid order must go through the refund workflow before it can be cancelled or rejected.');
