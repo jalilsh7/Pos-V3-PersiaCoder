@@ -56,6 +56,9 @@ $assert(is_string($catalogService) && str_contains($catalogService, "'variant_sk
     'Duplicate variant SKU must be rejected with a stable conflict response.');
 $assert(is_string($catalogRepository) && str_contains($catalogRepository, 'WHERE business_id = :business_id AND product_id = :product_id AND sku = :sku'),
     'Variant SKU conflict lookup must be scoped to the current business and product.');
+$assert(str_contains($catalogRepository, 'findProductSkuConflict(int $businessId, string $sku, int $exceptProductId)')
+    && str_contains($catalogService, 'findProductSkuConflict($scope->businessId, $sku, $productId)'),
+    'Product SKU conflict lookup must respect business scope and allow identical SKUs in separate businesses.');
 $assert(str_contains($catalogRepository, '?int $exceptVariantId = null')
     && str_contains($catalogService, 'variantSkuExists($scope->businessId, $productId, $sku, $variantId)'),
     'Variant updates must exclude the current variant while rejecting another variant with the same SKU.');
