@@ -1853,3 +1853,11 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - قرارداد استاتیک در `scripts/check-v3-backend-orders.php` اضافه شد.
 - commits: `8fb7d339a4e4efeb775e236dcbc222d81c5e8d49`، `b097f5f900fca3d1f8e66135a62baecc1d292fc2`.
 - وضعیت: کد و assertion ثبت شده؛ PHP lint، order/payment integration و frontend build اجرا نشده‌اند.
+
+
+### CAT-VARIANT-SKU-02 — کنترل SKU تکراری تنوع محصول (2026-11-26)
+- پیش از درج تنوع محصول، SKU غیرخالی در محدوده همان کسب‌وکار و همان محصول بررسی می‌شود؛ تکرار با HTTP 409 و کد پایدار `variant_sku_exists` رد می‌شود.
+- محدودیت unique دیتابیس همچنان مرجع نهایی هم‌زمانی است؛ lookup برای پاسخ قابل‌فهم و جلوگیری از خطای عمومی duplicate key اضافه شد.
+- قرارداد بررسی به `scripts/check-v3-backend-recipe-routes.php` افزوده شد.
+- commits: `f214248fbdcf28fabd805067b0d1d12b9ac3cd7f`، `cbf26cfe8a53a175b60ca3140b77a91d21165ff3`، `fa337d3fe102068ab6513a91241c6cefd6680ea8`.
+- وضعیت: کد و assertion ثبت شده؛ تست runtime و build هنوز اجرا نشده‌اند.
