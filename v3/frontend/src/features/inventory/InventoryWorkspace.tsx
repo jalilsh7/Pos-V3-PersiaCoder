@@ -42,7 +42,7 @@ const normalizeDecimalInput = (value: string) => {
     .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
     .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
     .replace(/٫/g, ".")
-    .replace(/[٬،,\\s]/g, "")
+    .replace(/[٬،,\s]/g, "")
     .replace(/[^0-9.]/g, "");
   const [whole, ...fraction] = normalized.split(".");
   return fraction.length ? `${whole}.${fraction.join("")}` : whole;
@@ -50,7 +50,7 @@ const normalizeDecimalInput = (value: string) => {
 const normalizeIntegerInput = (value: string) => value
   .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
   .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
-  .replace(/[٬،,\\s]/g, "")
+  .replace(/[٬،,\s]/g, "")
   .replace(/[^0-9]/g, "");
 const dateTime = (value: string) => {
   const date = new Date(value.includes("Z") || /[+-]\d\d:\d\d$/.test(value) ? value : `${value.replace(" ", "T")}Z`);
