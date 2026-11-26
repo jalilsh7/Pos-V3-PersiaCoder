@@ -350,6 +350,9 @@ final readonly class CatalogService
         if (!is_int($delta) || $delta < -9000000000000000 || $delta > 9000000000000000) throw new HttpException(422, 'variant_price_invalid', 'Variant price delta is invalid.');
         $id = self::uuidV4(); $fp = hash('sha256', json_encode([$productPublicId,$name,$sku,$delta], JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE));
         return $this->idempotency->execute($actor->userId,$scope,'catalog.variant.create',$key,$fp,function(PDO $db) use($scope,$productId,$id,$name,$sku,$delta,$actor,$requestId,$ip): array {
+            if ($sku !== null && $this->catalog->variantSkuExists($scope->businessId, $productId, $sku)) {
+                throw new HttpException(409, 'variant_sku_exists', 'This product already has a variant with the supplied SKU.');
+            }
             $this->catalog->createVariant($scope->businessId,$productId,$id,$name,$sku,$delta);
             $this->audit->record($actor->userId,'catalog.variant.created','product_variant',$id,null,['name'=>$name,'sku'=>$sku,'price_delta_amount'=>$delta],null,$requestId,$ip,$scope->businessId);
             return ['status'=>201,'body'=>['data'=>['variant'=>['id'=>$id,'name'=>$name,'sku'=>$sku,'price_delta_amount'=>$delta,'is_active'=>true]],'meta'=>(object)[]]];
