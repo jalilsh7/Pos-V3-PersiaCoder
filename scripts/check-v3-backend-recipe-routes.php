@@ -5,6 +5,8 @@ $root = dirname(__DIR__);
 $entrypoint = file_get_contents($root . '/v3/backend/public/index.php');
 $service = file_get_contents($root . '/v3/backend/src/Recipes/RecipeService.php');
 $controller = file_get_contents($root . '/v3/backend/src/Recipes/RecipeController.php');
+$catalogService = file_get_contents($root . '/v3/backend/src/Catalog/CatalogService.php');
+$catalogRepository = file_get_contents($root . '/v3/backend/src/Infrastructure/Database/CatalogRepository.php');
 
 $assert = static function (bool $condition, string $message): void {
     if (!$condition) throw new RuntimeException($message);
@@ -49,5 +51,10 @@ $assert(str_contains($service, 'deleteRecipeLinesForVersion'), 'Draft line repla
 $assert(str_contains($service, 'countRecipeVersionLines'), 'Audit snapshot must include the prior draft line count.');
 $assert(str_contains($service, 'findConversionFactor') && str_contains($service, 'createRecipeLine'), 'Recipe lines must resolve and persist unit conversion snapshots.');
 $assert(str_contains($service, 'retireActiveVersions'), 'Activating a recipe must retire the previous active version.');
+$assert(is_string($catalogService) && str_contains($catalogService, "'variant_sku_exists'")
+    && str_contains($catalogService, 'variantSkuExists($scope->businessId, $productId, $sku)'),
+    'Duplicate variant SKU must be rejected with a stable conflict response.');
+$assert(is_string($catalogRepository) && str_contains($catalogRepository, 'WHERE business_id = :business_id AND product_id = :product_id AND sku = :sku'),
+    'Variant SKU conflict lookup must be scoped to the current business and product.');
 
 echo "V3 recipe route and security contract checks passed.\n";
