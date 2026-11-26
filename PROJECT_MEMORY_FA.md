@@ -748,3 +748,8 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 - متن راهنمای صفحه مالی با امکانات اجرایی موجود هماهنگ شد.
 - static contract check برای parser اضافه شد؛ تست و build اجرا نشده‌اند.
 - commits: `3bc447f808b3323b8b203948155a4a8d3a0a5c41` و `d38a3d90797c0452bd003f1e265d7716ca63efd9`.
+
+## CAT-INPUT-01 — اصلاح ورودی قیمت کاتالوگ (2026-11-26)
+- regex نرمال‌سازی قیمت در CatalogWorkspace برای حذف whitespace واقعی اصلاح شد.
+- commit: `063aa7b75c91b37e1fdb22ff16f4005e1983c44a`.
+- تست و build اجرا نشده است.
