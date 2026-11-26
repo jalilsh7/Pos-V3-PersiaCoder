@@ -753,3 +753,8 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 - regex نرمال‌سازی قیمت در CatalogWorkspace برای حذف whitespace واقعی اصلاح شد.
 - commit: `063aa7b75c91b37e1fdb22ff16f4005e1983c44a`.
 - تست و build اجرا نشده است.
+
+## INV-UX-04 — ورودی عدد محلی برای انبار و رسپی (2026-11-26)
+- ورودی‌های quantity/cost در InventoryWorkspace و quantity/waste در دو editor رسپی برای ارقام فارسی و عربی-هندی اصلاح شدند؛ جداکننده اعشاری عربی پشتیبانی می‌شود.
+- regexهای whitespace اصلاح شدند؛ build و تست runtime هنوز اجرا نشده‌اند.
+- commits: `d782d51b72e6f6c6d7e1fadb3b3920dd6d4770d2`، `ae29c8398254ef61c2b346dc1b689f8efdb0105a`، `22d84aef21fec0451c21d21b7e7e723bb4123fb3`، `165a725fc9fc6b9fd1b36723b7e09d82c5477b2b`، `b36f863da0fd41f8d360a5a95a91ec4c928a7783`، `aaf8977446dcd65d204d67fa2cd6de9e44914774`.
