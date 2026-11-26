@@ -554,6 +554,18 @@ final readonly class OrderService
                     throw new HttpException(404, 'order_not_found', 'The order was not found in this branch.');
                 }
                 $currentStatus = (string) $order['order_status'];
+                // Delivery completion must not bypass the explicit dispatch transition.
+                if ($targetStatus === 'completed') {
+                    $fulfillment = $this->orders->findFulfillmentForUpdate(
+                        $scope->businessId,
+                        (int) $scope->branchId,
+                        (int) $order['id'],
+                    );
+                    if ($fulfillment !== null && (string) $fulfillment['method'] === 'delivery'
+                        && (string) $fulfillment['status'] !== 'dispatched') {
+                        throw new HttpException(409, 'delivery_dispatch_required', 'A delivery order must be dispatched before it can be completed.');
+                    }
+                }
                 if (in_array($targetStatus, ['cancelled', 'rejected'], true)
                     && in_array((string) $order['payment_status'], ['paid', 'partially_paid', 'partially_refunded'], true)) {
                     throw new HttpException(409, 'refund_required_before_cancellation', 'A paid order must go through the refund workflow before it can be cancelled or rejected.');
