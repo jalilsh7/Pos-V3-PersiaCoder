@@ -13,6 +13,16 @@ import {
 import { Button, SelectField, StatusBadge, TextField } from "../../shared/ui";
 
 type RecipeLineDraft = { stock_item_id: string; quantity: string; unit_code: string; waste_percent: string };
+const normalizeDecimalInput = (value: string) => {
+  const normalized = value
+    .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+    .replace(/٫/g, ".")
+    .replace(/[٬،,\\s]/g, "")
+    .replace(/[^0-9.]/g, "");
+  const [whole, ...fraction] = normalized.split(".");
+  return fraction.length ? `${whole}.${fraction.join("")}` : whole;
+};
 
 const statusLabel: Record<string, string> = { draft: "پیش‌نویس", active: "فعال", retired: "بازنشسته" };
 
