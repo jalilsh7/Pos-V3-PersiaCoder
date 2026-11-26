@@ -120,4 +120,16 @@ $assert(str_contains($frontController, "makePermissionMiddleware('inventory.mana
 $assert(!preg_match('/(?:UPDATE|INSERT INTO)\\s+pos_stock_balances/i', $repository), 'Draft line CRUD must not mutate stock balances.');
 $assert(!preg_match('/INSERT INTO\\s+pos_stock_ledger/i', $repository), 'Draft line CRUD must not append stock ledger entries.');
 
+$assert(str_contains($postingService, 'findPostedReturnSourceByIdForUpdate')
+    && str_contains($postingService, 'canAddReturnQuantity')
+    && str_contains($postingService, "'0', '1'"),
+    'Posting a return must re-lock its posted source and re-check the complete draft return quantity before stock is received.');
+$assert(str_contains($service, 'findPostedReturnSourceByIdForUpdate')
+    && str_contains($service, 'canAddReturnQuantity')
+    && str_contains($service, 'sourceLinePublicId'),
+    'Adding a return line must lock the posted source and enforce the remaining quantity for the exact source line.');
+$assert(str_contains($service, 'stock_return_line_inherited')
+    && str_contains($service, 'Only draft document lines can be updated.'),
+    'Return line valuation and source identity must remain immutable after creation.');
+
 echo "V3 inventory draft document contract checks passed.\n";
