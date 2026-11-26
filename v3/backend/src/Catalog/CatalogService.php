@@ -237,6 +237,9 @@ final readonly class CatalogService
         $fp = hash('sha256', json_encode($after, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
         return $this->idempotency->execute($actor->userId, $scope, 'catalog.category.update', $key, $fp,
             function (PDO $db) use ($scope, $categoryId, $publicId, $name, $parentId, $sort, $active, $actor, $requestId, $ip, $before, $after): array {
+                if ($parentId !== null && $this->catalog->categoryParentWouldCycle($scope->businessId, $categoryId, $parentId)) {
+                    throw new HttpException(409, 'category_hierarchy_cycle', 'A category cannot be nested beneath itself or one of its descendants.');
+                }
                 $this->catalog->updateCategory($scope->businessId, $categoryId, $name, $parentId, $sort, $active);
                 $this->audit->record($actor->userId, 'catalog.category.updated', 'category', $publicId, $before, $after, null, $requestId, $ip, $scope->businessId);
                 return ['status' => 200, 'body' => ['data' => ['category' => ['id' => $publicId] + $after], 'meta' => (object) []]];
