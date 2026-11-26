@@ -59,3 +59,11 @@
 - Never report an unrun test as passing; record deferred low-value tests and their risk.
 - Stop for owner input only when a change alters approved product scope or a binding decision, introduces foundational architectural change, risks irreversible data loss, incurs external cost/commitment, performs a high-risk production/public release action, or raises a sensitive legal/security issue.
 - Report concrete commits, actual test results, deferred checks and risks. See DEC-2026-012 in PROJECT_MEMORY_FA.md.
+
+
+## User-facing delivery priority (owner-approved, 2026-11-27)
+- Optimize for a usable commercial product, not technical complexity for its own sake.
+- Prefer end-to-end user workflows and visible UI implementation: POS checkout, order management, catalog/menu, customers, practical inventory, and the real online storefront-to-POS order flow.
+- A preview/mock screen is not a completed feature; connect it to real backend/database operations before marking it complete.
+- Defer low-impact abstractions, repetitive checks and over-engineering. Keep essential security, server-side authorization, financial/inventory integrity and phase-gate validation.
+- Report progress in terms of what an operator/customer can actually do, not only static assertions or documentation. See DEC-2026-013 in PROJECT_MEMORY_FA.md.
