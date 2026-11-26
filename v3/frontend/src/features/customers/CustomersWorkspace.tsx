@@ -16,7 +16,7 @@ import "./customers.css";
 const money = (value: number) => new Intl.NumberFormat("fa-IR").format(value);
 const dateTime = (value: string | null) => {
   if (!value) return "بدون سفارش";
-  const date = new Date(value.includes("Z") || /[+-]\\d\\d:\\d\\d$/.test(value) ? value : `${value.replace(" ", "T")}Z`);
+  const date = new Date(value.includes("Z") || /[+-]\d\d:\d\d$/.test(value) ? value : `${value.replace(" ", "T")}Z`);
   if (Number.isNaN(date.getTime())) return value;
   return new Intl.DateTimeFormat("fa-IR", { dateStyle: "short", timeStyle: "short" }).format(date);
 };
