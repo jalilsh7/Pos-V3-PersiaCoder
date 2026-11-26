@@ -217,6 +217,23 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
     setSelectedId(orderId);
   }
 
+  async function retrySelectedOrderDetails() {
+    if (!selectedId || detailLoading) return;
+    const requestedId = selectedId;
+    setDetailLoading(true);
+    setDetailError(null);
+    try {
+      const result = await getOrderDetails(requestedId);
+      if (selectedId === requestedId) setDetail(result);
+    } catch (cause) {
+      if (selectedId === requestedId) {
+        setDetailError(cause instanceof ApiError ? cause.message : "دریافت جزئیات سفارش انجام نشد.");
+      }
+    } finally {
+      if (selectedId === requestedId) setDetailLoading(false);
+    }
+  }
+
   useEffect(() => {
     // This effect starts an asynchronous API request; state updates happen after the request settles.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -567,7 +584,7 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
             </div>
           </div>
           {detailLoading ? <Notice variant="info">در حال دریافت جزئیات سفارش...</Notice> : null}
-          {detailError ? <Notice variant="warning">{detailError}</Notice> : null}
+          {detailError ? <div className="page-stack"><Notice variant="warning">{detailError}</Notice><Button size="sm" variant="secondary" onClick={() => { void retrySelectedOrderDetails(); }} disabled={detailLoading}>تلاش دوباره برای دریافت جزئیات</Button></div> : null}
           {actionError ? <Notice variant="warning">{actionError}</Notice> : null}
           {selectedOrder && detail ? (
             <>
