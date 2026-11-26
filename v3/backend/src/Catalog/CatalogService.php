@@ -276,7 +276,7 @@ final readonly class CatalogService
         $fp = hash('sha256', json_encode($after, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
         return $this->idempotency->execute($actor->userId, $scope, 'catalog.product.update', $key, $fp,
             function (PDO $db) use ($scope, $productId, $publicId, $sku, $name, $type, $price, $tax, $active, $categoryId, $actor, $requestId, $ip, $before, $after): array {
-                if ($sku !== null && $this->catalog->findProductSkuConflict($sku, $productId)) throw new HttpException(409, 'product_sku_exists', 'Another product already uses this SKU.');
+                if ($sku !== null && $this->catalog->findProductSkuConflict($scope->businessId, $sku, $productId)) throw new HttpException(409, 'product_sku_exists', 'Another product already uses this SKU.');
                 $this->catalog->updateProduct($scope->businessId, $productId, $categoryId, $name, $sku, $type, $price, $tax, $active);
                 $this->audit->record($actor->userId, 'catalog.product.updated', 'product', $publicId, $before, $after, null, $requestId, $ip, $scope->businessId);
                 return ['status' => 200, 'body' => ['data' => ['product' => ['id' => $publicId] + $after], 'meta' => (object) []]];
