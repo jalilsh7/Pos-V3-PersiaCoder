@@ -1349,3 +1349,9 @@ KitchenBoard به‌روزرسانی خودکار ۱۵ ثانیه‌ای، جل�
 - `scripts/check-v3-order-payments.php`: assertion استاتیک برای parser محلی اضافه شد.
 - commits: `3bc447f808b3323b8b203948155a4a8d3a0a5c41`، `d38a3d90797c0452bd003f1e265d7716ca63efd9`.
 - هنوز PHP checks و frontend build اجرا نشده‌اند.
+
+
+## CAT-INPUT-01 — اصلاح whitespace در ورودی قیمت (2026-11-26)
+- `CatalogWorkspace.tsx`: الگوی حذف فاصله در normalizeDigits اصلاح شد تا whitespace واقعی را با `\s` حذف کند، نه backslash و حرف s را.
+- commit: `063aa7b75c91b37e1fdb22ff16f4005e1983c44a`.
+- frontend typecheck و production build هنوز اجرا نشده‌اند.
