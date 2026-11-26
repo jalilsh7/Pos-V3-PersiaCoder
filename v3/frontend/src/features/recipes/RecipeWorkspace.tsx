@@ -12,6 +12,16 @@ import "./recipes.css";
 type DraftLine = { stock_item_id: string; quantity: string; unit_code: string; waste_percent: string };
 const statusLabels: Record<string,string> = { draft: "پیش‌نویس", active: "فعال", retired: "بایگانی‌شده" };
 const format = (value: string | number) => new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 6 }).format(Number(value) || 0);
+const normalizeDecimalInput = (value:string) => {
+  const normalized=value
+    .replace(/[۰-۹]/g,digit=>String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+    .replace(/[٠-٩]/g,digit=>String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+    .replace(/٫/g,".")
+    .replace(/[٬،,\\s]/g,"")
+    .replace(/[^0-9.]/g,"");
+  const [whole,...fraction]=normalized.split(".");
+  return fraction.length? `${whole}.${fraction.join("")}`:whole;
+};
 
 export function RecipeWorkspace() {
   const [products,setProducts]=useState<PosCatalogProduct[]>([]);
@@ -129,9 +139,9 @@ export function RecipeWorkspace() {
             const compatible=units.filter(u=>!item||u.dimension===item.base_unit.dimension);
             return <div className="recipe-line" key={index}>
               <label>ماده اولیه<select value={line.stock_item_id} onChange={e=>{const next=stockItems.find(x=>x.id===e.target.value);updateLine(index,{stock_item_id:e.target.value,unit_code:next?.base_unit.code??""});}}><option value="">انتخاب ماده</option>{stockItems.map(x=><option key={x.id} value={x.id}>{x.name} ({x.base_unit.name})</option>)}</select></label>
-              <label>مقدار<input inputMode="decimal" value={line.quantity} onChange={e=>updateLine(index,{quantity:e.target.value.replace(/[^0-9.]/g,"")})}/></label>
+              <label>مقدار<input inputMode="decimal" value={line.quantity} onChange={e=>updateLine(index,{quantity:normalizeDecimalInput(e.target.value)})}/></label>
               <label>واحد<select value={line.unit_code} onChange={e=>updateLine(index,{unit_code:e.target.value})}><option value="">انتخاب واحد</option>{compatible.map(u=><option key={u.code} value={u.code}>{u.name}</option>)}</select></label>
-              <label>ضایعات ٪<input inputMode="decimal" value={line.waste_percent} onChange={e=>updateLine(index,{waste_percent:e.target.value.replace(/[^0-9.]/g,"")})}/></label>
+              <label>ضایعات ٪<input inputMode="decimal" value={line.waste_percent} onChange={e=>updateLine(index,{waste_percent:normalizeDecimalInput(e.target.value)})}/></label>
               {lines.length>1?<Button size="sm" variant="ghost" onClick={()=>removeLine(index)}>حذف</Button>:null}
             </div>;
           })}
