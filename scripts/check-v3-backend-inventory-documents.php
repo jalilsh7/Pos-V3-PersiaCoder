@@ -84,6 +84,12 @@ $assert(str_contains($frontController, 'inventory/documents/{documentPublicId}/l
 
 $assert(str_contains($service, 'total_cost_amount'), 'Purchase receipt draft lines must capture total TOMAN cost.');
 $assert(str_contains($postingRepository, 'FOR UPDATE'), 'Posting must lock balance rows.');
+$issueStart = strpos($postingRepository, 'function issueBalance(');
+$issueEnd = strpos($postingRepository, 'public function appendLedger(', $issueStart === false ? 0 : $issueStart);
+$issueMethod = $issueStart === false || $issueEnd === false ? '' : substr($postingRepository, $issueStart, $issueEnd - $issueStart);
+$assert(str_contains($issueMethod, 'quantity_on_hand - quantity_reserved >= CAST(:quantity_available AS DECIMAL(18,6))'), 'Outgoing stock posting must preserve reserved quantities and only issue available stock.');
+$assert(!str_contains($issueMethod, 'quantity_reserved = quantity_reserved -'), 'Manual stock posting must not release order reservations.');
+$assert(str_contains($postingService, 'reserved quantities cannot be transferred') && str_contains($postingService, 'reserved quantities cannot be consumed or written off'), 'Transfer and outgoing adjustment/waste/consumption must reject stock reserved by active orders.');
 $assert(str_contains($postingRepository, 'INSERT INTO pos_stock_ledger'), 'Posting must append ledger entries.');
 $assert(!preg_match('/(?:UPDATE|DELETE FROM)\\s+pos_stock_ledger/i', $postingRepository), 'Posting repository must keep the stock ledger append-only.');
 $assert(str_contains($postingRepository, 'quantity_reserved'), 'Posting must protect reserved quantities.');
