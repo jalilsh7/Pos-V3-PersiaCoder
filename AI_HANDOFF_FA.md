@@ -1371,3 +1371,12 @@ KitchenBoard به‌روزرسانی خودکار ۱۵ ثانیه‌ای، جل�
 - `scripts/check-v3-backend-orders.php` assertion قرارداد را پوشش می‌دهد.
 - commits: `8fb7d339a4e4efeb775e236dcbc222d81c5e8d49`، `b097f5f900fca3d1f8e66135a62baecc1d292fc2`.
 - هنوز اجرا/تست نشده؛ نتیجه PASS ادعا نشود.
+
+
+## CAT-VARIANT-SKU-02 — پاسخ کنترل‌شده برای SKU تکراری تنوع (2026-11-26)
+- `CatalogRepository::variantSkuExists` تکرار SKU را در محدوده business/product بررسی می‌کند.
+- `CatalogService::createVariant` پیش از درج، در صورت تکرار HTTP 409 با `variant_sku_exists` برمی‌گرداند.
+- unique constraint دیتابیس همچنان برای race هم‌زمان حفظ است.
+- قرارداد استاتیک در `scripts/check-v3-backend-recipe-routes.php` اضافه شد.
+- commits: `f214248fbdcf28fabd805067b0d1d12b9ac3cd7f`، `cbf26cfe8a53a175b60ca3140b77a91d21165ff3`، `fa337d3fe102068ab6513a91241c6cefd6680ea8`.
+- اجرا نشده؛ PASS ادعا نشود.
