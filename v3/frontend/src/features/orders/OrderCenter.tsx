@@ -120,6 +120,7 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
   const [refundSuccess, setRefundSuccess] = useState<string | null>(null);
   const refundAttempt = useRef<{ signature: string; key: string } | null>(null);
   const listRequestVersion = useRef(0);
+  const detailRequestVersion = useRef(0);
 
   async function fetchOrders() {
     const requestVersion = ++listRequestVersion.current;
@@ -220,17 +221,18 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
   async function retrySelectedOrderDetails() {
     if (!selectedId || detailLoading) return;
     const requestedId = selectedId;
+    const requestVersion = ++detailRequestVersion.current;
     setDetailLoading(true);
     setDetailError(null);
     try {
       const result = await getOrderDetails(requestedId);
-      if (selectedId === requestedId) setDetail(result);
+      if (detailRequestVersion.current === requestVersion) setDetail(result);
     } catch (cause) {
-      if (selectedId === requestedId) {
+      if (detailRequestVersion.current === requestVersion) {
         setDetailError(cause instanceof ApiError ? cause.message : "دریافت جزئیات سفارش انجام نشد.");
       }
     } finally {
-      if (selectedId === requestedId) setDetailLoading(false);
+      if (detailRequestVersion.current === requestVersion) setDetailLoading(false);
     }
   }
 
@@ -243,6 +245,7 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
   }, [status, channel, payment, fulfillment, fromDate, toDate]);
 
   useEffect(() => {
+    const requestVersion = ++detailRequestVersion.current;
     if (!selectedId) {
       setPaymentLoading(false);
       setPaymentSummary(null);
@@ -258,13 +261,13 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
     setRefundSuccess(null);
     refundAttempt.current = null;
     getOrderDetails(selectedId)
-      .then((result) => { if (active) setDetail(result); })
+      .then((result) => { if (active && detailRequestVersion.current === requestVersion) setDetail(result); })
       .catch((cause: unknown) => {
-        if (!active) return;
+        if (!active || detailRequestVersion.current !== requestVersion) return;
         setDetail(null);
         setDetailError(cause instanceof ApiError ? cause.message : "دریافت جزئیات سفارش انجام نشد.");
       })
-      .finally(() => { if (active) setDetailLoading(false); });
+      .finally(() => { if (active && detailRequestVersion.current === requestVersion) setDetailLoading(false); });
     getOrderPayments(selectedId)
       .then((result) => { if (active) setPaymentSummary(result); })
       .catch(() => { if (active) setPaymentSummary(null); })
