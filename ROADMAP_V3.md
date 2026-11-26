@@ -1793,3 +1793,9 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - در transition سفارش به `completed`، fulfillment مربوطه در همان تراکنش و با قفل خوانده می‌شود؛ سفارش delivery فقط پس از وضعیت `dispatched` قابل تکمیل است.
 - سفارش‌های روش‌های دیگر همچنان از مسیر قبلی تکمیل می‌شوند. اگر fulfillment برای سفارش قدیمی وجود نداشته باشد، این guard اعمال نمی‌شود تا رفتار قدیمی بدون اطلاعات کافی تغییر نکند.
 - تغییر کد در `v3/backend/src/Orders/OrderService.php` ثبت شد؛ PHP lint و integration test هنوز اجرا نشده‌اند و این بسته پذیرفته/بسته نیست.
+
+
+## ORD-DISPATCH-01D — ثبت contract check (2026-11-26)
+- اسکریپت `scripts/check-v3-order-inventory-lifecycle.php` اکنون وجود guard `delivery_dispatch_required` و شرط `dispatched` را به‌عنوان contract بررسی می‌کند.
+- این assertion به معنی اجرای script یا PASS نیست؛ اجرای validation به gate پایان بسته عملیاتی سفارش/انبار موکول شده است.
+- commit: `ccdd077b49a4bf067b1b43bea05bf61e95400270`.
