@@ -193,6 +193,18 @@ $refundReplay = $service->refundCash(
 );
 $assert($refundReplay['replayed'] === true, 'Repeated cash refund was not served from idempotency storage.');
 
+$overRefundBlocked = false;
+try {
+    $service->refundCash(
+        $actor, $scope, $orderPublicId, $paymentOne,
+        ['amount' => 2501, 'cash_session_id' => $sessionPublicId, 'reason' => 'CI over-refund attempt', 'confirm' => true],
+        'ci-cash-refund-over-limit', $requestId, $ip,
+    );
+} catch (HttpException $error) {
+    $overRefundBlocked = $error->status === 422 && $error->errorCode === 'refund_exceeds_refundable_amount';
+}
+$assert($overRefundBlocked, 'Cash refund exceeded the remaining refundable amount for its payment.');
+
 $service->refundCash(
     $actor, $scope, $orderPublicId, $paymentOne,
     ['amount' => 2500, 'cash_session_id' => $sessionPublicId, 'reason' => 'CI complete first payment refund', 'confirm' => true],
