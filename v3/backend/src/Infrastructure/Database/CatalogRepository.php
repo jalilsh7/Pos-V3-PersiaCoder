@@ -221,6 +221,23 @@ final readonly class CatalogRepository
         return $row ?: null;
     }
 
+    public function categoryParentWouldCycle(int $businessId, int $categoryId, int $candidateParentId): bool
+    {
+        $statement = $this->connection->prepare(
+            'WITH RECURSIVE descendants (id) AS (
+                SELECT id FROM pos_categories WHERE business_id = :business_id AND id = :category_id
+                UNION ALL
+                SELECT c.id FROM pos_categories c INNER JOIN descendants d ON c.parent_id = d.id
+                WHERE c.business_id = :business_id
+             )
+             SELECT 1 FROM descendants WHERE id = :parent_id LIMIT 1'
+        );
+        $statement->execute([
+            'business_id' => $businessId, 'category_id' => $categoryId, 'parent_id' => $candidateParentId,
+        ]);
+        return $statement->fetchColumn() !== false;
+    }
+
     public function updateCategory(int $businessId, int $categoryId, string $name, ?int $parentId, int $sortOrder, bool $isActive): void
     {
         $s = $this->connection->prepare(
