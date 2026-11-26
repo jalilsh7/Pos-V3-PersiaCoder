@@ -1363,3 +1363,11 @@ KitchenBoard به‌روزرسانی خودکار ۱۵ ثانیه‌ای، جل�
 - regex whitespace بعد از بازبینی به escape صحیح `\s` تغییر یافت.
 - commits: `d782d51b72e6f6c6d7e1fadb3b3920dd6d4770d2`، `ae29c8398254ef61c2b346dc1b689f8efdb0105a`، `22d84aef21fec0451c21d21b7e7e723bb4123fb3`، `165a725fc9fc6b9fd1b36723b7e09d82c5477b2b`، `b36f863da0fd41f8d360a5a95a91ec4c928a7783`، `aaf8977446dcd65d204d67fa2cd6de9e44914774`.
 - frontend build/typecheck اجرا نشده است.
+
+
+## ORD-PAY-GATE-01 — کنترل سمت سرور تسویه پیش از پذیرش POS (2026-11-26)
+- در `OrderService::transition`، فقط سفارش با `source_channel=pos` و `payment_status=paid` می‌تواند به `accepted` منتقل شود؛ در غیر این صورت 409 `pos_payment_required_before_acceptance`.
+- این guard پیش از اعمال lifecycle موجودی و update وضعیت سفارش قرار دارد و در همان idempotency transaction اجرا می‌شود.
+- `scripts/check-v3-backend-orders.php` assertion قرارداد را پوشش می‌دهد.
+- commits: `8fb7d339a4e4efeb775e236dcbc222d81c5e8d49`، `b097f5f900fca3d1f8e66135a62baecc1d292fc2`.
+- هنوز اجرا/تست نشده؛ نتیجه PASS ادعا نشود.
