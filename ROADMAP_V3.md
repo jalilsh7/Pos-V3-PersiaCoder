@@ -1874,3 +1874,11 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - assertion قراردادی اضافه شد تا lookup ایجاد و ویرایش را با هم پوشش دهد و اطمینان دهد ویرایش، شناسه تنوع جاری را از conflict query مستثنا می‌کند.
 - commit: `3f193bfd7ebe9359b85cecee1f38486e8e009087`.
 - assertion اجرا نشده؛ فقط به اسکریپت اضافه شده است.
+
+
+### CAT-SKU-SCOPE-03 — هم‌راستاسازی SKU محصول با business scope (2026-11-26)
+- Migration 006 قید `UNIQUE (business_id, sku)` را تعریف کرده بود، اما lookup زمان ویرایش محصول فقط با SKU جست‌وجو می‌کرد و به‌اشتباه می‌توانست SKU یک کسب‌وکار دیگر را conflict اعلام کند.
+- Repository و Service اکنون lookup را با business_id محدود می‌کنند؛ استفاده از SKU یکسان در دو کسب‌وکار مستقل مجاز می‌ماند و یکتایی داخل هر کسب‌وکار حفظ می‌شود.
+- قرارداد استاتیک در `scripts/check-v3-backend-recipe-routes.php` اضافه شد.
+- commits: `f14d382faf576a0bb05762f2dbb6b160e759b835`، `fbbd92249952aed69ceecfaf07c3a122ce2ace84`، `7982ca321397fad6fd3db875f06408edf1ed3049`.
+- تست اجرا نشده؛ فاز همچنان باز است.
