@@ -26,6 +26,14 @@ import {
 } from "../../shared/ui";
 
 const money = (value: number) => new Intl.NumberFormat("fa-IR").format(value);
+const parseMoneyInput = (value: string) => {
+  const normalized = value
+    .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+    .replace(/[،,٬\\s]/g, "")
+    .replace(/[^0-9]/g, "");
+  return normalized ? Number(normalized) : 0;
+};
 const dateTime = (value: string, timeZone: string) => {
   const date = new Date(value.includes("Z") || /[+-]\d\d:\d\d$/.test(value) ? value : `${value.replace(" ", "T")}Z`);
   if (Number.isNaN(date.getTime())) return value;
@@ -328,7 +336,7 @@ export function OrderCenter({ timeZone }: { timeZone: string }) {
 
   async function submitCashRefund() {
     if (!selectedOrder || !refundPaymentId || refundSubmitting) return;
-    const amount = Number(refundAmount.replace(/[,٬\\s]/g, ""));
+    const amount = parseMoneyInput(refundAmount);
     if (!Number.isSafeInteger(amount) || amount < 1) {
       setRefundError("مبلغ بازپرداخت باید عدد صحیح و بیشتر از صفر باشد.");
       return;
