@@ -159,17 +159,6 @@ final readonly class CatalogRepository
         return $v===false?null:(int)$v;
     }
 
-    public function variantSkuExists(int $businessId, int $productId, string $sku): bool
-    {
-        $statement = $this->connection->prepare(
-            'SELECT 1 FROM pos_product_variants
-             WHERE business_id = :business_id AND product_id = :product_id AND sku = :sku
-             LIMIT 1'
-        );
-        $statement->execute(['business_id' => $businessId, 'product_id' => $productId, 'sku' => $sku]);
-        return $statement->fetchColumn() !== false;
-    }
-
     public function createVariant(int $businessId,int $productId,string $publicId,string $name,?string $sku,int $delta): void
     {
         $s=$this->connection->prepare('INSERT INTO pos_product_variants (business_id,public_id,product_id,name,sku,price_delta_amount,is_active) VALUES (:business_id,:public_id,:product_id,:name,:sku,:delta,1)');
@@ -310,18 +299,19 @@ final readonly class CatalogRepository
         return $row ?: null;
     }
 
-    public function variantSkuExists(int $businessId, int $productId, string $sku, int $exceptVariantId): bool
-    {
-        $s = $this->connection->prepare(
-            'SELECT 1 FROM pos_product_variants
-             WHERE business_id = :business_id AND product_id = :product_id
-               AND sku = :sku AND id <> :except_id LIMIT 1'
-        );
-        $s->execute([
-            'business_id' => $businessId, 'product_id' => $productId,
-            'sku' => $sku, 'except_id' => $exceptVariantId,
-        ]);
-        return $s->fetchColumn() !== false;
+    public function variantSkuExists(
+        int $businessId, int $productId, string $sku, ?int $exceptVariantId = null,
+    ): bool {
+        $sql = 'SELECT 1 FROM pos_product_variants
+                WHERE business_id = :business_id AND product_id = :product_id AND sku = :sku';
+        $parameters = ['business_id' => $businessId, 'product_id' => $productId, 'sku' => $sku];
+        if ($exceptVariantId !== null) {
+            $sql .= ' AND id <> :except_id';
+            $parameters['except_id'] = $exceptVariantId;
+        }
+        $statement = $this->connection->prepare($sql . ' LIMIT 1');
+        $statement->execute($parameters);
+        return $statement->fetchColumn() !== false;
     }
 
     public function updateVariant(
