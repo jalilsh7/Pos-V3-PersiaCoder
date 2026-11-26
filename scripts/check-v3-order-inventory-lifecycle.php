@@ -56,6 +56,16 @@ $integration = file_get_contents(__DIR__ . '/check-v3-order-inventory-integratio
 $assert(str_contains($integration, '$otherBranchOrderId') && str_contains($integration, 'source_order') && str_contains($integration, 'crossBranchRejected'), 'Database integration test must reject cross-branch source order references.');
 
 $assert(str_contains($service, 'delivery_dispatch_required') && str_contains($service, "(string) $fulfillment['status'] !== 'dispatched'"), 'Delivery orders must not complete before explicit dispatch.');
+$consumeStart = strpos($lifecycle, 'private function consume(');
+$releaseStart = strpos($lifecycle, 'private function release(', $consumeStart === false ? 0 : $consumeStart);
+$recipeStart = strpos($lifecycle, 'private function activeRecipe(', $releaseStart === false ? 0 : $releaseStart);
+$consumeMethod = $consumeStart === false || $releaseStart === false ? '' : substr($lifecycle, $consumeStart, $releaseStart - $consumeStart);
+$releaseMethod = $releaseStart === false || $recipeStart === false ? '' : substr($lifecycle, $releaseStart, $recipeStart - $releaseStart);
+$assert(str_contains($consumeMethod, 'quantity_on_hand=quantity_on_hand-') && str_contains($consumeMethod, 'quantity_reserved=quantity_reserved-'), 'Consumption must atomically reduce on-hand and reserved quantities.');
+$assert(str_contains($consumeMethod, "'consumption_out'") && str_contains($consumeMethod, "'order-consume:'"), 'Consumption must write an order-linked, deterministic ledger event.');
+$assert(str_contains($consumeMethod, "status='consumed'") && str_contains($consumeMethod, "=== 'consumed'"), 'Consumption replay must be idempotent and finalize the reservation.');
+$assert(str_contains($releaseMethod, 'quantity_reserved=quantity_reserved-') && !str_contains($releaseMethod, 'quantity_on_hand=quantity_on_hand-'), 'Cancellation/rejection must release reservation without consuming on-hand stock.');
+$assert(str_contains($releaseMethod, "status='released'") && str_contains($releaseMethod, "=== 'active'"), 'Only active reservations may be released, and release must finalize the reservation.');
 $assert(str_contains($lifecycle, 'stock_reservation_missing') && str_contains($lifecycle, 'recipe_version_id IS NOT NULL'), 'Recipe-tracked orders must not complete without their stock reservation.');
 $assert(str_contains($lifecycle, 'one-time lifecycle record per order') && !str_contains($lifecycle, 'AND idempotency_key = :idempotency_key'), 'Reservation replay must be guarded by order identity, not only the request key.');
 $assert(str_contains($reservationMigration, 'DROP INDEX uq_stock_reservations_order_key') && str_contains($reservationMigration, 'uq_stock_reservations_order_once (business_id, branch_id, order_id)'), 'Database must enforce exactly one reservation per business/branch/order.');
