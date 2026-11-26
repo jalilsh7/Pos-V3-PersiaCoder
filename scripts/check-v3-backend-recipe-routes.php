@@ -56,5 +56,8 @@ $assert(is_string($catalogService) && str_contains($catalogService, "'variant_sk
     'Duplicate variant SKU must be rejected with a stable conflict response.');
 $assert(is_string($catalogRepository) && str_contains($catalogRepository, 'WHERE business_id = :business_id AND product_id = :product_id AND sku = :sku'),
     'Variant SKU conflict lookup must be scoped to the current business and product.');
+$assert(str_contains($catalogRepository, '?int $exceptVariantId = null')
+    && str_contains($catalogService, 'variantSkuExists($scope->businessId, $productId, $sku, $variantId)'),
+    'Variant updates must exclude the current variant while rejecting another variant with the same SKU.');
 
 echo "V3 recipe route and security contract checks passed.\n";
