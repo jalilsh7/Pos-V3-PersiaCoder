@@ -1305,3 +1305,9 @@ KitchenBoard به‌روزرسانی خودکار ۱۵ ثانیه‌ای، جل�
 - جزئیات سفارش و رسید چاپی زمان اعزام را در منطقه زمانی کسب‌وکار نمایش می‌دهند. این timestamp ثبت سیستمی اعزام است و اثبات تحویل فیزیکی یا هویت پیک نیست.
 - فایل‌ها: `database/v3/migrations/025_order-fulfillment-dispatched-at.sql`، `database/v3/schema.sql`، `v3/backend/src/Infrastructure/Database/OrderRepository.php`، `v3/backend/src/Orders/OrderService.php`، `v3/frontend/src/shared/api/client.ts`، `v3/frontend/src/features/orders/OrderCenter.tsx`.
 - تست migration، PHP lint، DB integration و frontend build هنوز اجرا نشده‌اند.
+
+
+## ORD-DISPATCH-01C — جلوگیری از تکمیل ارسال پیش از اعزام (2026-11-26)
+- در transition سفارش به `completed`، fulfillment مربوطه در همان تراکنش و با قفل خوانده می‌شود؛ سفارش delivery فقط پس از وضعیت `dispatched` قابل تکمیل است.
+- سفارش‌های روش‌های دیگر همچنان از مسیر قبلی تکمیل می‌شوند. اگر fulfillment برای سفارش قدیمی وجود نداشته باشد، این guard اعمال نمی‌شود تا رفتار قدیمی بدون اطلاعات کافی تغییر نکند.
+- تغییر کد در `v3/backend/src/Orders/OrderService.php` ثبت شد؛ PHP lint و integration test هنوز اجرا نشده‌اند و این بسته پذیرفته/بسته نیست.
