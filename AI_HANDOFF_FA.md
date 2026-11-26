@@ -1380,3 +1380,9 @@ KitchenBoard به‌روزرسانی خودکار ۱۵ ثانیه‌ای، جل�
 - قرارداد استاتیک در `scripts/check-v3-backend-recipe-routes.php` اضافه شد.
 - commits: `f214248fbdcf28fabd805067b0d1d12b9ac3cd7f`، `cbf26cfe8a53a175b60ca3140b77a91d21165ff3`، `fa337d3fe102068ab6513a91241c6cefd6680ea8`.
 - اجرا نشده؛ PASS ادعا نشود.
+
+
+## CAT-VARIANT-SKU-02A — اصلاح امضای Repository (2026-11-26)
+- متد `variantSkuExists` یکپارچه شد تا هم create (بدون except ID) و هم update (با except ID) را پوشش دهد؛ تعریف تکراری PHP حذف شد.
+- commit: `a31e9de0f59070ec3b20be439492652de4d69a42`.
+- بررسی متنی نشان داد یک تعریف باقی مانده؛ lint هنوز لازم است.
