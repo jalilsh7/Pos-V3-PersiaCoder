@@ -48,6 +48,15 @@ $checks = [
         str_contains($service, 'INSERT INTO pos_refunds') &&
         str_contains($service, "'refund_out'") &&
         str_contains($service, "'cash_refunded'"),
+    'cash refund cannot exceed the remaining refundable amount of its payment' =>
+        str_contains($service, '$refundable = (int) $payment[\'amount\'] - $refundedBefore') &&
+        str_contains($service, '$amount > $refundable || $refundable < 1'),
+    'cash refund cannot exceed the expected balance of the selected open drawer' =>
+        str_contains($service, "['expected_cash_amount'] < $amount") &&
+        str_contains($service, "'cash_balance_insufficient'"),
+    'order cancellation requires refund for net-paid or partially refunded orders while fully refunded orders remain cancellable' =>
+        str_contains($orderService, "['paid', 'partially_paid', 'partially_refunded']") &&
+        str_contains($orderService, "'refund_required_before_cancellation'"),
     'cash refund endpoint is protected by finance permission, CSRF and same-origin' =>
         str_contains($routes, '/payments/{paymentPublicId}/refunds/cash') &&
         str_contains($routes, "\$makePermissionMiddleware('finance.manage', true), \$csrfMiddleware, \$originMiddleware"),
