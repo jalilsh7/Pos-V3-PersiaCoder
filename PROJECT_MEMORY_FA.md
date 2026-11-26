@@ -770,3 +770,8 @@ Migration 023 دو جدول pos_sms_marketing_campaigns و pos_sms_marketing_cam
 - سرویس ساخت تنوع در تکرار، خطای 409 `variant_sku_exists` می‌دهد؛ unique دیتابیس برای race حفظ است.
 - static contract اضافه شده، ولی اجرا نشده است.
 - commits: `f214248fbdcf28fabd805067b0d1d12b9ac3cd7f`، `cbf26cfe8a53a175b60ca3140b77a91d21165ff3`، `fa337d3fe102068ab6513a91241c6cefd6680ea8`.
+
+## CAT-VARIANT-SKU-02A — یکپارچه‌سازی متد SKU
+- امضای lookup SKU تنوع به یک متد با `?int $exceptVariantId = null` تبدیل شد تا ایجاد و ویرایش هر دو را پوشش دهد.
+- تعریف تکراری حذف شد؛ lint و تست اجرا نشده‌اند.
+- commit: `a31e9de0f59070ec3b20be439492652de4d69a42`.
