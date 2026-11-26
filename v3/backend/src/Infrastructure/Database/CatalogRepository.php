@@ -249,13 +249,17 @@ final readonly class CatalogRepository
         return $row ?: null;
     }
 
-    public function findProductSkuConflict(string $sku, int $exceptProductId): bool
+    public function findProductSkuConflict(int $businessId, string $sku, int $exceptProductId): bool
     {
-        $s = $this->connection->prepare(
-            'SELECT 1 FROM pos_products WHERE sku = :sku AND id <> :except_id LIMIT 1'
+        $statement = $this->connection->prepare(
+            'SELECT 1 FROM pos_products
+             WHERE business_id = :business_id AND sku = :sku AND id <> :except_id
+             LIMIT 1'
         );
-        $s->execute(['sku' => $sku, 'except_id' => $exceptProductId]);
-        return $s->fetchColumn() !== false;
+        $statement->execute([
+            'business_id' => $businessId, 'sku' => $sku, 'except_id' => $exceptProductId,
+        ]);
+        return $statement->fetchColumn() !== false;
     }
 
     public function updateProduct(
