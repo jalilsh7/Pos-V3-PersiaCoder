@@ -51,6 +51,10 @@ $assert(str_contains($service, 'deleteRecipeLinesForVersion'), 'Draft line repla
 $assert(str_contains($service, 'countRecipeVersionLines'), 'Audit snapshot must include the prior draft line count.');
 $assert(str_contains($service, 'findConversionFactor') && str_contains($service, 'createRecipeLine'), 'Recipe lines must resolve and persist unit conversion snapshots.');
 $assert(str_contains($service, 'retireActiveVersions'), 'Activating a recipe must retire the previous active version.');
+$assert(str_contains($service, 'lockRecipeForVersionActivation')
+    && str_contains($catalogRepository, 'SELECT id FROM pos_recipes')
+    && str_contains($catalogRepository, 'LIMIT 1 FOR UPDATE'),
+    'Concurrent activations of different draft versions must serialize on the parent recipe row.');
 $assert(is_string($catalogService) && str_contains($catalogService, "'variant_sku_exists'")
     && str_contains($catalogService, 'variantSkuExists($scope->businessId, $productId, $sku)'),
     'Duplicate variant SKU must be rejected with a stable conflict response.');
