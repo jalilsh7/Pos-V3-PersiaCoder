@@ -37,6 +37,21 @@ import "./inventory.css";
 
 const numberFormat = new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 3 });
 const quantity = (value: string | number) => numberFormat.format(Number(value) || 0);
+const normalizeDecimalInput = (value: string) => {
+  const normalized = value
+    .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+    .replace(/٫/g, ".")
+    .replace(/[٬،,\\s]/g, "")
+    .replace(/[^0-9.]/g, "");
+  const [whole, ...fraction] = normalized.split(".");
+  return fraction.length ? `${whole}.${fraction.join("")}` : whole;
+};
+const normalizeIntegerInput = (value: string) => value
+  .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+  .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+  .replace(/[٬،,\\s]/g, "")
+  .replace(/[^0-9]/g, "");
 const dateTime = (value: string) => {
   const date = new Date(value.includes("Z") || /[+-]\d\d:\d\d$/.test(value) ? value : `${value.replace(" ", "T")}Z`);
   return Number.isNaN(date.getTime())
@@ -567,8 +582,8 @@ export function InventoryWorkspace() {
               <label>قلم انبار<select required value={documentItem} onChange={(event) => { const item = items.find((entry) => entry.id === event.target.value); setDocumentItem(event.target.value); if (item) setDocumentUnit(item.base_unit.code); }}>{activeItems.map((item) => <option key={item.id} value={item.id}>{item.name} ({item.code})</option>)}</select></label>
               <label>واحد<select required value={documentUnit} onChange={(event) => setDocumentUnit(event.target.value)}>{units.filter((unit) => !selectedDocumentItem || unit.dimension === selectedDocumentItem.base_unit.dimension).map((unit) => <option key={unit.code} value={unit.code}>{unit.name} ({unit.code})</option>)}</select></label>
             </>}
-            <label>مقدار<input required inputMode="decimal" pattern="^[0-9]+([.][0-9]{1,6})?$" value={documentQuantity} onChange={(event) => setDocumentQuantity(event.target.value)} /></label>
-            {needsCost ? <label>مبلغ کل خرید/ورودی (تومان)<input required inputMode="numeric" pattern="^[0-9]+$" value={documentCost} onChange={(event) => setDocumentCost(event.target.value)} /></label> : null}
+            <label>مقدار<input required inputMode="decimal" pattern="^[0-9]+([.][0-9]{1,6})?$" value={documentQuantity} onChange={(event) => setDocumentQuantity(normalizeDecimalInput(event.target.value))} /></label>
+            {needsCost ? <label>مبلغ کل خرید/ورودی (تومان)<input required inputMode="numeric" pattern="^[0-9]+$" value={documentCost} onChange={(event) => setDocumentCost(normalizeIntegerInput(event.target.value))} /></label> : null}
             {needsReason ? <label className="inventory-document-reason">دلیل ثبت<input required maxLength={500} value={documentReason} onChange={(event) => setDocumentReason(event.target.value)} placeholder="شرح دلیل تعدیل، ضایعات یا برگشت" /></label> : null}
           </div>
           {documentMessage ? <p className="inventory-document-message" role="status">{documentMessage}</p> : null}
@@ -590,9 +605,9 @@ export function InventoryWorkspace() {
               {activeDocument.lines.map((line) => <div className="inventory-document-line-detail" key={line.id}>
                 {editingLineId === line.id ? <>
                   <label><span>قلم</span><select value={editingItemId} onChange={(event) => { const item = items.find((entry) => entry.id === event.target.value); setEditingItemId(event.target.value); if (item) setEditingUnit(item.base_unit.code); }}>{activeItems.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-                  <label><span>مقدار</span><input value={editingQuantity} onChange={(event) => setEditingQuantity(event.target.value)} inputMode="decimal" /></label>
+                  <label><span>مقدار</span><input value={editingQuantity} onChange={(event) => setEditingQuantity(normalizeDecimalInput(event.target.value))} inputMode="decimal" /></label>
                   <label><span>واحد</span><select value={editingUnit} onChange={(event) => setEditingUnit(event.target.value)}>{units.filter((unit) => { const item = items.find((entry) => entry.id === editingItemId); return !item || unit.dimension === item.base_unit.dimension; }).map((unit) => <option key={unit.code} value={unit.code}>{unit.name}</option>)}</select></label>
-                  {["purchase_receipt", "adjustment_in"].includes(activeDocument.document_type) ? <label><span>مبلغ کل (تومان)</span><input required inputMode="numeric" pattern="^[0-9]+$" value={editingCost} onChange={(event) => setEditingCost(event.target.value)} /></label> : null}
+                  {["purchase_receipt", "adjustment_in"].includes(activeDocument.document_type) ? <label><span>مبلغ کل (تومان)</span><input required inputMode="numeric" pattern="^[0-9]+$" value={editingCost} onChange={(event) => setEditingCost(normalizeIntegerInput(event.target.value))} /></label> : null}
                   <div className="inventory-line-actions"><button type="button" disabled={documentDetailBusy} onClick={() => void saveDocumentLine()}>ذخیره</button><button type="button" onClick={() => setEditingLineId(null)}>انصراف</button></div>
                 </> : <>
                   <span>{line.stock_item_name}</span><b>{quantity(line.quantity)} {line.unit_name}</b><small>مقدار پایه: {quantity(line.base_quantity)}</small>{line.source_document_line_id ? <small>ردیف مبدأ: {line.source_document_line_id.slice(0, 8)}</small> : null}
