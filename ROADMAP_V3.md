@@ -1807,3 +1807,11 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - کد اجرایی موجود در این بسته تغییر نکرده؛ فقط قرارداد regression اضافه شد. اجرای تست و lint هنوز انجام نشده و نتیجه PASS ادعا نمی‌شود.
 - commit: `85a73bbfd36a7fee481468d316f32859d3a55fb2`.
 - گام بعد: بازبینی سناریوهای چرخه عمر رزرو سفارش در integration test و کنترل هم‌خوانی عملیات تکمیل/لغو با ledger.
+
+
+## ORD-STOCK-LIFECYCLE-03 — تثبیت قرارداد مصرف و آزادسازی رزرو (2026-11-26)
+- اسکریپت `scripts/check-v3-order-inventory-lifecycle.php` پنج assertion تکمیلی دارد: کاهش هم‌زمان on-hand/reserved هنگام مصرف، ثبت ledger با کلید deterministic و شناسه سفارش، idempotency مصرف، آزادسازی صرفاً quantity_reserved در لغو/رد، و محدود شدن release به رزرو active.
+- کد runtime در این بسته تغییر نکرده؛ هدف، تثبیت regression contract برای چرخه عمر موجودی است.
+- تست اجرا نشده؛ PASS یا پذیرش فاز اعلام نمی‌شود.
+- commit: `19db134b357a0380b548026e18b7b324338a8a4b`.
+- ادامه: مرور مسیرهای fulfillment و order state، سپس اجرای یکپارچه scriptهای سفارش/انبار در gate پایان بسته.
