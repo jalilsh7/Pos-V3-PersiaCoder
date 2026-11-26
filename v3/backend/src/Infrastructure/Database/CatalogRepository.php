@@ -159,6 +159,17 @@ final readonly class CatalogRepository
         return $v===false?null:(int)$v;
     }
 
+    public function variantSkuExists(int $businessId, int $productId, string $sku): bool
+    {
+        $statement = $this->connection->prepare(
+            'SELECT 1 FROM pos_product_variants
+             WHERE business_id = :business_id AND product_id = :product_id AND sku = :sku
+             LIMIT 1'
+        );
+        $statement->execute(['business_id' => $businessId, 'product_id' => $productId, 'sku' => $sku]);
+        return $statement->fetchColumn() !== false;
+    }
+
     public function createVariant(int $businessId,int $productId,string $publicId,string $name,?string $sku,int $delta): void
     {
         $s=$this->connection->prepare('INSERT INTO pos_product_variants (business_id,public_id,product_id,name,sku,price_delta_amount,is_active) VALUES (:business_id,:public_id,:product_id,:name,:sku,:delta,1)');
