@@ -1799,3 +1799,11 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - اسکریپت `scripts/check-v3-order-inventory-lifecycle.php` اکنون وجود guard `delivery_dispatch_required` و شرط `dispatched` را به‌عنوان contract بررسی می‌کند.
 - این assertion به معنی اجرای script یا PASS نیست؛ اجرای validation به gate پایان بسته عملیاتی سفارش/انبار موکول شده است.
 - commit: `ccdd077b49a4bf067b1b43bea05bf61e95400270`.
+
+
+## INV-STOCK-RESERVE-02 — تثبیت قرارداد حفظ رزرو موجودی (2026-11-26)
+- بازبینی `InventoryPostingRepository::issueBalance()` نشان داد خروجی موجودی فقط وقتی انجام می‌شود که `quantity_on_hand - quantity_reserved` برای مقدار خروج کافی باشد؛ رزرو سفارش‌ها با عملیات دستی خروج/انتقال آزاد نمی‌شود.
+- این رفتار در `scripts/check-v3-backend-inventory-documents.php` با سه assertion قراردادی تثبیت شد: شرط موجودی قابل‌استفاده، عدم دستکاری `quantity_reserved` و پوشش خطاهای transfer و خروجی‌های مصرف/ضایعات/اصلاح.
+- کد اجرایی موجود در این بسته تغییر نکرده؛ فقط قرارداد regression اضافه شد. اجرای تست و lint هنوز انجام نشده و نتیجه PASS ادعا نمی‌شود.
+- commit: `85a73bbfd36a7fee481468d316f32859d3a55fb2`.
+- گام بعد: بازبینی سناریوهای چرخه عمر رزرو سفارش در integration test و کنترل هم‌خوانی عملیات تکمیل/لغو با ledger.
