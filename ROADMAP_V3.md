@@ -1845,3 +1845,11 @@ PersiaCoder POS V3 یک سامانه جامع و یکپارچه مدیریت ک�
 - فایل‌ها: `InventoryWorkspace.tsx`، `RecipeWorkspace.tsx`، `ProductRecipeEditor.tsx`.
 - commits: `d782d51b72e6f6c6d7e1fadb3b3920dd6d4770d2`، `ae29c8398254ef61c2b346dc1b689f8efdb0105a`، `22d84aef21fec0451c21d21b7e7e723bb4123fb3`، `165a725fc9fc6b9fd1b36723b7e09d82c5477b2b`، `b36f863da0fd41f8d360a5a95a91ec4c928a7783`، `aaf8977446dcd65d204d67fa2cd6de9e44914774`.
 - وضعیت: کد ثبت شده؛ frontend typecheck/build و آزمون ورود داده فارسی هنوز اجرا نشده‌اند.
+
+
+### ORD-PAY-GATE-01 — الزام تسویه پیش از پذیرش سفارش صندوق (2026-11-26)
+- Backend اکنون هنگام انتقال سفارش با کانال `pos` به `accepted`، وضعیت پرداخت را در همان transaction بررسی می‌کند؛ فقط `paid` مجاز است و سایر وضعیت‌ها با 409 و کد `pos_payment_required_before_acceptance` رد می‌شوند.
+- این قاعده صرفاً برای سفارش صندوق حضوری است؛ کانال‌های آنلاین/تلفنی و سایر کانال‌ها با این guard تغییر نکرده‌اند.
+- قرارداد استاتیک در `scripts/check-v3-backend-orders.php` اضافه شد.
+- commits: `8fb7d339a4e4efeb775e236dcbc222d81c5e8d49`، `b097f5f900fca3d1f8e66135a62baecc1d292fc2`.
+- وضعیت: کد و assertion ثبت شده؛ PHP lint، order/payment integration و frontend build اجرا نشده‌اند.
