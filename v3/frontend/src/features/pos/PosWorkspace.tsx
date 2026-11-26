@@ -158,6 +158,19 @@ export function PosWorkspace() {
   const cashPaymentAttempt = useRef<{ signature: string; key: string } | null>(null);
   const receiptRequestVersion = useRef(0);
 
+  async function loadCatalog() {
+    setLoadingCatalog(true);
+    setCatalogError(null);
+    try {
+      const items = await getPosCatalogProducts();
+      setProducts(items.map(mapProductSummary));
+    } catch (cause) {
+      setCatalogError(cause instanceof Error ? cause.message : "دریافت منوی محصولات انجام نشد.");
+    } finally {
+      setLoadingCatalog(false);
+    }
+  }
+
   useEffect(() => {
     let active = true;
     setLoadingCatalog(true);
@@ -515,7 +528,12 @@ export function PosWorkspace() {
       <Notice variant="info">
         قیمت و ثبت سفارش در سرور اعتبارسنجی می‌شود. پس از تسویه کامل، می‌توانید سفارش را صریحاً بپذیرید تا برای آماده‌سازی ارسال و موجودی مواد اولیه رزرو شود.
       </Notice>
-      {catalogError ? <div className="auth-error" role="alert">{catalogError}</div> : null}
+      {catalogError ? <div className="auth-error" role="alert">
+        <span>{catalogError}</span>
+        <Button size="sm" variant="secondary" disabled={loadingCatalog} onClick={() => { void loadCatalog(); }}>
+          {loadingCatalog ? "در حال تلاش..." : "تلاش دوباره برای دریافت منو"}
+        </Button>
+      </div> : null}
       {actionError ? <div className="auth-error" role="alert">{actionError}</div> : null}
       {createdOrder ? (
         <div className="auth-success" role="status" aria-live="polite">
