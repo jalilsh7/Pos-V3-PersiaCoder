@@ -63,4 +63,9 @@ $assert(str_contains($catalogRepository, '?int $exceptVariantId = null')
     && str_contains($catalogService, 'variantSkuExists($scope->businessId, $productId, $sku, $variantId)'),
     'Variant updates must exclude the current variant while rejecting another variant with the same SKU.');
 
+$assert(str_contains($catalogRepository, 'categoryParentWouldCycle(int $businessId, int $categoryId, int $candidateParentId)')
+    && str_contains($catalogService, 'categoryParentWouldCycle($scope->businessId, $categoryId, $parentId)')
+    && str_contains($catalogService, "'category_hierarchy_cycle'"),
+    'Category updates must prevent nesting a category beneath itself or its descendants.');
+
 echo "V3 recipe route and security contract checks passed.\n";
