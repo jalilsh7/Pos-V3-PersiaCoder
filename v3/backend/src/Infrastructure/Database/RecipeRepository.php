@@ -213,6 +213,17 @@ final readonly class RecipeRepository
         return $row ?: null;
     }
 
+    public function lockRecipeForVersionActivation(int $businessId, int $recipeId): bool
+    {
+        $s = $this->connection->prepare(
+            'SELECT id FROM pos_recipes
+             WHERE business_id = :business_id AND id = :id
+             LIMIT 1 FOR UPDATE'
+        );
+        $s->execute(['business_id' => $businessId, 'id' => $recipeId]);
+        return $s->fetchColumn() !== false;
+    }
+
     public function retireActiveVersions(int $businessId, int $recipeId): void
     {
         $s = $this->connection->prepare(
